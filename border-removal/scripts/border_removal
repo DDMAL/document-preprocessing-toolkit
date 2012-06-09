@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+# This just simply runs the border_removal toolkits main function
+
+from gamera.toolkits.border_removal import main
+
+main.main()

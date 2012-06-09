@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+# This just simply runs the staffline_removal toolkits main function
+
+from gamera.toolkits.staffline_removal import main
+
+main.main()
