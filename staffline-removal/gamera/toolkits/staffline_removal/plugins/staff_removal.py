@@ -20,7 +20,9 @@
 
 """Staff removal tools."""
 
-from gamera.plugin import *
+from gamera.plugin import PluginFunction, PluginModule
+from gamera.args import Args, ImageType, Int, Real
+from gamera.enums import ONEBIT
 import _staff_removal
 
 
@@ -146,7 +148,7 @@ class staff_removal(PluginFunction):
 
 
 class StaffRemovalGenerator(PluginModule):
-    category = "StaffRemoval"
+    category = "Staff Removal"
     cpp_headers = ["staff_removal.hpp"]
     functions = [directional_med_filter_bw,
                  staffspace_estimation,
@@ -156,5 +158,3 @@ class StaffRemovalGenerator(PluginModule):
     url = "http://gamera.dkc.jhu.edu/"
 
 module = StaffRemovalGenerator()
-
-
