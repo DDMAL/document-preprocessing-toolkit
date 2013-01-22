@@ -256,7 +256,7 @@ class border_removal(PluginFunction):
 
 
 class BorderRemovalGenerator(PluginModule):
-    category = "BorderRemoval"
+    category = "Border Removal"
     cpp_headers = ["border_removal.hpp"]
     functions = [med_filter,
                  flood_fill_holes_grey,
