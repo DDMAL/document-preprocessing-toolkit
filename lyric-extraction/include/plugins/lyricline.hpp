@@ -334,7 +334,6 @@ OneBitImageView* baseline_merge(const T &src, double angle, double dist)
 {
     unsigned int number_seg=2;      // label for each baseline segment
     Size box=Size(floor(dist), floor(tan(angle)*dist));     // bounding box of points in candidate segments to connected with current segment
-    Point box_origin=Point(floor(dist), floor(tan(angle)*dist));
     OneBitImageData* data = new OneBitImageData(src.size(), src.origin());
     OneBitImageView* baseline_potential = new OneBitImageView(*data);
     OneBitImageData* src_copy_data = new OneBitImageData(src.size(), src.origin());
