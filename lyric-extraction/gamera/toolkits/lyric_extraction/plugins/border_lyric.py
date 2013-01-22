@@ -20,15 +20,16 @@
 
 """border removal and lyricline detection"""
 
-from gamera.plugin import *
-from sample_histogram import sample_hist
-import _border_lyric
+from gamera.plugin import PluginFunction, PluginModule
+from gamera.args import Args, ImageType, Int
+from gamera.enums import ONEBIT, GREYSCALE
 
+from gamera.toolkits.lyric_extraction.plugins.sample_histogram import sample_hist
+from gamera.toolkits.border_removal.plugins.border_removal import border_removal
+from gamera.toolkits.background_estimation.plugins.background_estimation import binarization
 
-# histogram template
 
 class correct_rotation(PluginFunction):
-# This function is adapted from Gamera MusicStaves Toolkit
     """Corrects a possible rotation angle with the aid of skewed projections.
 
 When the image is large, it is temporarily scaled down for performance
@@ -39,6 +40,8 @@ downscaling, set *staffline_height* to one.
 
 When *staffline_height* is given as zero, it is computed automatically
 as most frequent black vertical run.
+
+This function is adapted from Gamera MusicStaves Toolkit.
     """
     pure_python = 1
     self_type = ImageType([ONEBIT, GREYSCALE])
@@ -83,7 +86,7 @@ class border_removal_and_binarization(PluginFunction):
 
     def __call__(self):
         # border removal
-        mask = self.border_removal(win_dil=3, win_avg=5, win_med=5,
+        mask = border_removal(win_dil=3, win_avg=5, win_med=5,
              threshold1_scale=0.8, threshold1_gradient=6.0,
              threshold2_scale=0.8, threshold2_gradient=6.0,
              scale_length=0.25,
@@ -91,7 +94,7 @@ class border_removal_and_binarization(PluginFunction):
              interval2=45, interval3=15)
 
         # binarization
-        img_bw0 = self.binarization(mask, sample_hist, do_wiener=0, wiener_width=5, wiener_height=3, noise_variance=-1.0,
+        img_bw0 = binarization(mask, sample_hist, do_wiener=0, wiener_width=5, wiener_height=3, noise_variance=-1.0,
              med_size=17,
              region_size=15, sensitivity=0.5, dynamic_range=128, lower_bound=20, upper_bound=150,
              q=0.06, p1=0.7, p2=0.5)
@@ -114,7 +117,7 @@ class lyricline_extraction(PluginFunction):
 
     def __call__(self, binarization):
         # border removal
-        mask = self.border_removal(win_dil=3, win_avg=5, win_med=5,
+        mask = border_removal(win_dil=3, win_avg=5, win_med=5,
             threshold1_scale=0.8, threshold1_gradient=6.0,
             threshold2_scale=0.8, threshold2_gradient=6.0,
             scale_length=0.25,
@@ -122,7 +125,7 @@ class lyricline_extraction(PluginFunction):
             interval2=45, interval3=15)
 
         # binarization
-        img_bw_staff0 = self.binarization(mask, sample_hist, do_wiener=1, wiener_width=5, wiener_height=3, noise_variance=-1.0,
+        img_bw_staff0 = binarization(mask, sample_hist, do_wiener=1, wiener_width=5, wiener_height=3, noise_variance=-1.0,
             med_size=17,
             region_size=15, sensitivity=0.5, dynamic_range=128, lower_bound=20, upper_bound=150,
             q=0.06, p1=0.7, p2=0.5)
@@ -148,12 +151,12 @@ class lyricline_extraction(PluginFunction):
 
 
 class BorderLyricGenerator(PluginModule):
-    category = "BorderLyric"
+    category = "Border and Lyric Extraction"
     cpp_headers = ["border_lyric.hpp"]
     functions = [border_removal_and_binarization,
                  lyricline_extraction,
                  correct_rotation]
     author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://ddmal.music.mcgill.ca/"
 
 module = BorderLyricGenerator()
