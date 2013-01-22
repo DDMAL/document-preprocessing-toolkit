@@ -218,74 +218,107 @@ typename ImageFactory<T>::view_type* flood_marker_bw(const T &src)
 template<class T>
 void flood_fill_core(const T &mask, T &marker, int conn=4)
 {
-    Point p,q,p2;
+    Point p, q, p2;
     typename T::value_type max_pixel, value;
     queue<Point> queue_fifo;
 
     // raster scanning
-    for (p=Point(0,0); p.y()<marker.nrows(); p.move(0,1)) {
-        for (p.x(0); p.x()<marker.ncols(); p.move(1,0)) {
+    for (p=Point(0,0); p.y() < marker.nrows(); p.move(0,1)) {
+        for (p.x(0); p.x() < marker.ncols(); p.move(1,0)) {
             max_pixel=marker.get(p);
-            for (int walker=1; walker<=conn/2; walker++) {
+            for (int walker = 1; walker <= (conn / 2); walker++) {
                 q=neighbour_nth(marker, p, walker, PLUS);
-                if (marker.get(q)>max_pixel)
+                if (marker.get(q) > max_pixel)
                     max_pixel=marker.get(q);
             }
-            value=(max_pixel<(mask.get(p))) ? max_pixel : mask.get(p);
+            value=(max_pixel < (mask.get(p))) ? max_pixel : mask.get(p);
             marker.set(p,value);
         }
     }
 
-    // anti-raster scanning
-    for (p=Point(marker.ncols()-1, marker.nrows()-1); p.y()>=0; p.move(0,-1)) {
-        for (p.x(marker.ncols()-1); p.x()>=0; p.move(-1,0)) {
-            max_pixel=marker.get(p);
-            for (int walker=1; walker<=conn/2; walker++) {
-                q=neighbour_nth(marker, p, walker, MINUS);
-                if (marker.get(q)>max_pixel)
-                    max_pixel=marker.get(q);
+    // anti-raster scanning - AH refactor
+    p = Point(marker.ncols() - 1, marker.nrows() - 1);
+    while ( p.y() )
+    {
+        while ( p.x() )
+        {
+            max_pixel = marker.get(p);
+            for ( int walker = 1; walker <= (conn / 2); walker++)
+            {
+                q = neighbour_nth(marker, p, walker, MINUS);
+                if ( marker.get(q) > max_pixel )
+                {
+                    max_pixel = marker.get(q);
+                }
             }
-            value=(max_pixel<(mask.get(p))) ? max_pixel : mask.get(p);
-            marker.set(p,value);
-            // push to queue
-            for (int walker=1; walker<=conn/2; walker++) {
-                q=neighbour_nth(marker, p, walker, MINUS);
-                if (q==p)
+            value = (max_pixel < (mask.get(p))) ? max_pixel : mask.get(p);
+            marker.set(p, value);
+            for ( int walker = 1; walker <= (conn / 2); walker++ )
+            {
+                q = neighbour_nth(marker, p, walker, MINUS);
+                if (q == p)
+                {
                     continue;
-                if ((marker.get(q)<marker.get(p))&&(marker.get(q)<mask.get(q))) {
+                }
+                if ( (marker.get(q) < marker.get(p)) && (marker.get(q) < mask.get(q)) ) {
                     queue_fifo.push(p);
                     break;
                 }
             }
-        if (p.x()==0)
-            break;
+            p.move(-1, 0);
         }
-    if (p.y()==0)
-        break;
+        p.move(0, -1);
     }
 
+    // for (p = Point(marker.ncols() - 1, marker.nrows() - 1); p.y() >= 0; p.move(0, -1)) {
+    //     for (p.x(marker.ncols() - 1); p.x() >= 0; p.move(-1, 0)) {
+    //         max_pixel = marker.get(p);
+    //         for (int walker=1; walker <= conn / 2; walker++) {
+    //             q=neighbour_nth(marker, p, walker, MINUS);
+    //             if (marker.get(q) > max_pixel)
+    //                 max_pixel = marker.get(q);
+    //         }
+    //         value=(max_pixel<(mask.get(p))) ? max_pixel : mask.get(p);
+    //         marker.set(p,value);
+    //         // push to queue
+    //         for (int walker = 1; walker <= conn / 2; walker++) {
+    //             q=neighbour_nth(marker, p, walker, MINUS);
+    //             if (q == p)
+    //                 continue;
+    //             if ((marker.get(q) < marker.get(p)) && (marker.get(q) < mask.get(q))) {
+    //                 queue_fifo.push(p);
+    //                 break;
+    //             }
+    //         }
+    //     if (p.x()==0)
+    //         break;
+    //     }
+    // if (p.y()==0)
+    //     break;
+    // }
+
     // propagation
-    while (!queue_fifo.empty()) {
-        p=queue_fifo.front();
+    while ( !queue_fifo.empty() ) {
+        p = queue_fifo.front();
         queue_fifo.pop();
         // traverse all neighbours by raster and anti-raster scanning
-        for (int walker=1; walker<=conn/2; walker++) {
-            q=neighbour_nth(marker, p, walker, PLUS);
-            if (q==p)
+        for ( int walker=1; walker<=conn/2; walker++ ) {
+            q = neighbour_nth(marker, p, walker, PLUS);
+            if (q == p)
                 continue;
-            if ((marker.get(q)<marker.get(p))&&(marker.get(q)!=mask.get(q))) {
-                value=(marker.get(p)<mask.get(q)) ? marker.get(p) : mask.get(q);
+            if ( (marker.get(q)<marker.get(p))&&(marker.get(q)!=mask.get(q)) ) {
+                value = (marker.get(p)<mask.get(q)) ? marker.get(p) : mask.get(q);
                 marker.set(q,value);
                 queue_fifo.push(q);
             }
         }
-        for (int walker=1; walker<=conn/2; walker++) {
-            q=neighbour_nth(marker, p, walker, MINUS);
-            if (q==p)
+        for ( int walker = 1; walker <= conn / 2; walker++ ) {
+            q = neighbour_nth(marker, p, walker, MINUS);
+            if (q == p)
                 continue;
-            if ((marker.get(q)<marker.get(p))&&(marker.get(q)!=mask.get(q))) {
-                value=(marker.get(p)<mask.get(q)) ? marker.get(p) : mask.get(q);
-                marker.set(q,value);
+            if ( (marker.get(q)<marker.get(p))&&(marker.get(q)!=mask.get(q)) ) {
+                value = (marker.get(p) < mask.get(q)) ? marker.get(p) : mask.get(q);
+                marker.set(q, value);
                 queue_fifo.push(q);
             }
         }
