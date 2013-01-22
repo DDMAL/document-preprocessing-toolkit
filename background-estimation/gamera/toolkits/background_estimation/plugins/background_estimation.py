@@ -20,7 +20,10 @@
 
 """binarization tools."""
 
-from gamera.plugin import *
+from gamera.plugin import PluginFunction, PluginModule
+from gamera.args import Args, ImageType, Int, Real, FloatVector
+from gamera.enums import ONEBIT, GREYSCALE, GREY16, FLOAT
+
 from gamera.gui import has_gui
 from sample_histogram import sample_hist
 import _background_estimation
@@ -230,7 +233,7 @@ class binarization(PluginFunction):
 
 
 class BackgroundEstimationGenerator(PluginModule):
-    category = "BackgroundEstimation"
+    category = "Background Estimation"
     cpp_headers = ["background_estimation.hpp"]
     functions = [wiener2_filter,
          background_estimation,
@@ -241,6 +244,6 @@ class BackgroundEstimationGenerator(PluginModule):
          gatos_threshold_mask,
          binarization]
     author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://ddmal.music.mcgill.ca/"
 
 module = BackgroundEstimationGenerator()
