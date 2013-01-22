@@ -224,7 +224,7 @@ void staffspaceheight_estimation(const T &src, unsigned int win,
         }
     }
     staffheight=pos_hist;
-    cout<<"staffspace:"<<staffspace<<", staffheight:"<<staffheight<<'\n';
+    cout << "staffspace:" << staffspace << ", staffheight: " << staffheight << endl;
 }
 
 
@@ -259,15 +259,15 @@ OneBitImageView* staff_removal(const T &src, int staffspace0, int staffheight0,
 {
     unsigned int staffspace, staffheight;
     // estimate staffspace and staffheight
-    if ((staffspace0<=0)||(staffheight<=0)) {
-        cout<<"staff estimation"<<'\n';
+    if ( (staffspace0 <= 0 ) || (staffheight0 <= 0) ) {
+        cout << "staff estimation" << endl;
         staffspaceheight_estimation(src, staff_win,
                             staffspace_threshold1, staffspace_threshold2,
                             staffspace, staffheight);
     }
     else {
-        staffspace=staffspace0;
-        staffheight=staffheight0;
+        staffspace = staffspace0;
+        staffheight = staffheight0;
     }
 
     OneBitImageData* src_copy_data = new OneBitImageData(src.size(), src.origin());
@@ -279,7 +279,7 @@ OneBitImageView* staff_removal(const T &src, int staffspace0, int staffheight0,
     size_t med_region_width, med_region_height;
 
     // create kernel of median filter
-    if (staffheight>1) {
+    if (staffheight > 1) {
         med_region_width=ceil(scalar_med_width_staffheight*staffheight);
         med_region_height=ceil(scalar_med_height_staffheight*staffheight);
     }
