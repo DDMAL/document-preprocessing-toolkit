@@ -22,7 +22,10 @@
 
 """Lyrice line detectioon tools."""
 
-from gamera.plugin import *
+from gamera.plugin import PluginFunction, PluginModule
+from gamera.args import Args, ImageType, Int, Real
+from gamera.enums import ONEBIT
+
 import _lyricline
 
 
@@ -211,13 +214,13 @@ class lyric_line_detection(PluginFunction):
 
 
 class LyricLineGenerator(PluginModule):
-    category = "LyricLine"
+    category = "Lyric Line Extraction"
     cpp_headers = ["lyricline.hpp"]
     functions = [baseline_detection,
                  lyric_height_estimation,
                  lyric_line_fit,
                  lyric_line_detection]
     author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://ddmal.music.mcgill.ca/"
 
 module = LyricLineGenerator()
