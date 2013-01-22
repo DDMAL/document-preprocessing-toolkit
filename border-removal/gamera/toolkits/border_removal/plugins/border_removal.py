@@ -23,7 +23,9 @@
 
 """border removal tools."""
 
-from gamera.plugin import *
+from gamera.plugin import PluginFunction, PluginModule
+from gamera.args import Args, ImageType, Int, Real
+from gamera.enums import FLOAT, GREYSCALE, GREY16, ONEBIT
 import _border_removal
 
 
@@ -38,6 +40,9 @@ class med_filter(PluginFunction):
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
     args = Args([Int("region size", default=5)])
     doc_examples = [(GREYSCALE,), (GREY16,), (FLOAT,)]
+    category = "Border Removal"
+    author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
+    url = "http://ddmal.music.mcgill.ca/"
 
     def __call__(self, region_size=5):
         return _border_removal.med_filter(self, region_size)
@@ -56,6 +61,9 @@ class flood_fill_holes_grey(PluginFunction):
     """
     self_type = ImageType([GREYSCALE])
     return_type = ImageType([GREYSCALE], "output")
+    category = "Border Removal"
+    author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
+    url = "http://ddmal.music.mcgill.ca/"
 
     def __call__(self):
         return _border_removal.flood_fill_holes_grey(self)
@@ -74,6 +82,9 @@ class flood_fill_bw(PluginFunction):
     """
     self_type = ImageType([ONEBIT])
     return_type = ImageType([ONEBIT], "output")
+    category = "Border Removal"
+    author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
+    url = "http://ddmal.music.mcgill.ca/"
 
     def __call__(self):
         return _border_removal.flood_fill_bw(self)
@@ -101,6 +112,9 @@ class paper_estimation(PluginFunction):
     *med_win*
         region size for median filter.
     """
+    category = "Border Removal"
+    author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
+    url = "http://ddmal.music.mcgill.ca/"
     return_type = ImageType([GREYSCALE], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([Int("sign", default=1),
@@ -137,6 +151,9 @@ class edge_detection(PluginFunction):
         edge tranfer parameter.
         Ther higher it is, the more edges in image2 will be combined into final edge map.
     """
+    category = "Border Removal"
+    author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
+    url = "http://ddmal.music.mcgill.ca/"
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([ImageType([GREYSCALE], "image2"),
@@ -176,6 +193,9 @@ class boundary_reconstruct(PluginFunction):
     *interval3*
         interval for edge adding in 3rd round.
     """
+    category = "Border Removal"
+    author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
+    url = "http://ddmal.music.mcgill.ca/"
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([ONEBIT])
     args = Args([Int("terminate_time1", default=15),
@@ -199,6 +219,9 @@ class border_removal(PluginFunction):
 
     Gathers paper_estimation, edge_detection and boundary_reconstruct functions.
     """
+    category = "Border Removal"
+    author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
+    url = "http://ddmal.music.mcgill.ca/"
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([Int("dil_win", default=3),
@@ -243,6 +266,5 @@ class BorderRemovalGenerator(PluginModule):
                  boundary_reconstruct,
                  border_removal]
     author = "Yue Phyllis Ouyang and John Ashley Burgoyne"
-    url = "http://gamera.dkc.jhu.edu/"
-
+    url = "http://ddmal.music.mcgill.ca/"
 module = BorderRemovalGenerator()
