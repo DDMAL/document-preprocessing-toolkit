@@ -24,9 +24,15 @@ from gamera.plugin import PluginFunction, PluginModule
 from gamera.args import Args, ImageType, Int
 from gamera.enums import ONEBIT, GREYSCALE
 
-from gamera.toolkits.lyric_extraction.plugins.sample_histogram import sample_hist
-from gamera.toolkits.border_removal.plugins.border_removal import border_removal
-from gamera.toolkits.background_estimation.plugins.background_estimation import binarization
+try:
+    from gamera.toolkits.border_removal.plugins.border_removal import border_removal
+except ImportError:
+    raise ImportError("You need to have the border removal toolkit installed to use this toolkit.")
+
+try:
+    from gamera.toolkits.background_estimation.plugins.background_estimation import binarization
+except ImportError:
+    raise ImportError("You need to have the background estimation toolkit installed to use this toolkit.")
 
 
 class correct_rotation(PluginFunction):
@@ -86,6 +92,7 @@ class border_removal_and_binarization(PluginFunction):
 
     def __call__(self):
         # border removal
+        from gamera.toolkits.lyric_extraction.plugins.sample_histogram import sample_hist
         mask = border_removal(win_dil=3, win_avg=5, win_med=5,
              threshold1_scale=0.8, threshold1_gradient=6.0,
              threshold2_scale=0.8, threshold2_gradient=6.0,
@@ -117,6 +124,7 @@ class lyricline_extraction(PluginFunction):
 
     def __call__(self, binarization):
         # border removal
+        from gamera.toolkits.lyric_extraction.plugins.sample_histogram import sample_hist
         mask = border_removal(win_dil=3, win_avg=5, win_med=5,
             threshold1_scale=0.8, threshold1_gradient=6.0,
             threshold2_scale=0.8, threshold2_gradient=6.0,
