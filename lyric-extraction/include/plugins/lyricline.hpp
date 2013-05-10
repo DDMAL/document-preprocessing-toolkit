@@ -93,29 +93,11 @@ OneBitImageView* local_min(const T &src, ImageList &ccs_list, int strip_width, u
             // compute local minimum within current component
                 // divide the component into strips
             int number_strip=ceil((double(cc_cur->ncols()))/double(strip_width));
+            Size strip_size=Size(strip_width, cc_cur->nrows());
             Point cc_origin=cc_cur->origin();
             Point strip_origin;
             for (int n=1; n<number_strip; n++) {
                 strip_origin=Point((cc_origin.x()+(n-1)*strip_width), cc_origin.y());
-                /* this is to prevent the bug when cc_strip->rect_set(strip_origin,
-                 * strip_size) is made too large */
-                Size strip_size=Size(strip_width, 
-                    /* if the lower-right coordinate would overshoot the
-                     * height*/
-                    ((cc_cur->nrows() + strip_origin.y()) > src.size().height())
-                    /* make the strip height just the difference between the origin
-                     * and source image height */
-                    ? (src.size().height() - strip_origin.y())
-                    /* otherwise just use the size of the connected component */
-                    : (cc_cur->nrows()));
-                    /* The reason why this is hacky is because really we should
-                     * be figuring out why the cc_analysis returned a component
-                     * that can't fit on the original image in the first place
-                     * */
-              /* The error occurs here.  cc_cur->nrows() might be bigger than
-               * the edge of the image. My hacky fix is to just make it
-               * cc_cur->nrows() if that's not too big, or the largest possible
-               * size without going over the edge otherwise. */
                 cc_strip->rect_set(strip_origin, strip_size);
                 local_minima_strip->rect_set(strip_origin, strip_size);
                 Point pos_strip=local_min_strip(*cc_strip, cc_cur->label());
