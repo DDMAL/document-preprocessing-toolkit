@@ -695,7 +695,23 @@ double lyric_height_estimation(const T &src, const U &baseline, double staffspac
                         Point cc_origin=cc_cur->origin();
                         int strip_nth=floor(double(n-cc_origin.x())/double(strip_width))+1;
                         Point strip_origin=Point((cc_origin.x()+(strip_nth-1)*strip_width), cc_origin.y());
-                        Size strip_size=Size(min(strip_width, int(cc_cur->ncols()+cc_origin.x()-1-strip_origin.x())), cc_cur->nrows());
+                        Size strip_size=Size(min(strip_width, int(cc_cur->ncols()+cc_origin.x()-1-strip_origin.x())),
+                          /* if the lower-right coordinate would overshoot the
+                           * height*/
+                          ((cc_cur->nrows() + strip_origin.y()) > src.size().height())
+                          /* make the strip height just the difference between the origin
+                           * and source image height */
+                          ? (src.size().height() - strip_origin.y())
+                          /* otherwise just use the size of the connected component */
+                          : (cc_cur->nrows()));
+                          /* The reason why this is hacky is because really we should
+                           * be figuring out why the cc_analysis returned a component
+                           * that can't fit on the original image in the first place
+                           * */
+                          /* The error occurs here.  cc_cur->nrows() might be bigger than
+                           * the edge of the image. My hacky fix is to just make it
+                           * cc_cur->nrows() if that's not too big, or the largest possible
+                           * size without going over the edge otherwise. */
                         cc_strip->rect_set(strip_origin, strip_size);
                         // compute height of fragment
                         unsigned int height_strip=cc_height(*cc_strip, label_k);
@@ -765,7 +781,20 @@ OneBitImageView* lyric_line_fit(const T &src, const U &baseline, double lyric_he
         for (unsigned int n=0; n<src.ncols(); n++) {
             if (baseline_copy->get(Point(n, m))!=0) {
                 // extract next baseline
-                baseline_patch->rect_set(baseline_copy->origin(), Size(baseline.width(), min(m+1+search_height, (unsigned int)(baseline_copy->nrows()))));
+                baseline_patch->rect_set(baseline_copy->origin(), Size(baseline.width(), min(m+1+search_height, (unsigned int)(
+                          /* if the lower-right coordinate would overshoot the
+                           * height*/
+                          ((baseline_copy->nrows() + (baseline_copy->origin()).y()) > src.size().height())
+                          /* make the strip height just the difference between the origin
+                           * and source image height */
+                          ? (src.size().height() - (baseline_copy->origin()).y())
+                          /* otherwise just use the size of the connected component */
+                          : (baseline_copy->nrows())))));
+                          /* The reason why this is hacky is because really we should
+                           * be figuring out why the cc_analysis returned a component
+                           * that can't fit on the original image in the first place
+                           * */
+
                 if (cc_area(*baseline_patch)>1) {  // a baseline should contain at least 2 vertices
                     double line_para_a, line_para_b;
                     cc_line_fit(*baseline_patch, line_para_a, line_para_b);
@@ -777,8 +806,9 @@ OneBitImageView* lyric_line_fit(const T &src, const U &baseline, double lyric_he
                         double s0=t*line_para_a+line_para_b;
                         unsigned int s1=max(0.0, int(baseline_patch->offset_y())+s0-int(lyric_height*scalar_fit_up));
                         unsigned int s2=min(src.nrows()-1, (Gamera::coord_t)(int(baseline_patch->offset_y())+s0+int(lyric_height*scalar_fit_down)));
-                        for (unsigned int s=s1; s<=s2; s++)
+                        for (unsigned int s=s1; s<=s2; s++) {
                             mask->set(Point(t, s), 1);
+                        }
 //                  if (s1==0)
 //                  cout<<"s0:"<<s0<<", s2:"<<s2<<'\n';
                     }
