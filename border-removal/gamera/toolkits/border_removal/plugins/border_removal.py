@@ -224,14 +224,14 @@ class border_removal(PluginFunction):
     url = "http://ddmal.music.mcgill.ca/"
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([GREYSCALE])
-    args = Args([Int("dil_win", default=3),
-                 Int("avg_win", default=5),
-                 Int("med_win", default=5),
+    args = Args([Int("win_dil", default=3),
+                 Int("win_avg", default=5),
+                 Int("win_med", default=5),
                  Real("threshold1_scale", default=0.8),
                  Real("threshold1_gradient", default=6.0),
                  Real("threshold2_scale", default=0.8),
                  Real("threshold2_gradient", default=6.0),
-                 Real("tranfer_parameter", default=0.25),
+                 Real("transfer_parameter", default=0.25),
                  Int("terminate_time1", default=15),
                  Int("terminate_time2", default=23),
                  Int("terminate_time3", default=75),
@@ -242,14 +242,14 @@ class border_removal(PluginFunction):
                  win_dil=3, win_avg=5, win_med=5,
                  threshold1_scale=0.8, threshold1_gradient=6.0,
                  threshold2_scale=0.8, threshold2_gradient=6.0,
-                 scale_length=0.25,
+                 transfer_parameter=0.25,
                  terminate_time1=15, terminate_time2=23, terminate_time3=75,
                  interval2=45, interval3=15):
         return _border_removal.border_removal(self,
                                               win_dil, win_avg, win_med,
                                               threshold1_scale, threshold1_gradient,
                                               threshold2_scale, threshold2_gradient,
-                                              scale_length,
+                                              transfer_parameter,
                                               terminate_time1, terminate_time2, terminate_time3,
                                               interval2, interval3)
     __call__ = staticmethod(__call__)

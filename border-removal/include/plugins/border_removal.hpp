@@ -879,7 +879,7 @@ OneBitImageView* border_removal(const T &src,
                                 int win_dil, int win_avg, int win_med,
                                 double threshold1_scale, double threshold1_gradient,
                                 double threshold2_scale, double threshold2_gradient,
-                                double scale_length,
+                                double transfer_parameter,
                                 int terminate_time1, int terminate_time2, int terminate_time3,
                                 unsigned int interval2, unsigned int interval3)
 {
@@ -895,7 +895,7 @@ OneBitImageView* border_removal(const T &src,
     OneBitImageView* boundary=edge_detection(*blur1, *blur2,
                                 threshold1_scale, threshold1_gradient,
                                 threshold2_scale, threshold2_gradient,
-                                scale_length);
+                                transfer_parameter);
 
     // boundary reconstruct
     OneBitImageView* mask_scale=boundary_reconstruct(*boundary,
