@@ -6,8 +6,6 @@
 # n. esterer may 2013
 
 from gamera import toolkit
-from gamera.toolkits.lyric_extraction.plugins.lyricline import\
-LyricLineGenerator
-from gamera.toolkits.lyric_extraction.plugins.border_lyric import\
-BorderLyricGenerator
-
+from gamera.toolkits.lyric_extraction.plugins.lyricline import LyricLineGenerator
+from gamera.toolkits.lyric_extraction.plugins.border_lyric import BorderLyricGenerator
+from gamera.toolkits.lyric_extraction.plugins.lyric_extractor import LyricExtractor
