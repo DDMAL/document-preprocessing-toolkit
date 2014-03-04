@@ -21,10 +21,10 @@
 
 from gamera.plugin import PluginFunction, PluginModule
 from gamera.args import Args, ImageType, Int, Class, Float, Real
-from gamera.enums import ONEBIT
+from gamera.enums import ONEBIT, RGB
 import lyric_extractor_helper
 
-class extract_lyrics(PluginFunction):
+class extract_lyrics(PluginFunction):  
     """
     Takes in a binarised image and attempts to remove lyrics by processing horizontal
     projections (see find_blackest_lines).  Whatever lines are found from find_blackest_lines
@@ -57,18 +57,104 @@ class extract_lyrics(PluginFunction):
                  Int("postive_bound", default=10)])
 
     def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
-        ccs = self.cc_analysis()
-        horizontal_projections = self.projection_rows()
-        lines = self.find_blackest_lines( horizontal_projections,
-                                            minimum_y_threshold,
-                                            num_searches,
-                                            negative_bound,
-                                            postive_bound )
-        mb_lines = [lyric_extractor_helper.slope_intercept_from_points(p0,p1) for p0, p1 in lines]
-        newccs = lyric_extractor_helper.remove_ccs_intersected_by_lines(ccs, mb_lines)
-        for cc in set(ccs) - set(newccs):
+        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
+        for cc in set(result[0]) - set(result[1]):
             cc.fill_white()
         return self
+
+    __call__ = staticmethod(__call__)
+
+class segment_lyrics_red(PluginFunction):  
+    """
+    Takes in a binarised image and attempts to show only lyrics in red (see find_blackest_lines).
+
+    Parameters:
+
+      minimum_y_threshold: the minimum value that may be considered a local peak
+      in the horizontal projection.
+
+      num_searches: the number of searches to do around each local peak
+
+      negative_bound: how far below the local peak to start the line search (this
+      value is positive! so the value of negative_bound=10 will start searching 10
+      pixels below the peak-point (or -10 pixels. To make this even more
+      confusing, the negative direction is actually upward when talking about
+      images, but you already knew this from reading the Gamera documentation).
+
+      positive_bound: how far above the local peak to start the line search
+
+      delta: see the delta parameter for the peakdet function above 
+    """
+    pure_python = 1
+    return_type = ImageType([RGB], "output")
+    self_type = ImageType([ONEBIT])
+    args = Args([Int("minimum_y_threshold", default=10),
+                 Int("num_searches", default=4),
+                 Int("negative_bound", default=10),
+                 Int("postive_bound", default=10)])
+
+    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
+        from gamera.core import RGBPixel
+
+        # Do analysis.
+        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
+
+        # Prepare output image.
+        rgbLyricsImage = self.to_rgb()
+
+        # Do highlighting.
+        for cc in set(result[0]) - set(result[1]):
+            rgbLyricsImage.highlight(cc, RGBPixel(255, 0, 0))
+        for cc in set(result[1]):
+            rgbLyricsImage.highlight(cc, RGBPixel(255, 255, 255)) 
+        return rgbLyricsImage
+
+    __call__ = staticmethod(__call__)
+
+class segment_nonlyrics_green(PluginFunction):  
+    """
+    Takes in a binarised image and attempts to show only non-lyrics in red (see find_blackest_lines).
+
+    Parameters:
+
+      minimum_y_threshold: the minimum value that may be considered a local peak
+      in the horizontal projection.
+
+      num_searches: the number of searches to do around each local peak
+
+      negative_bound: how far below the local peak to start the line search (this
+      value is positive! so the value of negative_bound=10 will start searching 10
+      pixels below the peak-point (or -10 pixels. To make this even more
+      confusing, the negative direction is actually upward when talking about
+      images, but you already knew this from reading the Gamera documentation).
+
+      positive_bound: how far above the local peak to start the line search
+
+      delta: see the delta parameter for the peakdet function above 
+    """
+    pure_python = 1
+    return_type = ImageType([RGB], "output")
+    self_type = ImageType([ONEBIT])
+    args = Args([Int("minimum_y_threshold", default=10),
+                 Int("num_searches", default=4),
+                 Int("negative_bound", default=10),
+                 Int("postive_bound", default=10)])
+
+    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
+        from gamera.core import RGBPixel
+
+        # Do analysis.
+        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
+
+        # Prepare output images.
+        rgbNeumesImage = self.to_rgb()
+
+        # Do highlighting.
+        for cc in set(result[0]) - set(result[1]):
+            rgbNeumesImage.highlight(cc, RGBPixel(255, 255, 255)) 
+        for cc in set(result[1]):
+            rgbNeumesImage.highlight(cc, RGBPixel(0, 255, 0))
+        return rgbNeumesImage
 
     __call__ = staticmethod(__call__)
 
@@ -141,7 +227,7 @@ class count_black_under_line_points(PluginFunction):
 class LyricExtractor(PluginModule):
     category = "Border and Lyric Extraction"
     cpp_headers = ["find_lyrics.hpp"]
-    functions = [find_blackest_lines, extract_lyrics, count_black_under_line_points, count_black_under_line]
+    functions = [find_blackest_lines, segment_lyrics_red, segment_nonlyrics_green, extract_lyrics, count_black_under_line_points, count_black_under_line]
     author = "Nicholas Esterer"
     url = "nicholas.esterer@gmail.com"
 

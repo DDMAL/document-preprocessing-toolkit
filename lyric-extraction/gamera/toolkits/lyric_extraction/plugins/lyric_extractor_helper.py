@@ -215,3 +215,16 @@ def remove_ccs_intersected_by_lines(ccs, list_m_b_pairs):
   for m, b in list_m_b_pairs:
     ccs = remove_ccs_intersected_by_func(ccs, LineSegment(m,b))
   return ccs
+
+def extract_lyric_ccs(image, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
+    """
+    See lyric_extractor.extract_lyrics for full description.
+
+    The return is an array: [all Ccs, the lyric ccs]
+    """
+    ccs = image.cc_analysis()
+    horizontal_projections = image.projection_rows()
+    lines = image.find_blackest_lines(horizontal_projections, minimum_y_threshold, num_searches, negative_bound, postive_bound )
+    mb_lines = [slope_intercept_from_points(p0,p1) for p0, p1 in lines]
+    lyricCcs = remove_ccs_intersected_by_lines(ccs, mb_lines)
+    return [ccs, lyricCcs]
