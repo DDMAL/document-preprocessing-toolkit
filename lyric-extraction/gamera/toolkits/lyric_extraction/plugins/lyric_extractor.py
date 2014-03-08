@@ -64,9 +64,9 @@ class extract_lyrics(PluginFunction):
 
     __call__ = staticmethod(__call__)
 
-class segment_lyrics_red(PluginFunction):  
+class segment_by_colour(PluginFunction):
     """
-    Takes in a binarised image and attempts to show only lyrics in red (see find_blackest_lines).
+    Same as 'extract_lyrics', only the lyrics and neumes are highlighted by the specified colours.
 
     Parameters:
 
@@ -83,7 +83,11 @@ class segment_lyrics_red(PluginFunction):
 
       positive_bound: how far above the local peak to start the line search
 
-      delta: see the delta parameter for the peakdet function above 
+      delta: see the delta parameter for the peakdet function above
+
+      neume_colour: RGB of neume highlighting; default is [0, 255, 0]
+
+      lyric_colour: RGB of lyric highlighting; default is [255, 0, 0]
     """
     pure_python = 1
     return_type = ImageType([RGB], "output")
@@ -91,70 +95,29 @@ class segment_lyrics_red(PluginFunction):
     args = Args([Int("minimum_y_threshold", default=10),
                  Int("num_searches", default=4),
                  Int("negative_bound", default=10),
-                 Int("postive_bound", default=10)])
+                 Int("postive_bound", default=10),
+                 Class("neume_colour", list, default=[0,255,0]),
+                 Class("lyric_colour", list, default=[255,0,0])])
 
-    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
+    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10, neume_colour=[0, 255, 0], lyric_colour=[255, 0, 0]):
         from gamera.core import RGBPixel
 
         # Do analysis.
         result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
+
+        # Check color input.
+        neumeColour = RGBPixel(neume_colour[0], neume_colour[1], neume_colour[2]) if len(neume_colour) else RGBPixel(0, 255, 0)
+        lyricColour = RGBPixel(lyric_colour[0], lyric_colour[1], lyric_colour[2]) if len(lyric_colour) else RGBPixel(255, 0, 0)
 
         # Prepare output image.
-        rgbLyricsImage = self.to_rgb()
+        returnImage = self.to_rgb()
 
         # Do highlighting.
         for cc in set(result[0]) - set(result[1]):
-            rgbLyricsImage.highlight(cc, RGBPixel(255, 0, 0))
+            returnImage.highlight(cc, lyricColour)
         for cc in set(result[1]):
-            rgbLyricsImage.highlight(cc, RGBPixel(255, 255, 255)) 
-        return rgbLyricsImage
-
-    __call__ = staticmethod(__call__)
-
-class segment_nonlyrics_green(PluginFunction):  
-    """
-    Takes in a binarised image and attempts to show only non-lyrics in red (see find_blackest_lines).
-
-    Parameters:
-
-      minimum_y_threshold: the minimum value that may be considered a local peak
-      in the horizontal projection.
-
-      num_searches: the number of searches to do around each local peak
-
-      negative_bound: how far below the local peak to start the line search (this
-      value is positive! so the value of negative_bound=10 will start searching 10
-      pixels below the peak-point (or -10 pixels. To make this even more
-      confusing, the negative direction is actually upward when talking about
-      images, but you already knew this from reading the Gamera documentation).
-
-      positive_bound: how far above the local peak to start the line search
-
-      delta: see the delta parameter for the peakdet function above 
-    """
-    pure_python = 1
-    return_type = ImageType([RGB], "output")
-    self_type = ImageType([ONEBIT])
-    args = Args([Int("minimum_y_threshold", default=10),
-                 Int("num_searches", default=4),
-                 Int("negative_bound", default=10),
-                 Int("postive_bound", default=10)])
-
-    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
-        from gamera.core import RGBPixel
-
-        # Do analysis.
-        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
-
-        # Prepare output images.
-        rgbNeumesImage = self.to_rgb()
-
-        # Do highlighting.
-        for cc in set(result[0]) - set(result[1]):
-            rgbNeumesImage.highlight(cc, RGBPixel(255, 255, 255)) 
-        for cc in set(result[1]):
-            rgbNeumesImage.highlight(cc, RGBPixel(0, 255, 0))
-        return rgbNeumesImage
+            returnImage.highlight(cc, neumeColour) 
+        return returnImage
 
     __call__ = staticmethod(__call__)
 
@@ -227,7 +190,7 @@ class count_black_under_line_points(PluginFunction):
 class LyricExtractor(PluginModule):
     category = "Border and Lyric Extraction"
     cpp_headers = ["find_lyrics.hpp"]
-    functions = [find_blackest_lines, segment_lyrics_red, segment_nonlyrics_green, extract_lyrics, count_black_under_line_points, count_black_under_line]
+    functions = [find_blackest_lines, segment_by_colour, extract_lyrics, count_black_under_line_points, count_black_under_line]
     author = "Nicholas Esterer"
     url = "nicholas.esterer@gmail.com"
 
