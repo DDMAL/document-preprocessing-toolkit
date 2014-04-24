@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-"""lyric removal"""
+"""lyric removal""" 
 
 from gamera.plugin import PluginFunction, PluginModule
 from gamera.args import Args, ImageType, Int, Class, Float, Real
@@ -66,7 +66,7 @@ class extract_lyrics(PluginFunction):
 
 class segment_by_colour(PluginFunction):
     """
-    Same as 'extract_lyrics', only the lyrics and neumes are highlighted by the specified colours.
+    Same as extract_lyrics, only the lyrics and neumes are highlighted by the specified colours (neums: red, text: black).
 
     Parameters:
 
@@ -84,30 +84,24 @@ class segment_by_colour(PluginFunction):
       positive_bound: how far above the local peak to start the line search
 
       delta: see the delta parameter for the peakdet function above
-
-      neume_colour: RGB of neume highlighting; default is [0, 255, 0]
-
-      lyric_colour: RGB of lyric highlighting; default is [255, 0, 0]
     """
-    pure_python = 1
+    pure_python = 1 
     return_type = ImageType([RGB], "output")
     self_type = ImageType([ONEBIT])
     args = Args([Int("minimum_y_threshold", default=10),
                  Int("num_searches", default=4),
                  Int("negative_bound", default=10),
-                 Int("postive_bound", default=10),
-                 Class("neume_colour", list, default=[0,255,0]),
-                 Class("lyric_colour", list, default=[255,0,0])])
+                 Int("postive_bound", default=10)])
 
-    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10, neume_colour=[0, 255, 0], lyric_colour=[255, 0, 0]):
+    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
         from gamera.core import RGBPixel
 
         # Do analysis.
         result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
 
         # Check color input.
-        neumeColour = RGBPixel(neume_colour[0], neume_colour[1], neume_colour[2]) if len(neume_colour) else RGBPixel(0, 255, 0)
-        lyricColour = RGBPixel(lyric_colour[0], lyric_colour[1], lyric_colour[2]) if len(lyric_colour) else RGBPixel(255, 0, 0)
+        neumeColour = RGBPixel(0, 255, 0)
+        lyricColour = RGBPixel(255, 0, 0)
 
         # Prepare output image.
         returnImage = self.to_rgb()
