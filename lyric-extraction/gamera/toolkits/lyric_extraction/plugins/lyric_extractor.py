@@ -97,7 +97,7 @@ class segment_by_colour(PluginFunction):
         from gamera.core import RGBPixel
 
         # Do analysis.
-        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
+        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold, num_searches, negative_bound, postive_bound)
 
         # Check color input.
         neumeColour = RGBPixel(0, 255, 0)
