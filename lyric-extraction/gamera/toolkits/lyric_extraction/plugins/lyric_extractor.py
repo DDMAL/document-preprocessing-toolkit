@@ -46,7 +46,13 @@ class extract_lyrics(PluginFunction):
 
       positive_bound: how far above the local peak to start the line search
 
-      delta: see the delta parameter for the peakdet function above
+      thickness_above: the number of parallel lines to add above the original 
+      intercept line; this simulates "thickness" above the line; use 0 for just no 
+      extra lines
+
+      thickness_below: the number of parallel lines to add below the original 
+      intercept line; this simulates "thickness" above the line; use 0 for just no 
+      extra lines
     """
     pure_python = 1
     return_type = ImageType([ONEBIT], "output")
@@ -54,10 +60,11 @@ class extract_lyrics(PluginFunction):
     args = Args([Int("minimum_y_threshold", default=10),
                  Int("num_searches", default=4),
                  Int("negative_bound", default=10),
-                 Int("postive_bound", default=10)])
+                 Int("postive_bound", default=10),
+                 Int("thickness_above", default=0), Int("thickness_below", default=0) ])
 
-    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
-        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10)
+    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10, thickness_above=0, thickness_below=0):
+        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10, thickness_above=0, thickness_below=0)
         for cc in set(result[0]) - set(result[1]):
             cc.fill_white()
         return self
@@ -83,7 +90,13 @@ class segment_by_colour(PluginFunction):
 
       positive_bound: how far above the local peak to start the line search
 
-      delta: see the delta parameter for the peakdet function above
+      thickness_above: the number of parallel lines to add above the original 
+      intercept line; this simulates "thickness" above the line; use 0 for just no 
+      extra lines
+
+      thickness_below: the number of parallel lines to add below the original 
+      intercept line; this simulates "thickness" above the line; use 0 for just no 
+      extra lines
     """
     pure_python = 1 
     return_type = ImageType([RGB], "output")
@@ -91,13 +104,14 @@ class segment_by_colour(PluginFunction):
     args = Args([Int("minimum_y_threshold", default=10),
                  Int("num_searches", default=4),
                  Int("negative_bound", default=10),
-                 Int("postive_bound", default=10)])
+                 Int("postive_bound", default=10),
+                 Int("thickness_above", default=0), Int("thickness_below", default=0)])
 
-    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
+    def __call__(self, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10, thickness_above=0, thickness_below=0):
         from gamera.core import RGBPixel
 
         # Do analysis.
-        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold, num_searches, negative_bound, postive_bound)
+        result = lyric_extractor_helper.extract_lyric_ccs(self, minimum_y_threshold, num_searches, negative_bound, postive_bound, thickness_above, thickness_below)
 
         # Check color input.
         neumeColour = RGBPixel(0, 255, 0)
@@ -142,21 +156,30 @@ class find_blackest_lines(PluginFunction):
       positive_bound: how far above the local peak to start the line search
 
       delta: see the delta parameter for the peakdet function above
+
+      thickness_above: the number of parallel lines to add above the original 
+      intercept line; this simulates "thickness" above the line; use 0 for just no 
+      extra lines
+
+      thickness_below: the number of parallel lines to add below the original 
+      intercept line; this simulates "thickness" above the line; use 0 for just no 
+      extra lines
     """
     self_type = ImageType([ONEBIT])
     args = Args([ Class('horizontal_projections', list),
                   Int("minimum_y_threshold"), Int("num_searches"),
                   Int("negative_bound"), Int("positive_bound"),
-                  Int("delta") ])
+                  Int("delta"),
+                  Int("thickness_above"), Int("thickness_below") ])
     return_type = Float("area")
     pure_python = True
 
     @staticmethod
     def __call__(self, horizontal_projections, minimum_y_threshold, num_searches,
-        negative_bound, positive_bound, delta=10):
+        negative_bound, positive_bound, delta=10, thickness_above=0, thickness_below=0):
       return lyric_extractor_helper._find_blackest_lines(self, horizontal_projections,
           minimum_y_threshold, num_searches, negative_bound, positive_bound,
-          delta)
+          delta, thickness_above, thickness_below)
 
 class count_black_under_line(PluginFunction):
     """
