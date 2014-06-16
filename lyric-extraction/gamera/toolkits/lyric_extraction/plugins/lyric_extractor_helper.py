@@ -158,7 +158,8 @@ def slope_intercept_from_points(p0, p1):
   return (m, b)
 
 def _find_blackest_lines( img, horizontal_projections, minimum_y_threshold,
-    num_searches, negative_bound, positive_bound, delta):
+    num_searches, negative_bound, positive_bound, delta, thickness_above,
+    thickness_below):
 
   # The horizontal projections of the image
   hp = horizontal_projections
@@ -200,6 +201,16 @@ def _find_blackest_lines( img, horizontal_projections, minimum_y_threshold,
     blackest_lines.append([(img.ul.x, y_ends[ len(y_ends) - blackest_idx - 1 ]),
       (img.lr.x, y_ends[ blackest_idx ])])
 
+    # Set extra lines to simulate thickness.
+    print thickness_above
+    print thickness_below
+    for i in range(1, thickness_above + 1):
+      blackest_lines.append([(img.ul.x, y_ends[ len(y_ends) - blackest_idx - 1 ] - i),
+        (img.lr.x, y_ends[ blackest_idx ] - i)])
+    for j in range(1, thickness_below + 1):
+      blackest_lines.append([(img.ul.x, y_ends[ len(y_ends) - blackest_idx - 1 ] + j),
+        (img.lr.x, y_ends[ blackest_idx ] + j)])
+
   return blackest_lines
 
 def remove_ccs_intersected_by_func(ccs, func):
@@ -216,7 +227,7 @@ def remove_ccs_intersected_by_lines(ccs, list_m_b_pairs):
     ccs = remove_ccs_intersected_by_func(ccs, LineSegment(m,b))
   return ccs
 
-def extract_lyric_ccs(image, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10):
+def extract_lyric_ccs(image, minimum_y_threshold=10, num_searches=4, negative_bound=10, postive_bound=10, thickness_above=0, thickness_below=0):
     """
     See lyric_extractor.extract_lyrics for full description.
 
@@ -224,7 +235,7 @@ def extract_lyric_ccs(image, minimum_y_threshold=10, num_searches=4, negative_bo
     """
     ccs = image.cc_analysis()
     horizontal_projections = image.projection_rows()
-    lines = image.find_blackest_lines(horizontal_projections, minimum_y_threshold, num_searches, negative_bound, postive_bound )
+    lines = image.find_blackest_lines(horizontal_projections, minimum_y_threshold, num_searches, negative_bound, postive_bound, 10, thickness_above, thickness_below )
     mb_lines = [slope_intercept_from_points(p0,p1) for p0, p1 in lines]
     lyricCcs = remove_ccs_intersected_by_lines(ccs, mb_lines)
     return [ccs, lyricCcs]
