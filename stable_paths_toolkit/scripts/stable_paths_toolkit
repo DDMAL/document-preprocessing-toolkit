@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+# This just simply runs the stable_paths_toolkit toolkits main function
+
+from gamera.toolkits.stable_paths_toolkit import main
+
+main.main()
