@@ -257,7 +257,7 @@ public:
         int vRun1 = verRun[pixelVal1.y()*image.nrows() + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
         int vRun2 = verRun[pixelVal2.y()*image.nrows() + pixelVal2.x()]; 
 
-        int pel = min(pel1, pel2); //take the minimum pixel value
+        int pel = max(pel1, pel2); //pel set to 1 if either pixel is black
         
         //Weights for a 4-Neighborhood
         int y1 = 4; //Black pixels
@@ -356,15 +356,15 @@ public:
             graphPath[row*width + startCol_i].start = Point(startCol_i, row);
         }
 
-        for (int col = startCol_i + 1; col <= endCol_i; col++) 
+        for (int col = startCol_i + 1; col <= endCol_i; col++) //Creates path from right to left
         {
             for (int row = 0; row < height; row++) 
-            {
+            {  
                 weight_t weight10, weight20, weight30;
                 weight_t value1, value2, value3;
                 weight10 = weight20 = weight30 = TOP_VALUE;
                 value1 = value2 = value3 = TOP_VALUE;
-
+0
                 if (row > 0) 
                 {
                     weight10 = graphWeight[row*width + width-1-col].weight_up;
@@ -372,7 +372,7 @@ public:
                 }
 
                 weight20 = graphWeight[row*width + width-1-col].weight_hor;
-                value2 = weight20 + graphPath[(row+0)*width + (col-1)].weight;
+                value2 = weight20 + graphPath[(row)*width + (col-1)].weight;
             
                 if (row < height-1)
                 {
@@ -414,10 +414,8 @@ public:
             graphPath[row*width + startCol].start = Point(startCol, row);
         }
 
-        for (int c = startCol+1; c <= endCol; c++)
+        for (int col = startCol+1; col <= endCol; col++)
         {
-            int col = c;
-
             for (int row = 0; row < height; row++)
             {
                 weight_t weight10, weight20, weight30;
