@@ -52,7 +52,7 @@ public:
     };
 
     //Values taken from stableStaffLineFinder.cpp lines 106-107
-    static const double MIN_BLACK_PER = 0.25;
+    const double MIN_BLACK_PER = 0.25;
     static const weight_t TOP_VALUE = (INT_MAX/2);
 
     int* verRun; //length of vertical run of same color pixels. 
@@ -104,7 +104,6 @@ public:
         return dest_view;
     }
 
-    // template<class T>
     void myVerticalErodeImage(OneBitImageView * img, int width, int height)
     {
         unsigned char pel_prev;
@@ -143,6 +142,20 @@ public:
         printf("(%lu, %lu)\n", p.x(), p.y());
     }
 
+    void deletePaths(vector <vector<Point> > &validStaves, OneBitImageView *image)
+    {
+        int numPaths = validStaves.size();
+        int numPix = validStaves[0].size();
+        printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        for (int i = 0; i < numPaths; i++)
+        {
+            for (int x = 0; x < numPix; x++)
+            {
+                image->set(validStaves[i][x], 0);
+            }
+        }
+    }
+
     //=========================================================================================
     //                          Functions
     //=========================================================================================
@@ -165,7 +178,8 @@ public:
                 {
                     run++;
                 }
-                else {
+                else
+                {
                     int len = run;
                     for (int row = r-1; len > 0; len--, row--) 
                     {
@@ -274,14 +288,18 @@ public:
         }
         int y = (pel == 0 ? y0:y1);
         if ( (pel) && (min(vRun1, vRun2) <= staffLineHeight))
+        {
             --y;
+        }
         if (max(dist1, dist2) > 2*staffLineHeight+staffSpaceDistance)
+        {
             y++;
+        }
         return y;
     }
 
     template<class T>
-    stableStaffLineFinder(T &image) 
+    stableStaffLineFinder(T &image)
     {
         graphPath = new NODE[image.nrows()*image.ncols()];
         graphWeight = new NODEGRAPH[image.nrows()*image.ncols()];
@@ -314,33 +332,35 @@ public:
         return avgDiff;
     }
 
-    template<class T>
-    int sumOfValuesInVector (vector<Point>& vec, T &image)
+    //template<class T>
+    int sumOfValuesInVector (vector<Point>& vec, OneBitImageView *image)
     {
         //size_t len = vec.size();
         int sumOfValues = 0;
         int startCol = 0;
-        int endCol = image.ncols()-1;
+        int endCol = image->ncols()-1;
         for (int i = startCol; i <= endCol; i++)
         {
             int col = vec[i].x();
             int row = vec[i].y();
-            unsigned char pel = image.get(getPoint((row*image.ncols() + col), image));
+            unsigned char pel = image->get(getPointView((row*image->ncols() + col), image->ncols(), image->nrows()));
             sumOfValues += pel;
         }
         return sumOfValues;
     }
 
-    template<class T>
-    bool tooMuchWhite (vector<Point> &vec, T &image, double minBlackPerc)
+    //template<class T>
+    bool tooMuchWhite (vector<Point> &vec, OneBitImageView *image, double minBlackPerc)
     {
         int sumOfValues = sumOfValuesInVector(vec, image);
         //size_t len = vec.size();
         int startCol = 0;
-        int endCol = image.ncols()-1;
+        int endCol = image->ncols()-1;
         int usedSize = endCol-startCol+1;
         if (sumOfValues < 1*(1-minBlackPerc)*(usedSize))
+        {
             return true;
+        }
         return false;
     }
 
@@ -677,7 +697,8 @@ public:
     void stableStaffDetection(vector <vector <Point> > &validStaves, T &image)
     {
         constructGraphWeights(image);
-        OneBitImageView* imgErode = myCloneImage(image);
+        OneBitImageView *imageCopy = myCloneImage(image);
+        OneBitImageView *imgErode = myCloneImage(image);
         myVerticalErodeImage(imgErode, image.ncols(), image.nrows());
         // myIplImage* imgErode  = myCloneImage(img);
         // myVerticalErodeImage (imgErode);
@@ -693,9 +714,9 @@ public:
         {
             vector <vector<Point> > stablePaths;
             int curr_n_paths = 0;
-
+            printf("About to findAllStablePaths\n");
             findAllStablePaths(image, 0, image.ncols()-1, stablePaths);
-
+            printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
             if (first_time && stablePaths.size() > 0)
             {
                 first_time = 0;
@@ -706,7 +727,7 @@ public:
 
                 for (size_t c = 0; c < stablePaths.size(); c++)
                 {
-                    size_t sumOfValues = sumOfValuesInVector(stablePaths[c], image);
+                    size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imageCopy);
                     if (sumOfValues/(1.0*(stablePaths[c].size())) < MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
                         allSumOfValues.push_back(sumOfValues);
                     if (sumOfValues < bestSumOfValues)
@@ -789,7 +810,6 @@ public:
     }
 };
 
-
 template<class T>
 float returnGraphWeights(T &image) 
 {
@@ -807,8 +827,11 @@ OneBitImageView* copyImage(T &image)
     stableStaffLineFinder slf1 (image);
     OneBitImageView* new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu \n", image.nrows(), image.ncols());
-    slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
+    //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
+    slf1.constructGraphWeights(image);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
+    slf1.deletePaths(validStaves, new1);
+
     //slf1.stableStaffDetection(validStaves, image);
     return new1;
 }
