@@ -364,7 +364,6 @@ public:
                 weight_t value1, value2, value3;
                 weight10 = weight20 = weight30 = TOP_VALUE;
                 value1 = value2 = value3 = TOP_VALUE;
-0
                 if (row > 0) 
                 {
                     weight10 = graphWeight[row*width + width-1-col].weight_up;
@@ -799,9 +798,12 @@ float returnGraphWeights(T &image)
 template<class T>
 OneBitImageView* copyImage(T &image)
 {
+    vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
     OneBitImageView* new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu \n", image.nrows(), image.ncols());
     slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
+    printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
+    //slf1.stableStaffDetection(validStaves, image);
     return new1;
 }
