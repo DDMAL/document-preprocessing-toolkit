@@ -27,9 +27,6 @@
 
 #include <vector>
 #include <algorithm>
-#include "clear.hpp"
-#include "gamera.hpp"
-
 
 using namespace std;
 using namespace Gamera;
@@ -342,6 +339,8 @@ public:
         verRun = new int[image.nrows()*image.ncols()];
         verDistance = new int[image.nrows()*image.ncols()];
         memset (verDistance, 0, sizeof(int)*image.nrows()*image.ncols());
+        staffLineHeight = 1;
+        staffSpaceDistance = 27;
     }
 
     double staffDissimilarity(vector<Point>& staff1, vector<Point>& staff2)
@@ -736,9 +735,6 @@ public:
         OneBitImageView *imageCopy = myCloneImage(image);
         OneBitImageView *imgErode = myCloneImage(image);
         myVerticalErodeImage(imgErode, image.ncols(), image.nrows());
-        // myIplImage* imgErode  = myCloneImage(img);
-        // myVerticalErodeImage (imgErode);
-        // myIplImage* imgErodedCopy  = myCloneImage (imgErode);
 
         vector<int> npaths;
 
@@ -746,12 +742,15 @@ public:
         double blackPerc;
         vector<Point> bestStaff;
 
+        int nrows = image.nrows();
+        int ncols = image.ncols();
+
         while(1)
         {
             vector <vector<Point> > stablePaths;
             int curr_n_paths = 0;
             printf("About to findAllStablePaths\n");
-            findAllStablePaths(image, 0, image.ncols()-1, stablePaths);
+            findAllStablePaths(image, 0, ncols - 1, stablePaths);
             printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
             if (first_time && stablePaths.size() > 0)
             {
@@ -764,8 +763,10 @@ public:
                 for (size_t c = 0; c < stablePaths.size(); c++)
                 {
                     size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imageCopy);
-                    if (sumOfValues/(1.0*(stablePaths[c].size())) < MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
+                    if (sumOfValues/(1.0 * (stablePaths[c].size())) < MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
+                    {
                         allSumOfValues.push_back(sumOfValues);
+                    }
                     if (sumOfValues < bestSumOfValues)
                     {
                         bestSumOfValues = sumOfValues;
@@ -778,11 +779,15 @@ public:
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
                 int i;
                 for (i = 0; i < copy_allSumOfValues.size(); i++)
+                {
                     if (copy_allSumOfValues[i] == medianSumOfValues)
+                    {
                         break;
+                    }
+                }
                 bestStaff = stablePaths[i];
 
-                double bestBlackPerc = medianSumOfValues/(1.0*bestStaff.size());
+                double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
                 blackPerc = max(MIN_BLACK_PER, bestBlackPerc*0.8);
                 cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
             }
@@ -796,7 +801,7 @@ public:
                     continue;
                 }
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
-                if (dissimilarity > 4*staffSpaceDistance)
+                if (dissimilarity > 4 * staffSpaceDistance)
                 {
                     printf ("\tToo Dissimilar\n");
                     continue;
@@ -808,40 +813,54 @@ public:
                 int path_half_width2 = max(staffLineHeight, staffSpaceDistance/2);
 
                 //Erasing paths from our image, must create a copy of our image
-                // for (size_t i = 0; i<staff.size(); i++)
-                // {
-                //  int col = staff[i].x;
-                //  int row = staff[i].y;
+                for (size_t i = 0; i<staff.size(); i++)
+                {
+                    int col = staff[i].x();
+                    int row = staff[i].y();
 
-                //  // ERASE PATHS ALREADY SELECTED!
-                //  for (int j = -path_half_width2-1; j <= path_half_width2+1; j++)
-                //  {   
-                //      if ( ((row+j)>img->height-1) || ((row+j)<0) )
-                //          continue;
-                //      img->imageData[(row+j)*img->widthStep + col] = 255;
-                //      imgErode->imageData[(row+j)*imgErode->widthStep + col] = 255;
-                //      if ( ((row+j)>img->height-1) || ((row+j)<0) )
-                //          continue;
-                //      if (col == img->width-1)
-                //          continue;
-                //      if (row+j > 0)
-                //          graphWeight[(row+j)*img->width + col].weight_up = 12;
-                //      else
-                //          graphWeight[(row+j)*img->width + col].weight_up = TOP_VALUE;
-                //      graphWeight[(row+j)*img->width + col].weight_hor = 8;
-                //      if (row+j < img->height-1)
-                //          graphWeight[(row+j)*img->width + col].weight_down = 12;
-                //      else
-                //          graphWeight[(row+j)*img->width + col].weight_down = TOP_VALUE;
-                //  } //
-                // }
-
+                    //ERASE PATHS ALREADY SELECTED!
+                    for (int j = - path_half_width2 - 1; j <= path_half_width2 + 1; j++)
+                    {   
+                        if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
+                        {
+                            continue;
+                        }
+                        // image.set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        // imgErode->set(getPointView(((row+j)* ncols) + col, ncols, nrows), 0);
+                        if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
+                        {
+                            continue;
+                        }
+                        if (col == ncols - 1)
+                        {
+                            continue;
+                        }
+                        if (row + j > 0)
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
+                        }
+                        graphWeight[((row + j) * ncols) + col].weight_hor = 8;
+                        if (row+j < nrows - 1)
+                        {
+                            graphWeight[((row+j) * ncols) + col].weight_down = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row+j) * ncols) + col].weight_down = TOP_VALUE;
+                        }
+                    } 
+                }
             }
             npaths.push_back(curr_n_paths);
             if (curr_n_paths == 0)
+            {
                 break;
+            }
         }
-
         //postProcessing(validStaves, staffSpaceDistance, imageErodedCopy, image)
     }
 };
@@ -866,9 +885,8 @@ OneBitImageView* copyImage(T &image)
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     slf1.constructGraphWeights(image);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
-    slf1.deletePaths(validStaves, new1);
-
-    //slf1.stableStaffDetection(validStaves, image);
+    //slf1.deletePaths(validStaves, new1);
+    slf1.stableStaffDetection(validStaves, image);
     return new1;
 }
 
