@@ -729,7 +729,7 @@ public:
     }
 
     template<class T>
-    void stableStaffDetection(vector <vector <Point> > &validStaves, T &image)
+    OneBitImageView* stableStaffDetection(vector <vector <Point> > &validStaves, T &image)
     {
         constructGraphWeights(image);
         OneBitImageView *imageCopy = myCloneImage(image);
@@ -754,16 +754,18 @@ public:
             printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
             if (first_time && stablePaths.size() > 0)
             {
+                printf("Line 757\n");
                 first_time = 0;
                 bestStaff.clear();
                 size_t bestSumOfValues = INT_MAX;
                 size_t bestStaffIdx = 0;
                 vector<size_t> allSumOfValues;
 
+                printf("Line 764\n");
                 for (size_t c = 0; c < stablePaths.size(); c++)
                 {
                     size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imageCopy);
-                    if (sumOfValues/(1.0 * (stablePaths[c].size())) < MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
+                    if (sumOfValues/(1.0 * (stablePaths[c].size())) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
                     {
                         allSumOfValues.push_back(sumOfValues);
                     }
@@ -773,18 +775,22 @@ public:
                         bestStaffIdx = c;
                     }
                 }
+                printf("Line 778\n");
 
                 vector<size_t> copy_allSumOfValues = allSumOfValues;
                 sort(allSumOfValues.begin(), allSumOfValues.end());
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
                 int i;
-                for (i = 0; i < copy_allSumOfValues.size(); i++)
+                for (i = 0; i < allSumOfValues.size(); i++)
                 {
+                    printf("copy_allSumOfValues[%d] = %lu\n", i, allSumOfValues[i]);
                     if (copy_allSumOfValues[i] == medianSumOfValues)
                     {
                         break;
                     }
                 }
+
+                printf("Line 792\n");
                 bestStaff = stablePaths[i];
 
                 double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
@@ -815,18 +821,20 @@ public:
                 //Erasing paths from our image, must create a copy of our image
                 for (size_t i = 0; i<staff.size(); i++)
                 {
+                    printf("Staff Size: %lu\n", staff.size());
                     int col = staff[i].x();
                     int row = staff[i].y();
 
                     //ERASE PATHS ALREADY SELECTED!
                     for (int j = - path_half_width2 - 1; j <= path_half_width2 + 1; j++)
-                    {   
+                    {
+                        printf("Currently erasing lines\n");
                         if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
                         {
                             continue;
                         }
-                        // image.set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        // imgErode->set(getPointView(((row+j)* ncols) + col, ncols, nrows), 0);
+                        //image.set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imgErode->set(getPointView(((row+j) * ncols) + col, ncols, nrows), 0);
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
                             continue;
@@ -858,7 +866,8 @@ public:
             npaths.push_back(curr_n_paths);
             if (curr_n_paths == 0)
             {
-                break;
+                return imgErode;
+                //break;
             }
         }
         //postProcessing(validStaves, staffSpaceDistance, imageErodedCopy, image)
@@ -886,8 +895,8 @@ OneBitImageView* copyImage(T &image)
     slf1.constructGraphWeights(image);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
     //slf1.deletePaths(validStaves, new1);
-    slf1.stableStaffDetection(validStaves, image);
-    return new1;
+    //slf1.stableStaffDetection(validStaves, image);
+    return slf1.stableStaffDetection(validStaves, image);
 }
 
 template<class T>
