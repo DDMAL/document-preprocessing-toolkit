@@ -27,6 +27,9 @@
 
 #include <vector>
 #include <algorithm>
+#include "clear.hpp"
+#include "gamera.hpp"
+
 
 using namespace std;
 using namespace Gamera;
@@ -85,6 +88,23 @@ public:
         int xValue = x % width;
         int yValue = (x - xValue) / width;
         return Point(xValue, yValue);
+    }
+
+    template<class T>
+    OneBitImageView* clear(T& image)
+    {
+        OneBitImageData* dest_data = new OneBitImageData(image.size());
+        OneBitImageView* dest_view = new OneBitImageView(*dest_data);
+
+        for (size_t r = 0; r < image.nrows(); r++)
+        {
+            for (size_t c = 0; c < image.ncols(); c++)
+            {
+                dest_view->set(Point(c, r), 0);
+            }
+        }
+
+        return dest_view;
     }
 
     template<class T>
@@ -156,6 +176,20 @@ public:
         }
     }
 
+    void drawPaths(vector <vector<Point> > &validStaves, OneBitImageView *image)
+    {
+        int numPaths = validStaves.size();
+        int numPix = validStaves[0].size();
+        printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        for (int i = 0; i < numPaths; i++)
+        {
+            for (int x = 0; x < numPix; x++)
+            {
+                image->set(validStaves[i][x], 1);
+            }
+        }
+    }
+
     //=========================================================================================
     //                          Functions
     //=========================================================================================
@@ -164,14 +198,16 @@ public:
     void constructGraphWeights(T &image) 
     {
         unsigned char WHITE = 0;
+        int cols = image.ncols();
+        int rows = image.nrows();
 
         //Find vertical run values
         // ***USE VECTOR ITERATORS WITH ROW ON THE OUTSIDE TO INCREASE PERFORMANCE IF THERE'S TIME***
-        for (int c = 0; c < image.ncols(); c++) 
+        for (int c = 0; c < cols; c++) 
         {
             int run = 0;
             unsigned char val = WHITE;
-            for (int r = 0; r < image.nrows(); r++) 
+            for (int r = 0; r < rows; r++) 
             {
                 unsigned char pel = image.get(Point(c,r));
                 if (pel == val) 
@@ -183,7 +219,7 @@ public:
                     int len = run;
                     for (int row = r - 1; len > 0; len--, row--) 
                     {
-                        verRun[(row * image.ncols()) + c] = run;
+                        verRun[(row * cols) + c] = run;
                     }
                     val = !val; //Changes value from 0 to 1 or from 1 to 
                     run = 1;
@@ -193,17 +229,17 @@ public:
             {
                 //Last run on the column
                 int len = run;
-                for (int row = image.nrows() - 1; len > 0; len--, row--) 
+                for (int row = rows - 1; len > 0; len--, row--) 
                 {
-                    verRun[(row * image.ncols()) + c] = run;
+                    verRun[(row * cols) + c] = run;
                 }
             }
         }
 
         //Find Vertical Distance
-        for (int c = 0; c < image.ncols(); c++) 
+        for (int c = 0; c < cols; c++) 
         {
-            for (int r = 0; r < image.nrows(); r++) 
+            for (int r = 0; r < rows; r++) 
             {
                 unsigned char pel = image.get(Point(c, r));
                 int row = r;
@@ -224,45 +260,45 @@ public:
 
                 row = r;
                 curr_pel = pel;
-                while ((row < image.nrows() - 1) && (curr_pel == pel))
+                while ((row < rows - 1) && (curr_pel == pel))
                 {
                     row++;
                     curr_pel = image.get(Point(c, row));
                 }
 
                 int run2 = 1;
-                while ((row < image.nrows() - 1) && (curr_pel != pel))
+                while ((row < rows - 1) && (curr_pel != pel))
                 {
                     row++;
                     curr_pel = image.get(Point(c, row));
                     run2++;
                 }
 
-                verDistance[(r * image.ncols()) + c] = min(run1, run2);
+                verDistance[(r * cols) + c] = min(run1, run2);
             }
         }
 
         //Find Graph Weights
-        for (int r = 0; r < image.nrows(); r++) 
+        for (int r = 0; r < rows; r++) 
         {
-            for (int c = 0; c < image.ncols() - 1; c++) 
+            for (int c = 0; c < cols - 1; c++) 
             {
-                graphWeight[(r * image.ncols()) + c].weight_hor = weightFunction(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
+                graphWeight[(r * cols) + c].weight_hor = weightFunction(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
                 if (r > 0)
-                    graphWeight[(r * image.ncols()) + c].weight_up = weightFunction(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
+                    graphWeight[(r * cols) + c].weight_up = weightFunction(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
                 else
-                    graphWeight[(r * image.ncols()) + c].weight_up = TOP_VALUE;
-                if (r < image.nrows() - 1)
-                    graphWeight[(r * image.ncols()) + c].weight_down = weightFunction(image, Point(c, r), Point(c + 1, r + 1), NEIGHBOUR8);
+                    graphWeight[(r * cols) + c].weight_up = TOP_VALUE;
+                if (r < rows - 1)
+                    graphWeight[(r * cols) + c].weight_down = weightFunction(image, Point(c, r), Point(c + 1, r + 1), NEIGHBOUR8);
                 else
-                    graphWeight[(r * image.ncols()) + c].weight_down = TOP_VALUE;
+                    graphWeight[(r * cols) + c].weight_down = TOP_VALUE;
             }
         }
 
-        for (int x = 0; x < image.nrows() * image.ncols(); x++)
-        {
-            printf("Value: %d -> verDistance: %d -> verRun: %d\n", x, verDistance[x], verRun[x]);
-        }       
+        // for (int x = 0; x < rows * cols; x++)
+        // {
+        //     printf("Value: %d -> verDistance: %d -> verRun: %d\n", x, verDistance[x], verRun[x]);
+        // }       
     }
 
     template<class T>
@@ -825,7 +861,7 @@ OneBitImageView* copyImage(T &image)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
-    OneBitImageView* new1 = slf1.myCloneImage(image);
+    OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu \n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     slf1.constructGraphWeights(image);
@@ -834,4 +870,17 @@ OneBitImageView* copyImage(T &image)
 
     //slf1.stableStaffDetection(validStaves, image);
     return new1;
+}
+
+template<class T>
+OneBitImageView* findStablePaths(T &image) //Returns blank image with stable paths drawn
+{
+    vector <vector<Point> > validStaves;
+    stableStaffLineFinder slf1 (image);
+    OneBitImageView *blank = slf1.clear(image);
+    printf("Rows: %lu, Columns: %lu \n", image.nrows(), image.ncols());
+    slf1.constructGraphWeights(image);
+    printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
+    slf1.drawPaths(validStaves, blank);
+    return blank;
 }
