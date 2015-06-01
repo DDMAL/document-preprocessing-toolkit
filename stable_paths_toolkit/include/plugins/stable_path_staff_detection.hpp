@@ -324,7 +324,7 @@ public:
         {
             --y;
         }
-        if (max(dist1, dist2) > (2 * staffLineHeight) + staffSpaceDistance)
+        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
         {
             y++;
         }
@@ -339,8 +339,8 @@ public:
         verRun = new int[image.nrows()*image.ncols()];
         verDistance = new int[image.nrows()*image.ncols()];
         memset (verDistance, 0, sizeof(int)*image.nrows()*image.ncols());
-        staffLineHeight = 1;
-        staffSpaceDistance = 27;
+        staffLineHeight = 3;
+        staffSpaceDistance = 30;
     }
 
     double staffDissimilarity(vector<Point>& staff1, vector<Point>& staff2)
@@ -777,14 +777,14 @@ public:
                 }
                 printf("Line 778\n");
 
-                vector<size_t> copy_allSumOfValues = allSumOfValues;
+                //vector<size_t> copy_allSumOfValues = allSumOfValues;
                 sort(allSumOfValues.begin(), allSumOfValues.end());
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
                 int i;
                 for (i = 0; i < allSumOfValues.size(); i++)
                 {
                     printf("copy_allSumOfValues[%d] = %lu\n", i, allSumOfValues[i]);
-                    if (copy_allSumOfValues[i] == medianSumOfValues)
+                    if (allSumOfValues[i] == medianSumOfValues)
                     {
                         break;
                     }
@@ -826,7 +826,7 @@ public:
                     int row = staff[i].y();
 
                     //ERASE PATHS ALREADY SELECTED!
-                    for (int j = - path_half_width2 - 1; j <= path_half_width2 + 1; j++)
+                    for (int j = -path_half_width2 - 1; j <= path_half_width2 + 1; j++)
                     {
                         printf("Currently erasing lines\n");
                         if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
@@ -834,7 +834,7 @@ public:
                             continue;
                         }
                         //image.set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        imgErode->set(getPointView(((row+j) * ncols) + col, ncols, nrows), 0);
+                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
                             continue;
