@@ -76,14 +76,14 @@ public:
     Point getPoint(int x, T &image) //Returns the point value based on the int value x
     {
         int xValue = x % image.ncols();
-        int yValue = (x-xValue) / image.ncols();
+        int yValue = (x - xValue) / image.ncols();
         return Point(xValue, yValue);
     }
 
     Point getPointView(int x, int width, int height) //Returns the point value based on the int value x
     {
         int xValue = x % width;
-        int yValue = (x-xValue) / width;
+        int yValue = (x - xValue) / width;
         return Point(xValue, yValue);
     }
 
@@ -113,11 +113,11 @@ public:
         {
             pel_prev = img->get(getPointView(c, width, height));
             pel_curr = img->get(getPointView(c, width, height));
-            for (int r = 0; r < height-1; r++)
+            for (int r = 0; r < height - 1; r++)
             {
-                int curr_pixel = r*width + c;
+                int curr_pixel = (r * width) + c;
                 //printf("Current Point: (%d, %d) Current Pixel Value: (%d/ %d)", c, r, curr_pixel, width*height);
-                int next_row_pixel = (r+1)*width + c;
+                int next_row_pixel = ((r + 1) * width) + c;
                 pel_next = img->get(getPointView(next_row_pixel, width, height));
                 if (pel_prev || pel_curr || pel_next)
                 {
@@ -128,11 +128,11 @@ public:
             }
             if (pel_prev || pel_curr)
             {
-                img->set(getPointView((height-1)*(width) + c, width, height), 1);
+                img->set(getPointView(((height - 1) * width) + c, width, height), 1);
             }
             else
             {
-                img->set(getPointView((height-1)*(width) + c, width, height), 0);
+                img->set(getPointView(((height - 1) * width) + c, width, height), 0);
             }
         }
     }
@@ -181,9 +181,9 @@ public:
                 else
                 {
                     int len = run;
-                    for (int row = r-1; len > 0; len--, row--) 
+                    for (int row = r - 1; len > 0; len--, row--) 
                     {
-                        verRun[row*image.ncols() + c] = run;
+                        verRun[(row * image.ncols()) + c] = run;
                     }
                     val = !val; //Changes value from 0 to 1 or from 1 to 
                     run = 1;
@@ -193,9 +193,9 @@ public:
             {
                 //Last run on the column
                 int len = run;
-                for (int row = image.nrows()-1; len > 0; len--, row--) 
+                for (int row = image.nrows() - 1; len > 0; len--, row--) 
                 {
-                    verRun[row*image.ncols() + c] = run;
+                    verRun[(row * image.ncols()) + c] = run;
                 }
             }
         }
@@ -205,61 +205,61 @@ public:
         {
             for (int r = 0; r < image.nrows(); r++) 
             {
-                unsigned char pel = image.get(Point(c,r));
+                unsigned char pel = image.get(Point(c, r));
                 int row = r;
                 unsigned char curr_pel = pel;
-                while (row > 0 && curr_pel == pel) 
+                while ((row > 0) && (curr_pel == pel))
                 {
                     row--;
-                    curr_pel = image.get(Point(c,row));
+                    curr_pel = image.get(Point(c, row));
                 }
 
                 int run1 = 1;
                 while (row > 0 && curr_pel != pel) 
                 {
                     row--;
-                    curr_pel = image.get(Point(c,row));
+                    curr_pel = image.get(Point(c, row));
                     run1++;
                 }
 
                 row = r;
                 curr_pel = pel;
-                while (row < image.nrows()-1 && curr_pel == pel) 
+                while ((row < image.nrows() - 1) && (curr_pel == pel))
                 {
                     row++;
-                    curr_pel = image.get(Point(c,row));
+                    curr_pel = image.get(Point(c, row));
                 }
 
                 int run2 = 1;
-                while (row < image.nrows()-1 && curr_pel != pel) 
+                while ((row < image.nrows() - 1) && (curr_pel != pel))
                 {
                     row++;
-                    curr_pel = image.get(Point(c,row));
+                    curr_pel = image.get(Point(c, row));
                     run2++;
                 }
 
-                verDistance[r*image.ncols() + c] = min(run1, run2);
+                verDistance[(r * image.ncols()) + c] = min(run1, run2);
             }
         }
 
         //Find Graph Weights
         for (int r = 0; r < image.nrows(); r++) 
         {
-            for (int c = 0; c < image.ncols()-1; c++) 
+            for (int c = 0; c < image.ncols() - 1; c++) 
             {
-                graphWeight[r*image.ncols() + c].weight_hor = weightFunction(image, Point(c,r), Point(c+1, r), NEIGHBOUR4);
+                graphWeight[(r * image.ncols()) + c].weight_hor = weightFunction(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
                 if (r > 0)
-                    graphWeight[r*image.ncols() + c].weight_up = weightFunction(image, Point(c,r), Point(c+1, r-1), NEIGHBOUR8);
+                    graphWeight[(r * image.ncols()) + c].weight_up = weightFunction(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
                 else
-                    graphWeight[r*image.ncols() + c].weight_up = TOP_VALUE;
-                if (r < image.nrows()-1)
-                    graphWeight[r*image.ncols() + c].weight_down = weightFunction(image, Point(c,r), Point(c+1, r+1), NEIGHBOUR8);
+                    graphWeight[(r * image.ncols()) + c].weight_up = TOP_VALUE;
+                if (r < image.nrows() - 1)
+                    graphWeight[(r * image.ncols()) + c].weight_down = weightFunction(image, Point(c, r), Point(c + 1, r + 1), NEIGHBOUR8);
                 else
-                    graphWeight[r*image.ncols() + c].weight_down = TOP_VALUE;
+                    graphWeight[(r * image.ncols()) + c].weight_down = TOP_VALUE;
             }
         }
 
-        for (int x = 0; x < image.nrows()*image.ncols(); x++)
+        for (int x = 0; x < image.nrows() * image.ncols(); x++)
         {
             printf("Value: %d -> verDistance: %d -> verRun: %d\n", x, verDistance[x], verRun[x]);
         }       
@@ -271,10 +271,10 @@ public:
         unsigned int pel1 = image.get(pixelVal1); //Gets the pixel value of Point 1
         unsigned int pel2 = image.get(pixelVal2); //Gets pixel value of Point 2
 
-        int dist1 = verDistance[pixelVal1.y()*image.nrows() + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
-        int dist2 = verDistance[pixelVal2.y()*image.nrows() + pixelVal2.x()];
-        int vRun1 = verRun[pixelVal1.y()*image.nrows() + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
-        int vRun2 = verRun[pixelVal2.y()*image.nrows() + pixelVal2.x()]; 
+        int dist1 = verDistance[(pixelVal1.y() * image.nrows()) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
+        int dist2 = verDistance[(pixelVal2.y() * image.nrows()) + pixelVal2.x()];
+        int vRun1 = verRun[(pixelVal1.y() * image.nrows()) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
+        int vRun2 = verRun[(pixelVal2.y() * image.nrows()) + pixelVal2.x()]; 
 
         int pel = max(pel1, pel2); //pel set to 1 if either pixel is black
         
@@ -291,7 +291,7 @@ public:
         {
             --y;
         }
-        if (max(dist1, dist2) > 2*staffLineHeight+staffSpaceDistance)
+        if (max(dist1, dist2) > (2 * staffLineHeight) + staffSpaceDistance)
         {
             y++;
         }
