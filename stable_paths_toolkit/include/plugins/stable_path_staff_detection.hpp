@@ -10,10 +10,10 @@
 
     Main Cycle:
         *1. Compute stable paths
-        2. Validate paths with blackness and shape
-        3. Erase valid paths from image
-        4. Add valid paths to list of stafflines
-        5. End of cycle if no valid path was found
+        *2. Validate paths with blackness and shape
+        *3. Erase valid paths from image
+        *4. Add valid paths to list of stafflines
+        *5. End of cycle if no valid path was found
 
     Postprocessing
         1. Uncross stafflines
@@ -38,13 +38,13 @@ public:
     enum e_NEIGHBOUR {NEIGHBOUR4 = 0, NEIGHBOUR8};
     typedef enum e_NEIGHBOUR NEIGHBOUR;
 
-    struct NODE 
+    struct NODE
     {
         Point previous;
         weight_t weight;
         Point start;
     };
-    struct NODEGRAPH 
+    struct NODEGRAPH
     {
         weight_t weight_up;
         weight_t weight_hor;
@@ -320,7 +320,7 @@ public:
             y0 = 12; //White
         }
         int y = (pel == 0 ? y0:y1);
-        if ( (pel) && (min(vRun1, vRun2) <= staffLineHeight))
+        if ( (pel) && ( (min(vRun1, vRun2) <= staffLineHeight)) )
         {
             --y;
         }
@@ -742,15 +742,15 @@ public:
         double blackPerc;
         vector<Point> bestStaff;
 
-        int nrows = image.nrows();
-        int ncols = image.ncols();
+        int nrows = imageCopy->nrows();
+        int ncols = imageCopy->ncols();
 
         while(1)
         {
             vector <vector<Point> > stablePaths;
             int curr_n_paths = 0;
             printf("About to findAllStablePaths\n");
-            findAllStablePaths(image, 0, ncols - 1, stablePaths);
+            findAllStablePathsView(imageCopy, 0, ncols - 1, stablePaths);
             printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
             if (first_time && stablePaths.size() > 0)
             {
@@ -764,7 +764,7 @@ public:
                 printf("Line 764\n");
                 for (size_t c = 0; c < stablePaths.size(); c++)
                 {
-                    size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imageCopy);
+                    size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imgErode);
                     if (sumOfValues/(1.0 * (stablePaths[c].size())) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
                     {
                         allSumOfValues.push_back(sumOfValues);
@@ -777,14 +777,14 @@ public:
                 }
                 printf("Line 778\n");
 
-                //vector<size_t> copy_allSumOfValues = allSumOfValues;
+                vector<size_t> copy_allSumOfValues = allSumOfValues;
                 sort(allSumOfValues.begin(), allSumOfValues.end());
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
                 int i;
                 for (i = 0; i < allSumOfValues.size(); i++)
                 {
-                    printf("copy_allSumOfValues[%d] = %lu\n", i, allSumOfValues[i]);
-                    if (allSumOfValues[i] == medianSumOfValues)
+                    printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+                    if (copy_allSumOfValues[i] == medianSumOfValues)
                     {
                         break;
                     }
@@ -826,14 +826,15 @@ public:
                     int row = staff[i].y();
 
                     //ERASE PATHS ALREADY SELECTED!
-                    for (int j = -path_half_width2 - 1; j <= path_half_width2 + 1; j++)
+                    for (int j =-path_half_width2 - 1; j <= path_half_width2 + 1; j++)
                     {
+                        printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         printf("Currently erasing lines\n");
                         if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
                         {
                             continue;
                         }
-                        //image.set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
                         imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
@@ -872,7 +873,297 @@ public:
         }
         //postProcessing(validStaves, staffSpaceDistance, imageErodedCopy, image)
     }
+
+    //===================================================================================================
+    //================================== OneBitImageView Functions ======================================
+    //===================================================================================================
+
+    int findAllStablePathsView(OneBitImageView *image, int startCol, int endCol, vector <vector<Point> > &stablePaths) 
+    {
+        stablePaths.clear();
+        int width = image->ncols();
+        int height = image->nrows();
+        vector<int> startRow_i;
+
+        int endCol_i = width - 1 - startCol;
+        int startCol_i = width - 1 - endCol;
+
+        for (int row = 0; row < height; row++) 
+        {
+            graphPath[row*width + startCol_i].weight = static_cast<weight_t>(0);
+            graphPath[row*width + startCol_i].start = Point(startCol_i, row);
+        }
+
+        for (int col = startCol_i + 1; col <= endCol_i; col++) //Creates path from right to left
+        {
+            for (int row = 0; row < height; row++) 
+            {  
+                weight_t weight10, weight20, weight30;
+                weight_t value1, value2, value3;
+                weight10 = weight20 = weight30 = TOP_VALUE;
+                value1 = value2 = value3 = TOP_VALUE;
+                if (row > 0) 
+                {
+                    weight10 = graphWeight[row*width + width-1-col].weight_up;
+                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
+                }
+
+                weight20 = graphWeight[row*width + width-1-col].weight_hor;
+                value2 = weight20 + graphPath[(row)*width + (col-1)].weight;
+            
+                if (row < height-1)
+                {
+                    weight30 = graphWeight[row*width + width-1-col].weight_down; 
+                    value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
+                }   
+
+                if ((value3)<= (value2) && (value3)<= (value1))
+                {               
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
+                    graphPath[(row)*width + (col)].weight = value3;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
+                }
+
+                else if ((value2)<= (value1) && (value2)<= (value3))
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row);
+                    graphPath[(row)*width + (col)].weight = value2;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
+                }
+
+                else
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
+                    graphPath[(row)*width + (col)].weight = value1;
+                    graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
+                }   
+            }
+        }
+
+        for (int i = 0; i < height; i++)
+        {
+            startRow_i.push_back(graphPath[i*width + endCol_i].start.y());
+        }
+
+        for (int row = 0; row < height; row++)
+        {
+            graphPath[row*width + startCol].weight = static_cast<weight_t>(0.0);
+            graphPath[row*width + startCol].start = Point(startCol, row);
+        }
+
+        for (int col = startCol+1; col <= endCol; col++)
+        {
+            for (int row = 0; row < height; row++)
+            {
+                weight_t weight10, weight20, weight30;
+                weight_t value1, value2, value3;
+                weight10 = weight20 = weight30 = TOP_VALUE;
+                value1 = value2 = value3  = TOP_VALUE; 
+
+                if (row > 0)
+                {
+                    weight10 = graphWeight[(row-1)*width + col-1].weight_down;
+                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
+                }
+
+                weight20 = graphWeight[row*width + col-1].weight_hor; 
+                value2 = weight20 + graphPath[(row+0)*width + (col-1)].weight;
+
+                if (row < height-1)
+                {
+                    weight30 = graphWeight[(row+1)*width + col-1].weight_up; 
+                    value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
+                }
+
+                if ((value3)<= (value2) && (value3)<= (value1))
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
+                    graphPath[(row)*width + (col)].weight = value3;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
+                }
+
+                else if ((value2)<= (value1) && (value2)<= (value3))
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row);
+                    graphPath[(row)*width + (col)].weight = value2;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
+                }
+
+                else 
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
+                    graphPath[(row)*width + (col)].weight = value1;
+                    graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
+                }
+            }
+        }
+
+        for (int i = 0; i < height; i++)
+        {
+            int startR = graphPath[i*width + endCol].start.y();
+
+            if (startRow_i[startR] == i)
+            {
+                Point p = Point(endCol, i);
+                vector<Point> contour;
+                contour.resize(endCol - startCol + 1);
+                int pos = endCol - startCol;
+                contour[pos] = p;
+                pos--;
+                while (p.x() != startCol)
+                {
+                    p = graphPath[(p.y() * width) + p.x()].previous;
+                    contour[pos] = p;
+                    pos--;
+                }
+                stablePaths.push_back(contour);
+            }
+        }
+        return 0;
+    }
+
+    void constructGraphWeightsView(OneBitImageView *image) 
+    {
+        unsigned char WHITE = 0;
+        int cols = image->ncols();
+        int rows = image->nrows();
+
+        //Find vertical run values
+        // ***USE VECTOR ITERATORS WITH ROW ON THE OUTSIDE TO INCREASE PERFORMANCE IF THERE'S TIME***
+        for (int c = 0; c < cols; c++) 
+        {
+            int run = 0;
+            unsigned char val = WHITE;
+            for (int r = 0; r < rows; r++) 
+            {
+                unsigned char pel = image->get(Point(c, r));
+                if (pel == val) 
+                {
+                    run++;
+                }
+                else
+                {
+                    int len = run;
+                    for (int row = r - 1; len > 0; len--, row--) 
+                    {
+                        verRun[(row * cols) + c] = run;
+                    }
+                    val = !val; //Changes value from 0 to 1 or from 1 to 
+                    run = 1;
+                }
+            }
+            if (run > 0) 
+            {
+                //Last run on the column
+                int len = run;
+                for (int row = rows - 1; len > 0; len--, row--) 
+                {
+                    verRun[(row * cols) + c] = run;
+                }
+            }
+        }
+
+        //Find Vertical Distance
+        for (int c = 0; c < cols; c++) 
+        {
+            for (int r = 0; r < rows; r++) 
+            {
+                unsigned char pel = image->get(Point(c, r));
+                int row = r;
+                unsigned char curr_pel = pel;
+                while ((row > 0) && (curr_pel == pel))
+                {
+                    row--;
+                    curr_pel = image->get(Point(c, row));
+                }
+
+                int run1 = 1;
+                while ((row > 0) && (curr_pel != pel))
+                {
+                    row--;
+                    curr_pel = image->get(Point(c, row));
+                    run1++;
+                }
+
+                row = r;
+                curr_pel = pel;
+                while ((row < rows - 1) && (curr_pel == pel))
+                {
+                    row++;
+                    curr_pel = image->get(Point(c, row));
+                }
+
+                int run2 = 1;
+                while ((row < rows - 1) && (curr_pel != pel))
+                {
+                    row++;
+                    curr_pel = image->get(Point(c, row));
+                    run2++;
+                }
+
+                verDistance[(r * cols) + c] = min(run1, run2);
+            }
+        }
+
+        //Find Graph Weights
+        for (int r = 0; r < rows; r++) 
+        {
+            for (int c = 0; c < cols - 1; c++) 
+            {
+                graphWeight[(r * cols) + c].weight_hor = weightFunctionView(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
+                if (r > 0)
+                    graphWeight[(r * cols) + c].weight_up = weightFunctionView(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
+                else
+                    graphWeight[(r * cols) + c].weight_up = TOP_VALUE;
+                if (r < rows - 1)
+                    graphWeight[(r * cols) + c].weight_down = weightFunctionView(image, Point(c, r), Point(c + 1, r + 1), NEIGHBOUR8);
+                else
+                    graphWeight[(r * cols) + c].weight_down = TOP_VALUE;
+            }
+        }
+
+        // for (int x = 0; x < rows * cols; x++)
+        // {
+        //     printf("Value: %d -> verDistance: %d -> verRun: %d\n", x, verDistance[x], verRun[x]);
+        // }       
+    }
+
+    weight_t weightFunctionView(OneBitImageView *image, Point pixelVal1, Point pixelVal2, stableStaffLineFinder::NEIGHBOUR neigh) 
+    {
+        unsigned int pel1 = image->get(pixelVal1); //Gets the pixel value of Point 1
+        unsigned int pel2 = image->get(pixelVal2); //Gets pixel value of Point 2
+
+        int dist1 = verDistance[(pixelVal1.y() * image->nrows()) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
+        int dist2 = verDistance[(pixelVal2.y() * image->nrows()) + pixelVal2.x()];
+        int vRun1 = verRun[(pixelVal1.y() * image->nrows()) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
+        int vRun2 = verRun[(pixelVal2.y() * image->nrows()) + pixelVal2.x()]; 
+
+        int pel = max(pel1, pel2); //pel set to 1 if either pixel is black
+        
+        //Weights for a 4-Neighborhood
+        int y1 = 4; //Black pixels
+        int y0 = 8; //White pixels
+        if (neigh == NEIGHBOUR8) //Weights for an 8-Neighborhood
+        {
+            y1 = 6; //Black
+            y0 = 12; //White
+        }
+        int y = (pel == 0 ? y0:y1);
+        if ( (pel) && ( (min(vRun1, vRun2) <= staffLineHeight)) )
+        {
+            --y;
+        }
+        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
+        {
+            y++;
+        }
+        return y;
+    }
 };
+
+//===================================================================================================
+//================================ Plugins ==========================================================
+//===================================================================================================
 
 template<class T>
 float returnGraphWeights(T &image) 
@@ -892,7 +1183,7 @@ OneBitImageView* copyImage(T &image)
     OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu \n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
-    slf1.constructGraphWeights(image);
+    slf1.constructGraphWeightsView(new1);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
     //slf1.deletePaths(validStaves, new1);
     //slf1.stableStaffDetection(validStaves, image);
