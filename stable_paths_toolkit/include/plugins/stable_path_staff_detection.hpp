@@ -68,6 +68,9 @@ public:
     typedef ImageData<OneBitPixel> OneBitImageData;
     typedef ImageView<OneBitImageData> OneBitImageView;
 
+    typedef ImageData<GreyScalePixel> GreyScaleImageData;
+    typedef ImageView<GreyScaleImageData> GreyScaleImageView;
+
     //=========================================================================================
     //                          Image Cloners/Eroders
     //=========================================================================================
@@ -98,6 +101,23 @@ public:
             for (size_t c = 0; c < image.ncols(); c++)
             {
                 dest_view->set(Point(c, r), 0);
+            }
+        }
+
+        return dest_view;
+    }
+
+    template<class T>
+    GreyScaleImageView* clearGrey(T& image)
+    {
+        GreyScaleImageData* dest_data = new GreyScaleImageData(image.size());
+        GreyScaleImageView* dest_view = new GreyScaleImageView(*dest_data);
+
+        for (size_t r = 0; r < image.nrows(); r++)
+        {
+            for (size_t c = 0; c < image.ncols(); c++)
+            {
+                dest_view->set(Point(c, r), 255);
             }
         }
 
@@ -348,8 +368,8 @@ public:
         verRun = new int[image.nrows()*image.ncols()];
         verDistance = new int[image.nrows()*image.ncols()];
         memset (verDistance, 0, sizeof(int)*image.nrows()*image.ncols());
-        // staffLineHeight = 3;
-        // staffSpaceDistance = 30;
+        staffLineHeight = 3;
+        staffSpaceDistance = 30;
     }
 
     double staffDissimilarity(vector<Point>& staff1, vector<Point>& staff2)
@@ -368,15 +388,14 @@ public:
 
         for (size_t i = 0; i < staff1.size(); i++)
         {
-            double curr_dif = abs(staff1[i].y() - staff2[i].y() - currAvg1+currAvg2);
-            avgDiff += (curr_dif*curr_dif);
+            double curr_dif = abs(staff1[i].y() - staff2[i].y() - currAvg1 + currAvg2);
+            avgDiff += (curr_dif * curr_dif);
         }
         avgDiff /= staff1.size();
         avgDiff = sqrt(avgDiff);
         return avgDiff;
     }
 
-    //template<class T>
     int sumOfValuesInVector (vector<Point>& vec, OneBitImageView *image)
     {
         //size_t len = vec.size();
@@ -387,13 +406,12 @@ public:
         {
             int col = vec[i].x();
             int row = vec[i].y();
-            unsigned char pel = image->get(getPointView((row*image->ncols() + col), image->ncols(), image->nrows()));
+            unsigned char pel = image->get(getPointView(((row * image->ncols()) + col), image->ncols(), image->nrows()));
             sumOfValues += pel;
         }
         return sumOfValues;
     }
 
-    //template<class T>
     bool tooMuchWhite (vector<Point> &vec, OneBitImageView *image, double minBlackPerc)
     {
         int sumOfValues = sumOfValuesInVector(vec, image);
@@ -401,7 +419,7 @@ public:
         int startCol = 0;
         int endCol = image->ncols()-1;
         int usedSize = endCol-startCol+1;
-        if (sumOfValues < 1*(1-minBlackPerc)*(usedSize))
+        if (sumOfValues < 1 * (1 - minBlackPerc) * (usedSize))
         {
             return true;
         }
@@ -816,7 +834,7 @@ public:
                     continue;
                 }
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
-                if (dissimilarity > 4 * staffSpaceDistance)
+                if (dissimilarity > (4 * staffSpaceDistance))
                 {
                     printf ("\tToo Dissimilar\n");
                     continue;
@@ -835,7 +853,7 @@ public:
                     int row = staff[i].y();
 
                     //ERASE PATHS ALREADY SELECTED!
-                    for (int j =-path_half_width2 - 1; j <= path_half_width2 + 1; j++)
+                    for (int j =-2; j <= 2; j++)
                     {
                         printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         printf("Currently erasing lines\n");
@@ -843,35 +861,35 @@ public:
                         {
                             continue;
                         }
-                        // imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        // imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        deleteOnePath(staff, imageCopy);
-                        deleteOnePath(staff, imgErode);
-                        // if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
-                        // {
-                        //     continue;
-                        // }
-                        // if (col == ncols - 1)
-                        // {
-                        //     continue;
-                        // }
-                        // if (row + j > 0)
-                        // {
-                        //     graphWeight[((row + j) * ncols) + col].weight_up = 12;
-                        // }
-                        // else
-                        // {
-                        //     graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
-                        // }
-                        // graphWeight[((row + j) * ncols) + col].weight_hor = 8;
-                        // if (row + j < nrows - 1)
-                        // {
-                        //     graphWeight[((row + j) * ncols) + col].weight_down = 12;
-                        // }
-                        // else
-                        // {
-                        //     graphWeight[((row + j) * ncols) + col].weight_down = TOP_VALUE;
-                        // }
+                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        // deleteOnePath(staff, imageCopy);
+                        // deleteOnePath(staff, imgErode);
+                        if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
+                        {
+                            continue;
+                        }
+                        if (col == ncols - 1)
+                        {
+                            continue;
+                        }
+                        if (row + j > 0)
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
+                        }
+                        graphWeight[((row + j) * ncols) + col].weight_hor = 8;
+                        if (row + j < nrows - 1)
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_down = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_down = TOP_VALUE;
+                        }
                     } 
                 }
             }
@@ -883,6 +901,79 @@ public:
             }
         }
         //postProcessing(validStaves, staffSpaceDistance, imageErodedCopy, image)
+    }
+
+    void postProcessing(vector <vector<Point> > &validStaves, int staffDistance, OneBitImageView *imageErodedCopy)
+    {
+        cout <<"Postprocessing Image\n";
+        if (!validStaves.size())
+        {
+            return;
+        }
+
+        //Uncross Lines
+        for (int c = validStaves[0][0].x(); c <= validStaves[0][validStaves[0].size() - 1].x(); c++)
+        {
+            vector<Point> column;
+            for (int nvalid = 0; nvalid < validStaves.size(); nvalid++)
+            {
+                column.push_back(validStaves[nvalid][c]);
+            }
+            sort(column.begin(), column.end());
+            for (int nvalid = 0; nvalid < validStaves.size(); nvalid++)
+            {
+                validStaves[nvalid][c] = column[nvalid];
+            }
+        }
+
+        vector<Point> medianStaff;
+        computeMedianStaff(validStaves, medianStaff);
+
+        //staffDistance similar to staffLineHeightValue
+        int maxStaffDistance;
+        if (abs(staffDistance - staffLineHeight) < (0.5 * max(staffDistance, staffLineHeight)))
+        {
+            maxStaffDistance = max(3 * staffDistance, 3 * staffLineHeight);
+        }
+        else
+        {
+            maxStaffDistance = max(2 * staffDistance, 2 * staffLineHeight);
+        }
+
+        printf("maxStaffDistance = %d\n", maxStaffDistance);
+
+        //Organize in sets
+    }
+
+    void computeMedianStaff(vector <vector<Point> > &staves, vector<Point> &medianStaff)
+    {
+        medianStaff.clear();
+        for (int c = staves[0][0].x(); c <= staves[0][staves[0].size() - 1].x(); c++)
+        {
+            vector<int> delta;
+            for (size_t nvalid = 0; nvalid < staves.size(); nvalid++)
+            {
+                if (c != staves[0][0].x())
+                {
+                    delta.push_back(staves[nvalid][c].y() - staves[nvalid][0].y());
+                }
+                else
+                {
+                    delta.push_back(staves[nvalid][0].y());
+                }
+            }
+            sort(delta.begin(), delta.end());
+            int y;
+            if (c != staves[0][0].x())
+            {
+                y = medianStaff[0].y() + delta[staves.size()/2];
+            }
+            else
+            {
+                y = delta[staves.size()/2];
+            }
+            medianStaff.push_back(Point(c, y));
+        }
     }
 
     //===================================================================================================
@@ -901,8 +992,8 @@ public:
 
         for (int row = 0; row < height; row++) 
         {
-            graphPath[row*width + startCol_i].weight = static_cast<weight_t>(0);
-            graphPath[row*width + startCol_i].start = Point(startCol_i, row);
+            graphPath[(row * width) + startCol_i].weight = static_cast<weight_t>(0);
+            graphPath[(row * width) + startCol_i].start = Point(startCol_i, row);
         }
 
         for (int col = startCol_i + 1; col <= endCol_i; col++) //Creates path from right to left
@@ -1170,6 +1261,155 @@ public:
         }
         return y;
     }
+
+
+    // template<class T>
+    // OneBitImageView* stableStaffDetection(vector <vector <Point> > &validStaves, T &image)
+    // {
+    //     constructGraphWeights(image);
+    //     OneBitImageView *imageCopy = myCloneImage(image);
+    //     OneBitImageView *imgErode = myCloneImage(image);
+    //     myVerticalErodeImage(imgErode, image.ncols(), image.nrows());
+
+    //     vector<int> npaths;
+
+    //     bool first_time = 1;
+    //     double blackPerc;
+    //     vector<Point> bestStaff;
+
+    //     int nrows = imageCopy->nrows();
+    //     int ncols = imageCopy->ncols();
+
+    //     while(1)
+    //     {
+    //         vector <vector<Point> > stablePaths;
+    //         int curr_n_paths = 0;
+    //         printf("About to findAllStablePaths\n");
+    //         findAllStablePathsView(imageCopy, 0, ncols - 1, stablePaths);
+    //         printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
+    //         if (first_time && stablePaths.size() > 0)
+    //         {
+    //             printf("Line 757\n");
+    //             first_time = 0;
+    //             bestStaff.clear();
+    //             size_t bestSumOfValues = INT_MAX;
+    //             size_t bestStaffIdx = 0;
+    //             vector<size_t> allSumOfValues;
+
+    //             printf("Line 764\n");
+    //             for (size_t c = 0; c < stablePaths.size(); c++)
+    //             {
+    //                 size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imgErode);
+    //                 if ((sumOfValues / (1.0 * (stablePaths[c].size()))) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
+    //                 {
+    //                     allSumOfValues.push_back(sumOfValues);
+    //                 }
+    //                 if (sumOfValues < bestSumOfValues)
+    //                 {
+    //                     bestSumOfValues = sumOfValues;
+    //                     bestStaffIdx = c;
+    //                 }
+    //             }
+    //             printf("Line 778\n");
+
+    //             vector<size_t> copy_allSumOfValues = allSumOfValues;
+    //             sort(allSumOfValues.begin(), allSumOfValues.end());
+    //             size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
+    //             int i;
+    //             for (i = 0; i < allSumOfValues.size(); i++)
+    //             {
+    //                 printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+    //                 if (copy_allSumOfValues[i] == medianSumOfValues)
+    //                 {
+    //                     break;
+    //                 }
+    //             }
+
+    //             printf("Line 792\n");
+    //             bestStaff = stablePaths[i];
+
+    //             double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
+    //             blackPerc = max(MIN_BLACK_PER, bestBlackPerc*0.8);
+    //             cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
+    //         }
+
+    //         for (size_t i = 0; i < stablePaths.size(); i++)
+    //         {
+    //             vector<Point> staff = stablePaths[i];
+
+    //             if (tooMuchWhite(staff, imgErode, blackPerc))
+    //             {
+    //                 continue;
+    //             }
+    //             double dissimilarity = staffDissimilarity(bestStaff, staff);
+    //             if (dissimilarity > 4 * staffSpaceDistance)
+    //             {
+    //                 printf ("\tToo Dissimilar\n");
+    //                 continue;
+    //             }
+
+    //             validStaves.push_back(staff);
+    //             curr_n_paths++;
+
+    //             int path_half_width2 = max(staffLineHeight, staffSpaceDistance/2);
+
+    //             //Erasing paths from our image, must create a copy of our image
+    //             for (size_t i = 0; i<staff.size(); i++)
+    //             {
+    //                 printf("Staff Size: %lu\n", staff.size());
+    //                 int col = staff[i].x();
+    //                 int row = staff[i].y();
+
+    //                 //ERASE PATHS ALREADY SELECTED!
+    //                 for (int j =-path_half_width2 - 1; j <= path_half_width2 + 1; j++)
+    //                 {
+    //                     printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
+    //                     printf("Currently erasing lines\n");
+    //                     if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
+    //                     {
+    //                         continue;
+    //                     }
+    //                     // imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+    //                     // imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+    //                     deleteOnePath(staff, imageCopy);
+    //                     deleteOnePath(staff, imgErode);
+    //                     // if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
+    //                     // {
+    //                     //     continue;
+    //                     // }
+    //                     // if (col == ncols - 1)
+    //                     // {
+    //                     //     continue;
+    //                     // }
+    //                     // if (row + j > 0)
+    //                     // {
+    //                     //     graphWeight[((row + j) * ncols) + col].weight_up = 12;
+    //                     // }
+    //                     // else
+    //                     // {
+    //                     //     graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
+    //                     // }
+    //                     // graphWeight[((row + j) * ncols) + col].weight_hor = 8;
+    //                     // if (row + j < nrows - 1)
+    //                     // {
+    //                     //     graphWeight[((row + j) * ncols) + col].weight_down = 12;
+    //                     // }
+    //                     // else
+    //                     // {
+    //                     //     graphWeight[((row + j) * ncols) + col].weight_down = TOP_VALUE;
+    //                     // }
+    //                 } 
+    //             }
+    //         }
+    //         npaths.push_back(curr_n_paths);
+    //         if (curr_n_paths == 0)
+    //         {
+    //             return imageCopy;
+    //             //break;
+    //         }
+    //     }
+    //     //postProcessing(validStaves, staffSpaceDistance, imageErodedCopy, image)
+    // }
 };
 
 //===================================================================================================
@@ -1187,7 +1427,7 @@ float returnGraphWeights(T &image)
 }
 
 template<class T>
-OneBitImageView* copyImage(T &image)
+OneBitImageView* deleteStablePaths(T &image)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
@@ -1196,10 +1436,46 @@ OneBitImageView* copyImage(T &image)
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     slf1.constructGraphWeightsView(new1);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
-    //slf1.deletePaths(validStaves, new1);
+    slf1.deletePaths(validStaves, new1);
+    //slf1.stableStaffDetection(validStaves, image);
+    //return slf1.stableStaffDetection(validStaves, image);
+    return new1;
+}
+
+template<class T>
+OneBitImageView* stablePathDetection1(T &image)
+{
+    vector <vector<Point> > validStaves;
+    stableStaffLineFinder slf1 (image);
+    OneBitImageView *new1 = slf1.myCloneImage(image);
+    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
+    slf1.constructGraphWeightsView(new1);
+    printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
+    slf1.deletePaths(validStaves, new1);
     //slf1.stableStaffDetection(validStaves, image);
     return slf1.stableStaffDetection(validStaves, image);
 }
+
+template<class T>
+GreyScaleImageView* displayWeights(T &image)
+{
+    stableStaffLineFinder slf1 (image);
+    int ncols = image.ncols();
+    int nrows = image.nrows();
+    slf1.constructGraphWeights(image);
+    GreyScaleImageView *new1 = slf1.clearGrey(image);
+    for (int col = 0; col < ncols - 1; col++)
+    {
+        for (int row = 0; row < nrows - 1; row++)
+        {
+            //new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down + slf1.graphWeight[row*ncols+col].weight_hor);
+            new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down);
+        }
+    }
+    return new1;
+}
+
 
 template<class T>
 OneBitImageView* findStablePaths(T &image) //Returns blank image with stable paths drawn
