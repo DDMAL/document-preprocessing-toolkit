@@ -173,6 +173,15 @@ public:
         }
     }
 
+    void deleteOnePath(vector<Point> path, OneBitImageView *image)
+    {
+        int size = path.size();
+        for (int i = 0; i < size; i++)
+        {
+            image->set(path[i], 0);
+        }
+    }
+
     void drawPaths(vector <vector<Point> > &validStaves, OneBitImageView *image)
     {
         int numPaths = validStaves.size();
@@ -339,8 +348,8 @@ public:
         verRun = new int[image.nrows()*image.ncols()];
         verDistance = new int[image.nrows()*image.ncols()];
         memset (verDistance, 0, sizeof(int)*image.nrows()*image.ncols());
-        staffLineHeight = 3;
-        staffSpaceDistance = 30;
+        // staffLineHeight = 3;
+        // staffSpaceDistance = 30;
     }
 
     double staffDissimilarity(vector<Point>& staff1, vector<Point>& staff2)
@@ -426,8 +435,8 @@ public:
                 value1 = value2 = value3 = TOP_VALUE;
                 if (row > 0) 
                 {
-                    weight10 = graphWeight[row*width + width-1-col].weight_up;
-                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
+                    weight10 = graphWeight[(row * width) + width - 1 - col].weight_up;
+                    value1 = weight10 + graphPath[((row - 1) * width) + (col - 1)].weight;
                 }
 
                 weight20 = graphWeight[row*width + width-1-col].weight_hor;
@@ -765,7 +774,7 @@ public:
                 for (size_t c = 0; c < stablePaths.size(); c++)
                 {
                     size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imgErode);
-                    if (sumOfValues/(1.0 * (stablePaths[c].size())) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
+                    if ((sumOfValues / (1.0 * (stablePaths[c].size()))) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
                     {
                         allSumOfValues.push_back(sumOfValues);
                     }
@@ -834,40 +843,42 @@ public:
                         {
                             continue;
                         }
-                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
-                        {
-                            continue;
-                        }
-                        if (col == ncols - 1)
-                        {
-                            continue;
-                        }
-                        if (row + j > 0)
-                        {
-                            graphWeight[((row + j) * ncols) + col].weight_up = 12;
-                        }
-                        else
-                        {
-                            graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
-                        }
-                        graphWeight[((row + j) * ncols) + col].weight_hor = 8;
-                        if (row+j < nrows - 1)
-                        {
-                            graphWeight[((row+j) * ncols) + col].weight_down = 12;
-                        }
-                        else
-                        {
-                            graphWeight[((row+j) * ncols) + col].weight_down = TOP_VALUE;
-                        }
+                        // imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        // imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        deleteOnePath(staff, imageCopy);
+                        deleteOnePath(staff, imgErode);
+                        // if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
+                        // {
+                        //     continue;
+                        // }
+                        // if (col == ncols - 1)
+                        // {
+                        //     continue;
+                        // }
+                        // if (row + j > 0)
+                        // {
+                        //     graphWeight[((row + j) * ncols) + col].weight_up = 12;
+                        // }
+                        // else
+                        // {
+                        //     graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
+                        // }
+                        // graphWeight[((row + j) * ncols) + col].weight_hor = 8;
+                        // if (row + j < nrows - 1)
+                        // {
+                        //     graphWeight[((row + j) * ncols) + col].weight_down = 12;
+                        // }
+                        // else
+                        // {
+                        //     graphWeight[((row + j) * ncols) + col].weight_down = TOP_VALUE;
+                        // }
                     } 
                 }
             }
             npaths.push_back(curr_n_paths);
             if (curr_n_paths == 0)
             {
-                return imgErode;
+                return imageCopy;
                 //break;
             }
         }
@@ -904,7 +915,7 @@ public:
                 value1 = value2 = value3 = TOP_VALUE;
                 if (row > 0) 
                 {
-                    weight10 = graphWeight[row*width + width-1-col].weight_up;
+                    weight10 = graphWeight[(row*width) + width-1-col].weight_up;
                     value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
                 }
 
@@ -1181,7 +1192,7 @@ OneBitImageView* copyImage(T &image)
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
     OneBitImageView *new1 = slf1.myCloneImage(image);
-    printf("Rows: %lu, Columns: %lu \n", image.nrows(), image.ncols());
+    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     slf1.constructGraphWeightsView(new1);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
@@ -1196,7 +1207,7 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
     OneBitImageView *blank = slf1.clear(image);
-    printf("Rows: %lu, Columns: %lu \n", image.nrows(), image.ncols());
+    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     slf1.constructGraphWeights(image);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
     slf1.drawPaths(validStaves, blank);
