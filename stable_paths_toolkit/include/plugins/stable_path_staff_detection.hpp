@@ -188,7 +188,11 @@ public:
         {
             for (int x = 0; x < numPix; x++)
             {
-                image->set(validStaves[i][x], 0);
+                if (verRun[((validStaves[i][x].y() * numPix) + validStaves[i][x].x())] < 5)
+                {
+                    image->set(validStaves[i][x], 0);
+                }
+                
             }
         }
     }
@@ -834,11 +838,11 @@ public:
                     continue;
                 }
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
-                if (dissimilarity > (4 * staffSpaceDistance))
-                {
-                    printf ("\tToo Dissimilar\n");
-                    continue;
-                }
+                // if (dissimilarity > (4 * staffSpaceDistance))
+                // {
+                //     printf ("\tToo Dissimilar\n");
+                //     continue;
+                // }
 
                 validStaves.push_back(staff);
                 curr_n_paths++;
@@ -861,8 +865,11 @@ public:
                         {
                             continue;
                         }
-                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        if (verRun[((row + j) * ncols) + col] < 5)
+                        {        
+                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        }
                         // deleteOnePath(staff, imageCopy);
                         // deleteOnePath(staff, imgErode);
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
@@ -1458,7 +1465,7 @@ OneBitImageView* stablePathDetection1(T &image)
 }
 
 template<class T>
-GreyScaleImageView* displayWeights(T &image)
+GreyScaleImageView* displayWeights(T &image) //Currently doesn't work...
 {
     stableStaffLineFinder slf1 (image);
     int ncols = image.ncols();
@@ -1469,8 +1476,8 @@ GreyScaleImageView* displayWeights(T &image)
     {
         for (int row = 0; row < nrows - 1; row++)
         {
-            //new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down + slf1.graphWeight[row*ncols+col].weight_hor);
-            new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down);
+            new1->set(Point(col, row), (1 * slf1.graphWeight[row*ncols+col].weight_up) + (1 * slf1.graphWeight[row*ncols+col].weight_down) + (5 * slf1.graphWeight[row*ncols+col].weight_hor));
+            //new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down);
         }
     }
     return new1;
