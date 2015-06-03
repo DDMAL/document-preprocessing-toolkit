@@ -972,8 +972,79 @@ public:
         int start = 0;
         for (size_t nvalid = 0; nvalid < validStaves.size(); nvalid++)
         {
-
+            if (nvalid == validStaves.size() - 1 || simplifiedAvgDistance(validStaves[nvalid], validStaves[nvalid + 1]) > maxStaffDistance)
+            {
+                vector <vector<Point> > singleSet;
+                for (int i = start; i <= nvalid; i++)
+                {
+                    singleSet.push_back(validStaves[i]);
+                }
+                if (singleSet.size() > 2) //Paper writers wanted more complex rules to validate sets
+                {
+                    setsOfValidStaves.push_back(singleSet);
+                    printf("SET SIZE = %lu\n", singleSet.size());
+                }
+                start = nvalid + 1;
+            }
         }
+
+        // // UNDOCUMENTED OPERATION
+        // for (int i = 0; i < setsOfValidStaves.size(); i++)
+        // {
+        //     vector <vector<Point2D> > &setOfStaves = setsOfValidStaves[i];
+        //     for (int nvalid = 0; nvalid < setOfStaves.size(); nvalid++)
+        //     {
+        //         for (int deltacolumn = 2, sgn = 1; deltacolumn <imgErodedCopy->width; deltacolumn++, sgn = (-1)*sgn)
+        //         {
+        //             int c = imgErodedCopy->width/2 + (deltacolumn>>1)*sgn; //starts on the middle of the img on both sides
+        //             int y = setOfStaves[nvalid][c].y;
+        //             int x = setOfStaves[nvalid][c].x;
+        //             int my = medianStaff[c].y;
+        //             int y0 = setOfStaves[nvalid][imgErodedCopy->width/2].y;
+        //             int my0 = medianStaff[imgErodedCopy->width/2].y;
+        //             double alpha = 0; 
+        //             unsigned char pel = imgErodedCopy->imageData[y*imgErodedCopy->widthStep + x];
+        //             if (pel != 0)
+        //                 alpha = pow(abs(c-imgErodedCopy->width/2)/double(imgErodedCopy->width/2), 1/4.0);
+
+        //             int delta = static_cast<int>( (1-alpha)*(y-y0) + alpha*(my-my0) );
+
+        //             y = y0+delta;
+        //             int prev_y = setOfStaves[nvalid][c-sgn].y;
+        //             if ((y-prev_y)>1) y = prev_y+1;
+        //             if ((y-prev_y)<-1) y = prev_y-1;
+
+        //             setOfStaves[nvalid][c].y = min(max(y,0), imgErodedCopy->height-1);
+        //         }
+        //     }
+        // }
+        int ncolsEroded = imageErodedCopy->ncols();
+        int nrowsEroded = imageErodedCopy->nrows();
+        
+        //Trim and smooth
+        // vector <vector <vector<Point> > >::iterator set_it = setsOfValidStaves.begin();
+        // while (set_it != setsOfValidStaves.end())
+        // {
+        //     vector <vector<Point> > &setOfStaves = *set_it; //setsOfValidStaves[i]
+
+        //     //Compute the median staff in terms of color
+        //     vector<unsigned char> medianStaff;
+        //     for (int c = 0; c < ncolsEroded; c++)
+        //     {
+        //         vector <unsigned char> medianStaff;
+        //         for (int i = 0; i < setOfStaves.size(); i++)
+        //         {
+        //             int x = setOfStaves[i][c].x();
+        //             int y = setOfStaves[i][c].y();
+        //             unsigned char pel = imageErodedCopy->get(getPointView((y * ncolsEroded) + x, ncolsEroded, nrowsEroded));
+        //             medianValue.push_back(pel);
+        //         }
+        //         sort(medianValue.begin(), medianValue.end());
+        //         medianStaff.push_back(medianValue[medianValue.size() / 5]) //Assumes stafflines in groups of 5
+        //     }
+        //     //1 find start and end
+        //     int startx = 0, endx = ncolsEroded - 1;
+        // }
     }
 
     double simplifiedAvgDistance(vector<Point> &staff1, vector<Point> &staff2)
