@@ -1458,10 +1458,28 @@ OneBitImageView* stablePathDetection1(T &image)
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     slf1.constructGraphWeightsView(new1);
-    printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
-    slf1.deletePaths(validStaves, new1);
+    //printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
+    //slf1.deletePaths(validStaves, new1);
     //slf1.stableStaffDetection(validStaves, image);
     return slf1.stableStaffDetection(validStaves, image);
+}
+
+template<class T>
+OneBitImageView* stablePathDetectionDraw(T &image)
+{
+    vector <vector<Point> > validStaves;
+    stableStaffLineFinder slf1 (image);
+    OneBitImageView *new1 = slf1.myCloneImage(image);
+    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
+    slf1.constructGraphWeightsView(new1);
+    // printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
+    // slf1.deletePaths(validStaves, new1);
+    //slf1.stableStaffDetection(validStaves, image);
+    slf1.stableStaffDetection(validStaves, image);
+    OneBitImageView *blank = slf1.clear(image);
+    slf1.drawPaths(validStaves, blank);
+    return blank;
 }
 
 template<class T>
