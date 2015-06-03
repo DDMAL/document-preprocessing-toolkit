@@ -31,8 +31,8 @@
 using namespace std;
 using namespace Gamera;
 
-#define CUSTOMSTAFFLINEHEIGHT 3
-#define CUSTOMSTAFFSPACEHEIGHT 30
+#define CUSTOMSTAFFLINEHEIGHT 9
+#define CUSTOMSTAFFSPACEHEIGHT 33
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -236,6 +236,9 @@ public:
 
         //Find vertical run values
         // ***USE VECTOR ITERATORS WITH ROW ON THE OUTSIDE TO INCREASE PERFORMANCE IF THERE'S TIME***
+
+        cout <<"About to calculate vertical runs\n";
+
         for (int c = 0; c < cols; c++) 
         {
             int run = 0;
@@ -384,7 +387,7 @@ public:
         staffSpaceDistance = CUSTOMSTAFFSPACEHEIGHT;
     }
 
-    double staffDissimilarity(vector<Point>& staff1, vector<Point>& staff2)
+    double staffDissimilarity(vector<Point> &staff1, vector<Point> &staff2)
     {
         double currAvg1 = 0;
         double currAvg2 = 0;
@@ -605,7 +608,9 @@ public:
                     --row;
                     ++runBlack;
                     if (row < 0)
+                    {
                         break;
+                    }
                     pel = image.get(getPoint(row*(image.ncols()) + col, image));
                 }
 
@@ -623,7 +628,9 @@ public:
                     ++row;
                     ++runBlack;
                     if (row > image.nrows()-1)
+                    {
                         break;
+                    }
                     pel = image.get(getPoint(row*(image.ncols()) + col, image));
                 }
 
@@ -696,10 +703,10 @@ public:
     void findStaffHeightandDistanceNoVectors(T &image) //Works only for staffLineHeight
     {
 
-        STAT *graphStats = new STAT[image.nrows()*image.ncols()/2];
+        STAT *graphStats = new STAT[(image.nrows() * image.ncols()) / 2];
         int counter = 0;
         int found;
-        for (int x = 0; x < image.ncols()*image.nrows(); x++)
+        for (int x = 0; x < (image.ncols() * image.nrows()); x++)
         {
             found = 0;
             for (int y = 0; y < counter; y++)
@@ -727,28 +734,19 @@ public:
             if (!staffLineHeight) //Has no assigned value yet
             {
                 if (graphStats[i].pixVal) //pixel is black
+                {
                     staffLineHeight = graphStats[i].runVal; //Assign value to StaffLineHeight
+                }
             }
             if (!staffSpaceDistance) //Has no assigned value yet
             {
                 if (!graphStats[i].pixVal) //pixel is white
+                {
                     staffSpaceDistance = graphStats[i].runVal; //Assign value to StaffSpaceDistance
+                }
             }
         }
     }
-
-    // template <class T>
-    // void findStaffHeightandDistanceNoVectors2(T &image)
-    // {
-    //  STAT *graphStats = new STAT[image.ncols()][image.nrows()/2];
-    //  int counter = 0;
-    //  int found;
-
-    //  for (int c = 0; x < image.ncols(); c++)
-    //  {
-
-    //  }
-    // }
 
     //Used in sort() to sort items from greatest number of occurences to lowest number of occurences
     static bool structCompare(STAT a, STAT b)
@@ -846,11 +844,12 @@ public:
                     continue;
                 }
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
-                // if (dissimilarity > (4 * staffSpaceDistance))
-                // {
-                //     printf ("\tToo Dissimilar\n");
-                //     continue;
-                // }
+                printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                if (dissimilarity > (4 * staffSpaceDistance))
+                {
+                    printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    continue;
+                }
 
                 validStaves.push_back(staff);
                 curr_n_paths++;
@@ -860,15 +859,15 @@ public:
                 //Erasing paths from our image, must create a copy of our image
                 for (size_t i = 0; i<staff.size(); i++)
                 {
-                    printf("Staff Size: %lu\n", staff.size());
+                    //printf("Staff Size: %lu\n", staff.size());
                     int col = staff[i].x();
                     int row = staff[i].y();
 
                     //ERASE PATHS ALREADY SELECTED!
                     for (int j =-2; j <= 2; j++)
                     {
-                        printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
-                        printf("Currently erasing lines\n");
+                        // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
+                        // printf("Currently erasing lines\n");
                         if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
                         {
                             continue;
@@ -1449,7 +1448,7 @@ OneBitImageView* deleteStablePaths(T &image)
     OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
-    slf1.constructGraphWeightsView(new1);
+    slf1.constructGraphWeights(image);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
     slf1.deletePaths(validStaves, new1);
     //slf1.stableStaffDetection(validStaves, image);
@@ -1465,7 +1464,7 @@ OneBitImageView* stablePathDetection1(T &image)
     OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
-    slf1.constructGraphWeightsView(new1);
+    //slf1.constructGraphWeights(image);
     //printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
     //slf1.deletePaths(validStaves, new1);
     //slf1.stableStaffDetection(validStaves, image);
@@ -1480,7 +1479,7 @@ OneBitImageView* stablePathDetectionDraw(T &image)
     OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
-    slf1.constructGraphWeightsView(new1);
+    //slf1.constructGraphWeights(image);
     // printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
     // slf1.deletePaths(validStaves, new1);
     //slf1.stableStaffDetection(validStaves, image);
