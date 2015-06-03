@@ -31,6 +31,9 @@
 using namespace std;
 using namespace Gamera;
 
+#define CUSTOMSTAFFLINEHEIGHT 3
+#define CUSTOMSTAFFSPACEHEIGHT 30
+
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
 public:
@@ -266,6 +269,8 @@ public:
             }
         }
 
+        cout <<"Finished calculating vertical runs\n";
+
         //Find Vertical Distance
         for (int c = 0; c < cols; c++) 
         {
@@ -308,11 +313,14 @@ public:
             }
         }
 
+        cout <<"Finished calculating vertical distance\n";
+
         //Find Graph Weights
         for (int r = 0; r < rows; r++) 
         {
             for (int c = 0; c < cols - 1; c++) 
             {
+                printf("About to find weight for Point(%d, %d)\n", c, r);
                 graphWeight[(r * cols) + c].weight_hor = weightFunction(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
                 if (r > 0)
                     graphWeight[(r * cols) + c].weight_up = weightFunction(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
@@ -372,8 +380,8 @@ public:
         verRun = new int[image.nrows()*image.ncols()];
         verDistance = new int[image.nrows()*image.ncols()];
         memset (verDistance, 0, sizeof(int)*image.nrows()*image.ncols());
-        staffLineHeight = 3;
-        staffSpaceDistance = 30;
+        staffLineHeight = CUSTOMSTAFFLINEHEIGHT;
+        staffSpaceDistance = CUSTOMSTAFFSPACEHEIGHT;
     }
 
     double staffDissimilarity(vector<Point>& staff1, vector<Point>& staff2)
@@ -865,7 +873,7 @@ public:
                         {
                             continue;
                         }
-                        if (verRun[((row + j) * ncols) + col] < 5)
+                        if (verRun[((row + j) * ncols) + col] < (1.5 * staffLineHeight)) //If a vertical run of pixels that is less than 1.5 times the staffLineHeight is along the path, set it to white
                         {        
                             imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
                             imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
