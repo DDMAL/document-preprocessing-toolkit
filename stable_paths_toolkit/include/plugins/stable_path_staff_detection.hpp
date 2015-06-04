@@ -31,8 +31,8 @@
 using namespace std;
 using namespace Gamera;
 
-#define CUSTOMSTAFFLINEHEIGHT 3
-#define CUSTOMSTAFFSPACEHEIGHT 33
+#define CUSTOMSTAFFLINEHEIGHT 100
+#define CUSTOMSTAFFSPACEHEIGHT 100
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -288,6 +288,7 @@ public:
         //Find Vertical Distance
         for (int c = 0; c < cols; c++) 
         {
+            //printf("Vertical Distance column %d\n", c);
             for (int r = 0; r < rows; r++) 
             {
                 unsigned char pel = image.get(Point(c, r));
@@ -334,7 +335,7 @@ public:
         {
             for (int c = 0; c < cols - 1; c++) 
             {
-                //printf("About to find weight for Point(%d, %d)\n", c, r);
+                printf("About to find weight for Point(%d, %d)\n", c, r);
                 graphWeight[(r * cols) + c].weight_hor = weightFunction(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
                 if (r > 0)
                     graphWeight[(r * cols) + c].weight_up = weightFunction(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
@@ -594,6 +595,7 @@ public:
                 stablePaths.push_back(contour);
             }
         }
+        //findStaffHeightandDistance(image, stablePaths); 
         return 0;
     }
 
@@ -988,6 +990,41 @@ public:
             }
         }
 
+        int ncolsEroded = imageErodedCopy->ncols();
+        int nrowsEroded = imageErodedCopy->nrows();
+
+        //Undocumented Operation
+        for (int i = 0; i < setsOfValidStaves.size(); i++)
+        {
+            vector <vector<Point> > &setOfStaves = setsOfValidStaves[i];
+            for (int nvalid = 0; nvalid < setOfStaves.size(); nvalid++)
+            {
+                for (int deltacolumn = 2, sgn = 1; deltacolumn < ncolsEroded; deltacolumn++, sgn = (-1) * sgn)
+                {
+                    int c = (ncolsEroded / 2) + ((deltacolumn >> 1) * sgn);
+                    int y = setOfStaves[nvalid][c].y();
+                    int x = setOfStaves[nvalid][c].x();
+                    int my = medianStaff[c].y();
+                    int y0 = setOfStaves[nvalid][ncolsEroded / 2].y();
+                    int my0 = medianStaff[ncolsEroded / 2].y();
+                    double alpha = 0;
+                    unsigned char pel =  imageErodedCopy->get(Point(x, y));
+                    if (!pel)
+                    {
+                        alpha = pow((abs(c - (ncolsEroded / 2)) / (double(ncolsEroded / 2))), 1 / 4.0);
+                    }
+                    int delta = static_cast<int>( (1 - alpha) * (y - y0) + (alpha * (my - my0)) );
+                    y = y0 + delta;
+                    int prev_y = setOfStaves[nvalid][c - sgn].y();
+                    if ((y - prev_y) > 1) y = prev_y + 1;
+                    if ((y - prev_y) < -1) y = prev_y - 1;
+
+                    //setOfStaves[nvalid][c].y() = min(max(y, 0), nrowsEroded - 1);
+                    setOfStaves[nvalid][c] = Point(setOfStaves[nvalid][c].x(), min(max(y, 0), nrowsEroded - 1));
+                }
+            }
+        }
+
         // // UNDOCUMENTED OPERATION
         // for (int i = 0; i < setsOfValidStaves.size(); i++)
         // {
@@ -1018,8 +1055,6 @@ public:
         //         }
         //     }
         // }
-        int ncolsEroded = imageErodedCopy->ncols();
-        int nrowsEroded = imageErodedCopy->nrows();
         
         //Trim and smooth
         // vector <vector <vector<Point> > >::iterator set_it = setsOfValidStaves.begin();
@@ -1455,7 +1490,7 @@ OneBitImageView* stablePathDetectionDraw(T &image)
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     //slf1.constructGraphWeights(image);
-    // printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
+    //printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(image, 0, image.ncols()-1, validStaves));
     // slf1.deletePaths(validStaves, new1);
     //slf1.stableStaffDetection(validStaves, image);
     slf1.stableStaffDetection(validStaves, image);
@@ -1477,7 +1512,7 @@ GreyScaleImageView* displayWeights(T &image) //Currently doesn't work...
     {
         for (int row = 0; row < nrows - 1; row++)
         {
-            new1->set(Point(col, row), (1 * slf1.graphWeight[row*ncols+col].weight_up) + (1 * slf1.graphWeight[row*ncols+col].weight_down) + (5 * slf1.graphWeight[row*ncols+col].weight_hor));
+            new1->set(Point(col, row), (1 * slf1.graphWeight[row*ncols+col].weight_up) + (1 * slf1.graphWeight[row*ncols+col].weight_down) + (1 * slf1.graphWeight[row*ncols+col].weight_hor));
             //new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down);
         }
     }
