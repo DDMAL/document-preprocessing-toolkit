@@ -27,11 +27,15 @@
 
 #include <vector>
 #include <algorithm>
+#include "gameramodule.hpp"
+#include "gamera.hpp"
+
+// #include "pixel.hpp"
 
 using namespace std;
 using namespace Gamera;
 
-#define CUSTOMSTAFFLINEHEIGHT 3
+#define CUSTOMSTAFFLINEHEIGHT 5
 #define CUSTOMSTAFFSPACEHEIGHT 30
 
 //Copied from stableStaffLineFinder.h
@@ -359,11 +363,13 @@ public:
     {
         unsigned int pel1 = image.get(pixelVal1); //Gets the pixel value of Point 1
         unsigned int pel2 = image.get(pixelVal2); //Gets pixel value of Point 2
+        int height = image.nrows();
+        int width = image.ncols();
 
-        int dist1 = verDistance[(pixelVal1.y() * image.nrows()) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
-        int dist2 = verDistance[(pixelVal2.y() * image.nrows()) + pixelVal2.x()];
-        int vRun1 = verRun[(pixelVal1.y() * image.nrows()) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
-        int vRun2 = verRun[(pixelVal2.y() * image.nrows()) + pixelVal2.x()]; 
+        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
+        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
+        int vRun1 = verRun[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
+        int vRun2 = verRun[(pixelVal2.y() * width) + pixelVal2.x()]; 
 
         int pel = max(pel1, pel2); //pel set to 1 if either pixel is black
         
@@ -390,11 +396,11 @@ public:
     template<class T>
     stableStaffLineFinder(T &image)
     {
-        graphPath = new NODE[image.nrows()*image.ncols()];
-        graphWeight = new NODEGRAPH[image.nrows()*image.ncols()];
-        verRun = new int[image.nrows()*image.ncols()];
-        verDistance = new int[image.nrows()*image.ncols()];
-        memset (verDistance, 0, sizeof(int)*image.nrows()*image.ncols());
+        graphPath = new NODE[image.nrows() * image.ncols()];
+        graphWeight = new NODEGRAPH[image.nrows() * image.ncols()];
+        verRun = new int[image.nrows() * image.ncols()];
+        verDistance = new int[image.nrows() * image.ncols()];
+        memset (verDistance, 0, sizeof(int) * image.nrows() * image.ncols());
         staffLineHeight = CUSTOMSTAFFLINEHEIGHT;
         staffSpaceDistance = CUSTOMSTAFFSPACEHEIGHT;
     }
@@ -444,8 +450,8 @@ public:
         int sumOfValues = sumOfValuesInVector(vec, image);
         //size_t len = vec.size();
         int startCol = 0;
-        int endCol = image->ncols()-1;
-        int usedSize = endCol-startCol+1;
+        int endCol = image->ncols() - 1;
+        int usedSize = endCol-startCol + 1;
         if (sumOfValues < 1 * (1 - minBlackPerc) * (usedSize))
         {
             return true;
@@ -478,6 +484,7 @@ public:
                 weight_t value1, value2, value3;
                 weight10 = weight20 = weight30 = TOP_VALUE;
                 value1 = value2 = value3 = TOP_VALUE;
+                
                 if (row > 0) 
                 {
                     weight10 = graphWeight[(row * width) + width - 1 - col].weight_up;
@@ -1088,7 +1095,7 @@ public:
         }
     }
 
-    
+
 
     double simplifiedAvgDistance(vector<Point> &staff1, vector<Point> &staff2)
     {
@@ -1311,6 +1318,7 @@ public:
 
         //Find vertical run values
         // ***USE VECTOR ITERATORS WITH ROW ON THE OUTSIDE TO INCREASE PERFORMANCE IF THERE'S TIME***
+        cout <<"About to find vertical runs" <<endl;
         for (int c = 0; c < cols; c++) 
         {
             int run = 0;
@@ -1343,12 +1351,14 @@ public:
                 }
             }
         }
+        cout <<"Done finding vertical runs" <<endl;
 
         //Find Vertical Distance
         for (int c = 0; c < cols; c++) 
         {
             for (int r = 0; r < rows; r++) 
             {
+                //cout <<"Finding vertical distance of Point(" <<c <<", " <<r <<")" <<endl;
                 unsigned char pel = image->get(Point(c, r));
                 int row = r;
                 unsigned char curr_pel = pel;
@@ -1413,11 +1423,13 @@ public:
     {
         unsigned int pel1 = image->get(pixelVal1); //Gets the pixel value of Point 1
         unsigned int pel2 = image->get(pixelVal2); //Gets pixel value of Point 2
+        int width = image->ncols();
+        int height = image->nrows();
 
-        int dist1 = verDistance[(pixelVal1.y() * image->nrows()) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
-        int dist2 = verDistance[(pixelVal2.y() * image->nrows()) + pixelVal2.x()];
-        int vRun1 = verRun[(pixelVal1.y() * image->nrows()) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
-        int vRun2 = verRun[(pixelVal2.y() * image->nrows()) + pixelVal2.x()]; 
+        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
+        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
+        int vRun1 = verRun[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
+        int vRun2 = verRun[(pixelVal2.y() * width) + pixelVal2.x()];
 
         int pel = max(pel1, pel2); //pel set to 1 if either pixel is black
         
@@ -1440,6 +1452,24 @@ public:
         }
         return y;
     }
+
+    //===================================================================================================
+    //================================ Testing Functions ================================================
+    //===================================================================================================
+
+    OneBitImageView* lineDraw(OneBitImageView *image)
+    {
+        int height = image->nrows();
+        int width = image->ncols();
+        for (int y = 0; y < height-1; y += (height / 30))
+        {
+            for (int x = 0; x < width - 1; x++)
+            {
+                image->set(Point(x, y), 1);
+            }
+        }
+        return image;
+    }
 };
 
 //===================================================================================================
@@ -1451,8 +1481,9 @@ float returnGraphWeights(T &image)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
-    slf1.constructGraphWeights(image);
-    slf1.findStaffHeightandDistanceNoVectors(image);
+    OneBitImageView *new1 = slf1.myCloneImage(image);
+    slf1.constructGraphWeightsView(new1);
+    //slf1.findStaffHeightandDistanceNoVectors(image);
     return slf1.staffLineHeight;
 }
 
