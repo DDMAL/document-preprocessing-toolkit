@@ -35,7 +35,7 @@
 using namespace std;
 using namespace Gamera;
 
-#define CUSTOMSTAFFLINEHEIGHT 5
+#define CUSTOMSTAFFLINEHEIGHT 3
 #define CUSTOMSTAFFSPACEHEIGHT 30
 
 //Copied from stableStaffLineFinder.h
@@ -77,6 +77,8 @@ public:
 
     typedef ImageData<GreyScalePixel> GreyScaleImageData;
     typedef ImageView<GreyScaleImageData> GreyScaleImageView;
+    
+    //OneBitImageView *primaryImage;
 
     //=========================================================================================
     //                          Image Cloners/Eroders
@@ -260,7 +262,7 @@ public:
             unsigned char val = WHITE;
             for (int r = 0; r < rows; r++) 
             {
-                unsigned char pel = image.get(Point(c,r));
+                unsigned char pel = image.get(Point(c, r));
                 if (pel == val) 
                 {
                     run++;
@@ -339,7 +341,7 @@ public:
         {
             for (int c = 0; c < cols - 1; c++) 
             {
-                printf("About to find weight for Point(%d, %d)\n", c, r);
+                //printf("About to find weight for Point(%d, %d)\n", c, r);
                 graphWeight[(r * cols) + c].weight_hor = weightFunction(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
                 if (r > 0)
                     graphWeight[(r * cols) + c].weight_up = weightFunction(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
@@ -403,6 +405,7 @@ public:
         memset (verDistance, 0, sizeof(int) * image.nrows() * image.ncols());
         staffLineHeight = CUSTOMSTAFFLINEHEIGHT;
         staffSpaceDistance = CUSTOMSTAFFSPACEHEIGHT;
+        //primaryImage = myCloneImage(image);
     }
 
     double staffDissimilarity(vector<Point> &staff1, vector<Point> &staff2)
@@ -595,7 +598,7 @@ public:
                 pos--;
                 while (p.x() != startCol)
                 {
-                    p = graphPath[p.y()*width + p.x()].previous;
+                    p = graphPath[(p.y() * width) + p.x()].previous;
                     contour[pos] = p;
                     pos--;
                 }
@@ -738,6 +741,7 @@ public:
                     break;
                 }
             }
+            
             if (!found)
             {
                 graphStats[counter].runVal = verRun[x];
@@ -746,9 +750,11 @@ public:
                 counter++;
             }
         }
+        
         sort(graphStats, graphStats+counter, structCompare);
         staffLineHeight = 0;
         staffSpaceDistance = 0;
+        
         for (int i = 0; i < counter; i++)
         {
             if (!staffLineHeight) //Has no assigned value yet
@@ -758,6 +764,7 @@ public:
                     staffLineHeight = graphStats[i].runVal; //Assign value to StaffLineHeight
                 }
             }
+            
             if (!staffSpaceDistance) //Has no assigned value yet
             {
                 if (!graphStats[i].pixVal) //pixel is white
@@ -767,6 +774,65 @@ public:
             }
         }
     }
+    
+//    template <class T>
+//    void findStaffLineHeightandDistanceFinal(T &image)
+//    {
+//        int height = image.nrows();
+//        int width = image.ncols();
+//        vector< vector<STAT> > graphStats;
+//        int counter = 0;
+//        int found;
+//        int column;
+//        
+//        for (int x = 0; x < width - 1; x++)
+//        {
+//            for (int y = 0; y < height - 1; y++)
+//            {
+//                
+//            }
+//        }
+//        
+//        sort(graphStats)
+//        
+//    }
+//    
+//    bool doesItemExist(STAT item, vector<STAT> &graphStat, Point(x, y))
+//    {
+//        for (int i = 0; i < graphStat.size() - 1; i++)
+//        {
+//            if (graphStat[i].runVal == item.runVal && )
+//        }
+//    }
+    
+    
+    
+    //        for (int x = 0; x < (height * width); x++)
+    //        {
+    //            column = x % width;
+    //            found = 0;
+    //            for (int y = 0; y < counter; y++)
+    //            {
+    //                if (verRun[x] == graphStats[column][y].runVal && image.get(getPoint(x, image)) == graphStats[column][y].pixVal)
+    //                {
+    //                    graphStats[column][y].numOfOccurences++;
+    //                    found = 1;
+    //                    break;
+    //                }
+    //            }
+    //
+    //            if (!found)
+    //            {
+    //                graphStats[column][counter].runVal = verRun[x];
+    //                graphStats[column][counter].pixVal = image.get(getPoint(x, image));
+    //                graphStats[column][counter].numOfOccurences = 1;
+    //                counter++;
+    //            }
+    //        }
+    
+    
+    
+    
 
     //Used in sort() to sort items from greatest number of occurences to lowest number of occurences
     static bool structCompare(STAT a, STAT b)
