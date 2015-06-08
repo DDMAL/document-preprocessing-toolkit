@@ -36,7 +36,7 @@ using namespace std;
 using namespace Gamera;
 
 #define CUSTOMSTAFFLINEHEIGHT 3
-#define CUSTOMSTAFFSPACEHEIGHT 30
+#define CUSTOMSTAFFSPACEHEIGHT 27
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -232,8 +232,21 @@ public:
     //=========================================================================================
     //                          Functions
     //=========================================================================================
+    
+    template<class T>
+    stableStaffLineFinder(T &image)
+    {
+        graphPath = new NODE[image.nrows() * image.ncols()];
+        graphWeight = new NODEGRAPH[image.nrows() * image.ncols()];
+        verRun = new int[image.nrows() * image.ncols()];
+        verDistance = new int[image.nrows() * image.ncols()];
+        memset (verDistance, 0, sizeof(int) * image.nrows() * image.ncols());
+        staffLineHeight = CUSTOMSTAFFLINEHEIGHT;
+        staffSpaceDistance = CUSTOMSTAFFSPACEHEIGHT;
+        //primaryImage = myCloneImage(image);
+    }
 
-    ~stableStaffLineFinder () 
+    ~stableStaffLineFinder ()
     {
         //myReleaseImage(&img);
         delete graphPath;
@@ -393,19 +406,6 @@ public:
             y++;
         }
         return y;
-    }
-
-    template<class T>
-    stableStaffLineFinder(T &image)
-    {
-        graphPath = new NODE[image.nrows() * image.ncols()];
-        graphWeight = new NODEGRAPH[image.nrows() * image.ncols()];
-        verRun = new int[image.nrows() * image.ncols()];
-        verDistance = new int[image.nrows() * image.ncols()];
-        memset (verDistance, 0, sizeof(int) * image.nrows() * image.ncols());
-        staffLineHeight = CUSTOMSTAFFLINEHEIGHT;
-        staffSpaceDistance = CUSTOMSTAFFSPACEHEIGHT;
-        //primaryImage = myCloneImage(image);
     }
 
     double staffDissimilarity(vector<Point> &staff1, vector<Point> &staff2)
@@ -857,7 +857,9 @@ public:
         constructGraphWeights(image);
         OneBitImageView *imageCopy = myCloneImage(image);
         OneBitImageView *imgErode = myCloneImage(image);
+        OneBitImageView *imageErodedCopy = myCloneImage(image);
         myVerticalErodeImage(imgErode, image.ncols(), image.nrows());
+        myVerticalErodeImage(imageErodedCopy, image.ncols(), image.nrows());
 
         vector<int> npaths;
 
@@ -996,11 +998,17 @@ public:
             npaths.push_back(curr_n_paths);
             if (curr_n_paths == 0)
             {
-                return imageCopy;
-                //break;
+                //return imageCopy;
+                break;
             }
         }
-        //postProcessing(validStaves, staffSpaceDistance, imageErodedCopy, image)
+        postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
+        printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
+        OneBitImageView *blank = clear(image);
+        drawPaths(validStaves, blank);
+        return blank;
+
+        //return imageCopy;
     }
 
     void postProcessing(vector <vector<Point> > &validStaves, int staffDistance, OneBitImageView *imageErodedCopy)
