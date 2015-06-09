@@ -808,7 +808,7 @@ public:
             }
         }
         
-        sort(graphStats, graphStats+counter, structCompare);
+        sort(graphStats, graphStats + counter, structCompare);
         staffLineHeight = 0;
         staffSpaceDistance = 0;
         
@@ -838,94 +838,23 @@ public:
         int width = image->ncols();
         int height = image->nrows();
         vector<int> values;
-        
-        for (int c = 0; c < width; c++)
-        {
-            for (int r = 0; r < height; r++)
-            {
-                int pel = image->get(Point(c, r));
-                values.push_back(pel);
-            }
-        }
-        
-        sort(values.begin(), values.end());
-        
-        int medValue = values[values.size() / 2];
         vector<int> runs[2];
         vector<int> sum2runs;
         runs[0].resize(height + 1, 0);
         runs[1].resize(height + 1, 0);
-        sum2runs.resize(height + 1, 0);
-        int *hist2d = new int [(height + 1) * (height + 1)];
-        memset(hist2d, 0, ((height + 1) * (height + 1) * sizeof(int)));
         
         for (int c = 0; c < width; c++)
         {
-            int run = 0;
-            int last_run = 0;
-            int val = 0;
-            
             for (int r = 0; r < height; r++)
             {
                 unsigned int pel = image->get(Point(c, r));
-                unsigned int pel_left2 = 0;
-                unsigned int pel_left1 = 0;
-                unsigned int pel_right2 = 0;
-                unsigned int pel_right1 = 0;
                 
-                if (c > 0)
+                if (pel) //Pixel is black
                 {
-                    pel_left1 = image->get(Point(c - 1, r));
+                    ++runs[1][verRun[(r * width) + c]];
+                    ++runs[0][verDistance[(r * width) + c]];
+                    r += verRun[(r * width) + c];
                 }
-                
-                if (c > 1)
-                {
-                    pel_left2 = image->get(Point(c - 2, r));
-                }
-                
-                if (c < (width - 1))
-                {
-                    pel_right1 = image->get(Point(c + 1, r));
-                }
-                
-                if (c < (width - 2))
-                {
-                    pel_right2 = image->get(Point(c + 2, r));
-                }
-                
-                pel = min(max(pel_left2, pel_left1), max(pel_left1, pel));
-                
-                if (pel == val)
-                {
-                    run++;
-                }
-                else
-                {
-                    ++runs[val][run];
-                    ++sum2runs[run + last_run];
-                    
-                    if (val == 1)
-                    {
-                        ++hist2d[(run * (height + 1)) + last_run];
-                    }
-                    else
-                    {
-                        ++hist2d[(last_run * (height + 1)) + run];
-                    }
-                    val = 1;
-                    last_run = run;
-                    run = 1;
-                }
-            }
-            ++runs[val][run];
-            ++sum2runs[run + last_run];
-            if (val == 1)
-            {
-                ++hist2d[(run * (height +1)) + last_run];
-            }
-            else
-            {
-                ++hist2d[(last_run * (height + 1)) + run];
             }
         }
         
@@ -935,10 +864,10 @@ public:
             
             for (int i = 0; i < runs[0].size(); i++)
             {
-                if (runs[0][i] > maxcounter)
+                if (runs[0][i] >= maxcounter)
                 {
                     maxcounter = runs[0][i];
-                    staffLineHeight = i;
+                    staffSpaceDistance = i;
                 }
             }
         }
@@ -950,45 +879,10 @@ public:
                 if (runs[1][i] > maxcounter)
                 {
                     maxcounter = runs[1][i];
-                    staffSpaceDistance = i;
+                    staffLineHeight = i;
                 }
             }
         }
-        
-        int staffHeightDistance = 0;
-        
-        {
-            int maxsum = 0;
-            for (int i = 0; i < sum2runs.size(); i++)
-            {
-                if (sum2runs[i] > maxsum)
-                {
-                    maxsum = sum2runs[i];
-                    staffHeightDistance = i;
-                }
-            }
-        }
-        
-        int b_run, w_run;
-        
-        {
-            int maxvalue = 0;
-            
-            for (int i = 0; i <= staffHeightDistance; i++)
-            {
-                int j = staffHeightDistance - i;
-                if (hist2d[(i * (height + 1)) + j] > maxvalue)
-                {
-                    maxvalue = hist2d[(i * (height + 1)) + j];
-                    b_run = i;
-                    w_run = j;
-                }
-            }
-        }
-        
-        delete hist2d;
-        staffLineHeight = b_run;
-        staffSpaceDistance = w_run;
         cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
     }
 
@@ -1774,7 +1668,7 @@ public:
         int height = image->nrows();
         int width = image->ncols();
         
-        for (int y = 0; y < height-1; y += (height / 30))
+        for (int y = height/3; y < height-1; y += (height / 2))
         {
             for (int x = 0; x < width - 1; x++)
             {
@@ -1797,7 +1691,7 @@ float returnGraphWeights(T &image)
     stableStaffLineFinder slf1 (image);
     OneBitImageView *new1 = slf1.myCloneImage(image);
     slf1.constructGraphWeightsView(new1);
-    //slf1.findStaffHeightandDistanceNoVectors(image);
+    slf1.findStaffLineHeightandDistanceFinal(new1);
     return slf1.staffLineHeight;
 }
 
