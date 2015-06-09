@@ -68,8 +68,8 @@ public:
     NODEGRAPH* graphWeight;
 
     string img_path;
-    int staffLineHeight;
-    int staffSpaceDistance;
+    int staffLineHeight = 0;
+    int staffSpaceDistance = 0;
     time_t globalStart;
 
     typedef ImageData<OneBitPixel> OneBitImageData;
@@ -373,6 +373,10 @@ public:
         if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
         {
             findStaffLineHeightandDistanceFinalTemplate(image);
+        }
+        else
+        {
+            cout <<"staffLineHeight already set to: " <<staffLineHeight <<" staffSpaceDistance already set to: " <<staffSpaceDistance <<endl;
         }
 
         //Find Graph Weights
@@ -845,7 +849,7 @@ public:
         {
             for (int r = 0; r < height; r++)
             {
-                unsigned int pel = image->get(Point(c, r));
+                unsigned int pel = image.get(Point(c, r));
                 
                 if (pel) //Pixel is black
                 {
@@ -972,7 +976,7 @@ public:
                 bestStaff = stablePaths[i];
 
                 double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
-                blackPerc = max(MIN_BLACK_PER, bestBlackPerc*0.8);
+                blackPerc = max(MIN_BLACK_PER, bestBlackPerc * 0.8);
                 cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
             }
 
@@ -987,11 +991,11 @@ public:
                 
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
                 printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
-                // if (dissimilarity > (4 * staffSpaceDistance))
-                // {
-                //     printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
-                //     continue;
-                // }
+                if (dissimilarity > (4 * staffSpaceDistance))
+                {
+                    printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    continue;
+                }
 
                 validStaves.push_back(staff);
                 curr_n_paths++;
@@ -1006,7 +1010,7 @@ public:
                     int row = staff[i].y();
 
                     //ERASE PATHS ALREADY SELECTED!
-                    for (int j =-2; j <= 2; j++)
+                    for (int j =-path_half_width2; j <= path_half_width2; j++)
                     {
                         // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         // printf("Currently erasing lines\n");
@@ -1015,11 +1019,11 @@ public:
                             continue;
                         }
                         
-                        if (verRun[((row + j) * ncols) + col] < (1.5 * staffLineHeight)) //If a vertical run of pixels that is less than 1.5 times the staffLineHeight is along the path, set it to white
-                        {        
+//                        if (verRun[((row + j) * ncols) + col] < (1.5 * staffLineHeight)) //If a vertical run of pixels that is less than 1.5 times the staffLineHeight is along the path, set it to white
+//                        {        
                             imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
                             imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        }
+                        //}
                         // deleteOnePath(staff, imageCopy);
                         // deleteOnePath(staff, imgErode);
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
@@ -1065,9 +1069,9 @@ public:
         printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
         OneBitImageView *blank = clear(image);
         drawPaths(validStaves, blank);
-        return blank;
+        //return blank;
 
-        //return imageCopy;
+        return imageCopy;
     }
 
     void postProcessing(vector <vector<Point> > &validStaves, int staffDistance, OneBitImageView *imageErodedCopy)
@@ -1689,7 +1693,7 @@ float returnGraphWeights(T &image)
     stableStaffLineFinder slf1 (image);
     OneBitImageView *new1 = slf1.myCloneImage(image);
     slf1.constructGraphWeightsView(new1);
-    slf1.findStaffLineHeightandDistanceFinal(new1);
+    //slf1.findStaffLineHeightandDistanceFinal(new1);
     return slf1.staffLineHeight;
 }
 
