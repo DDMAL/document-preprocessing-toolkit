@@ -369,6 +369,11 @@ public:
         }
 
         cout <<"Finished calculating vertical distance\n";
+        
+        if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
+        {
+            findStaffLineHeightandDistanceFinalTemplate(image);
+        }
 
         //Find Graph Weights
         for (int r = 0; r < rows; r++) 
@@ -770,67 +775,6 @@ public:
         return maxRun;
     }
     //=============================================================================
-
-    struct STAT {
-        int pixVal; //value of pixel (1 or 0)
-        int runVal; //runValue
-        int numOfOccurences; //Number of times the pixVal and runVal are identical in a graph
-    }; 
-
-    template <class T>
-    void findStaffHeightandDistanceNoVectors(T &image) //Works only for staffLineHeight
-    {
-
-        STAT *graphStats = new STAT[(image.nrows() * image.ncols()) / 2];
-        int counter = 0;
-        int found;
-        
-        for (int x = 0; x < (image.ncols() * image.nrows()); x++)
-        {
-            found = 0;
-            
-            for (int y = 0; y < counter; y++)
-            {
-                if (verRun[x] == graphStats[y].runVal && image.get(getPoint(x, image)) == graphStats[y].pixVal)
-                {
-                    graphStats[y].numOfOccurences++;
-                    found = 1;
-                    break;
-                }
-            }
-            
-            if (!found)
-            {
-                graphStats[counter].runVal = verRun[x];
-                graphStats[counter].pixVal = image.get(getPoint(x, image));
-                graphStats[counter].numOfOccurences = 1;
-                counter++;
-            }
-        }
-        
-        sort(graphStats, graphStats + counter, structCompare);
-        staffLineHeight = 0;
-        staffSpaceDistance = 0;
-        
-        for (int i = 0; i < counter; i++)
-        {
-            if (!staffLineHeight) //Has no assigned value yet
-            {
-                if (graphStats[i].pixVal) //pixel is black
-                {
-                    staffLineHeight = graphStats[i].runVal; //Assign value to StaffLineHeight
-                }
-            }
-            
-            if (!staffSpaceDistance) //Has no assigned value yet
-            {
-                if (!graphStats[i].pixVal) //pixel is white
-                {
-                    staffSpaceDistance = graphStats[i].runVal; //Assign value to StaffSpaceDistance
-                }
-            }
-        }
-    }
     
     //template <class T>
     void findStaffLineHeightandDistanceFinal(OneBitImageView *image)
@@ -885,12 +829,61 @@ public:
         }
         cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
     }
-
-    //Used in sort() to sort items from greatest number of occurences to lowest number of occurences
-    static bool structCompare(STAT a, STAT b)
+    
+    template <class T>
+    void findStaffLineHeightandDistanceFinalTemplate(T &image)
     {
-        return a.numOfOccurences > b.numOfOccurences;
+        int width = image.ncols();
+        int height = image.nrows();
+        vector<int> values;
+        vector<int> runs[2];
+        vector<int> sum2runs;
+        runs[0].resize(height + 1, 0);
+        runs[1].resize(height + 1, 0);
+        
+        for (int c = 0; c < width; c++)
+        {
+            for (int r = 0; r < height; r++)
+            {
+                unsigned int pel = image->get(Point(c, r));
+                
+                if (pel) //Pixel is black
+                {
+                    ++runs[1][verRun[(r * width) + c]];
+                    ++runs[0][verDistance[(r * width) + c]];
+                    r += verRun[(r * width) + c];
+                }
+            }
+        }
+        
+        //Find most repeated
+        {
+            int maxcounter = 0;
+            
+            for (int i = 0; i < runs[0].size(); i++)
+            {
+                if (runs[0][i] >= maxcounter)
+                {
+                    maxcounter = runs[0][i];
+                    staffSpaceDistance = i;
+                }
+            }
+        }
+        {
+            int maxcounter = 0;
+            
+            for (int i = 0; i < runs[1].size(); i++)
+            {
+                if (runs[1][i] > maxcounter)
+                {
+                    maxcounter = runs[1][i];
+                    staffLineHeight = i;
+                }
+            }
+        }
+        cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
     }
+
 
     //Used for testing
     int fillValues() 
@@ -1585,6 +1578,11 @@ public:
 
                 verDistance[(r * cols) + c] = min(run1, run2);
             }
+        }
+        
+        if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
+        {
+            findStaffLineHeightandDistanceFinal(image);
         }
 
         //Find Graph Weights
