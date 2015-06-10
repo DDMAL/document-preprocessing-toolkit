@@ -35,9 +35,10 @@
 using namespace std;
 using namespace Gamera;
 
-#define CUSTOM_STAFF_LINE_HEIGHT 3
-#define CUSTOM_STAFF_SPACE_HEIGHT 27
+#define CUSTOM_STAFF_LINE_HEIGHT 99999999
+#define CUSTOM_STAFF_SPACE_HEIGHT 99999999
 #define ALLOWED_DISSIMILARITY 4
+#define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 3
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -624,16 +625,13 @@ public:
             findAllStablePathsView(imageCopy, 0, ncols - 1, stablePaths);
             printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
             
-            if (first_time && stablePaths.size() > 0)
+            if (first_time && (stablePaths.size() > 0))
             {
-                printf("Line 757\n");
                 first_time = 0;
                 bestStaff.clear();
                 size_t bestSumOfValues = INT_MAX;
                 size_t bestStaffIdx = 0;
                 vector<size_t> allSumOfValues;
-                
-                printf("Line 764\n");
                 
                 for (size_t c = 0; c < stablePaths.size(); c++)
                 {
@@ -650,9 +648,8 @@ public:
                         bestStaffIdx = c;
                     }
                 }
-                printf("Line 778\n");
                 
-                vector<size_t> copy_allSumOfValues = allSumOfValues;
+                vector<size_t> copy_allSumOfValues = allSumOfValues; //Still not sure why this is necessary
                 sort(allSumOfValues.begin(), allSumOfValues.end());
                 //Must deal with empty allSumOfValues in case of completely blank image/image with no initial stablePaths
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
@@ -715,13 +712,12 @@ public:
                             continue;
                         }
                         
-                        //                        if (verRun[((row + j) * ncols) + col] < (1.5 * staffLineHeight)) //If a vertical run of pixels that is less than 1.5 times the staffLineHeight is along the path, set it to white
-                        //                        {
-                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        //}
-                        // deleteOnePath(staff, imageCopy);
-                        // deleteOnePath(staff, imgErode);
+                        if (verRun[((row + j) * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight)) //If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
+                        {
+                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        }
+                        
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
                             continue;
@@ -740,6 +736,7 @@ public:
                         {
                             graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
                         }
+                        
                         graphWeight[((row + j) * ncols) + col].weight_hor = 8;
                         
                         if (row + j < nrows - 1)
@@ -753,6 +750,7 @@ public:
                     }
                 }
             }
+            
             npaths.push_back(curr_n_paths);
             
             if (curr_n_paths == 0)
@@ -1701,10 +1699,12 @@ OneBitImageView* deleteStablePaths(T &image)
 }
 
 template<class T>
-OneBitImageView* stablePathDetection1(T &image)
+OneBitImageView* stablePathDetection1(T &image, int staffline_height, int staffspace_height)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
+    slf1.staffLineHeight = staffline_height;
+    slf1.staffSpaceDistance = staffspace_height;
     //OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
