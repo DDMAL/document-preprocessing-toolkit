@@ -37,6 +37,7 @@ using namespace Gamera;
 
 #define CUSTOMSTAFFLINEHEIGHT 3
 #define CUSTOMSTAFFSPACEHEIGHT 27
+#define ALLOWEDDISSIMILARITY 4 
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -991,7 +992,7 @@ public:
                 
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
                 printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
-                if (dissimilarity > (4 * staffSpaceDistance))
+                if (dissimilarity > (ALLOWEDDISSIMILARITY * staffSpaceDistance))
                 {
                     printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
                     continue;
