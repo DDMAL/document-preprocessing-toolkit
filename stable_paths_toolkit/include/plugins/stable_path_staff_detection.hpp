@@ -35,9 +35,9 @@
 using namespace std;
 using namespace Gamera;
 
-#define CUSTOMSTAFFLINEHEIGHT 3
-#define CUSTOMSTAFFSPACEHEIGHT 27
-#define ALLOWEDDISSIMILARITY 4 
+#define CUSTOM_STAFF_LINE_HEIGHT 3
+#define CUSTOM_STAFF_SPACE_HEIGHT 27
+#define ALLOWED_DISSIMILARITY 4
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -253,8 +253,8 @@ public:
 //        OneBitImageView *copy = myCloneImage(image);
 //        findStaffLineHeightandDistanceFinal(copy);
 //        delete copy;
-//        staffLineHeight = CUSTOMSTAFFLINEHEIGHT;
-//        staffSpaceDistance = CUSTOMSTAFFSPACEHEIGHT;
+//        staffLineHeight = CUSTOM_STAFF_LINE_HEIGHT;
+//        staffSpaceDistance = CUSTOM_STAFF_SPACE_HEIGHT;
         //primaryImage = myCloneImage(image);
     }
 
@@ -992,7 +992,7 @@ public:
                 
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
                 printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
-                if (dissimilarity > (ALLOWEDDISSIMILARITY * staffSpaceDistance))
+                if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
                 {
                     printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
                     continue;
