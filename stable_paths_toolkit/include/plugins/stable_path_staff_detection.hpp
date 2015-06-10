@@ -195,9 +195,9 @@ public:
 
     void deletePaths(vector <vector<Point> > &validStaves, OneBitImageView *image)
     {
-        int numPaths = validStaves.size();
-        int numPix = validStaves[0].size();
-        printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        unsigned long numPaths = validStaves.size();
+        unsigned long numPix = validStaves[0].size();
+        printf("numPaths: %lu, numPix: %lu\n", numPaths, numPix);
         
         for (int i = 0; i < numPaths; i++)
         {
@@ -213,7 +213,7 @@ public:
 
     void deleteOnePath(vector<Point> path, OneBitImageView *image)
     {
-        int size = path.size();
+        unsigned long size = path.size();
         
         for (int i = 0; i < size; i++)
         {
@@ -223,9 +223,9 @@ public:
 
     void drawPaths(vector <vector<Point> > &validStaves, OneBitImageView *image)
     {
-        int numPaths = validStaves.size();
-        int numPix = validStaves[0].size();
-        printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        unsigned long numPaths = validStaves.size();
+        unsigned long numPix = validStaves[0].size();
+        printf("numPaths: %lu, numPix: %lu\n", numPaths, numPix);
         
         for (int i = 0; i < numPaths; i++)
         {
@@ -572,7 +572,7 @@ public:
         
         for (int i = 0; i < height; i++)
         {
-            int startR = graphPath[i*width + endCol].start.y();
+            int startR = graphPath[(i * width) + endCol].start.y();
             
             if (startRow_i[startR] == i)
             {
@@ -613,8 +613,8 @@ public:
         double blackPerc;
         vector<Point> bestStaff;
         
-        int nrows = imageCopy->nrows();
-        int ncols = imageCopy->ncols();
+        unsigned long nrows = imageCopy->nrows();
+        unsigned long ncols = imageCopy->ncols();
         
         while(1)
         {
@@ -702,15 +702,15 @@ public:
                 for (size_t i = 0; i<staff.size(); i++)
                 {
                     //printf("Staff Size: %lu\n", staff.size());
-                    int col = staff[i].x();
-                    int row = staff[i].y();
+                    unsigned long col = staff[i].x();
+                    unsigned long row = staff[i].y();
                     
                     //ERASE PATHS ALREADY SELECTED!
                     for (int j =-path_half_width2; j <= path_half_width2; j++)
                     {
                         // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         // printf("Currently erasing lines\n");
-                        if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
+                        if ( ((row + j) > nrows - 1) || ((row + j) < 0) )
                         {
                             continue;
                         }
@@ -785,8 +785,8 @@ public:
             for (int j=0; j < staff.size(); j++)
             {
                 Point curr = staff[j];
-                int col = curr.x();
-                int row = curr.y();
+                unsigned long col = curr.x();
+                unsigned long row = curr.y();
                 unsigned char pel = image.get(getPoint(row*(image.ncols()) + col, image));
                 int runBlack = -1;
                 
