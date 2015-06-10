@@ -68,7 +68,6 @@ public:
     NODE* graphPath;
     NODEGRAPH* graphWeight;
 
-    string img_path;
     int staffLineHeight = 0;
     int staffSpaceDistance = 0;
     time_t globalStart;
@@ -208,7 +207,6 @@ public:
                 {
                     image->set(validStaves[i][x], 0);
                 }
-                
             }
         }
     }
@@ -371,7 +369,7 @@ public:
 
         cout <<"Finished calculating vertical distance\n";
         
-        if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
+        if ((!staffLineHeight) && (!staffSpaceDistance)) //No non-zero values yet assigned to staffLineHeight or staffSpaceDistance
         {
             findStaffLineHeightandDistanceFinalTemplate(image);
         }
@@ -419,7 +417,7 @@ public:
     {
         unsigned int pel1 = image.get(pixelVal1); //Gets the pixel value of Point 1
         unsigned int pel2 = image.get(pixelVal2); //Gets pixel value of Point 2
-        int height = image.nrows();
+        //int height = image.nrows();
         int width = image.ncols();
 
         int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
@@ -656,6 +654,7 @@ public:
                 
                 vector<size_t> copy_allSumOfValues = allSumOfValues;
                 sort(allSumOfValues.begin(), allSumOfValues.end());
+                //Must deal with empty allSumOfValues in case of completely blank image/image with no initial stablePaths
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
                 int i;
                 
@@ -765,7 +764,7 @@ public:
         postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
         printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
         OneBitImageView *blank = clear(image);
-        drawPaths(validStaves, blank);
+        //drawPaths(validStaves, blank);
         //return blank;
         
         return imageCopy;
@@ -967,7 +966,7 @@ public:
         
         for (size_t i = 0; i < staff1.size(); i++)
         {
-            double curr_dif = abs(staff1[i].y() - staff2[i].y() - currAvg1 + currAvg2);
+            unsigned long curr_dif = abs(staff1[i].y() - staff2[i].y() - currAvg1 + currAvg2);
             avgDiff += (curr_dif * curr_dif);
         }
         
@@ -1000,9 +999,9 @@ public:
         //size_t len = vec.size();
         int startCol = 0;
         int endCol = image->ncols() - 1;
-        int usedSize = endCol-startCol + 1;
+        double usedSize = endCol - startCol + 1.0;
         
-        if (sumOfValues < 1 * (1 - minBlackPerc) * (usedSize))
+        if (sumOfValues < (1.0 - minBlackPerc) * (usedSize))
         {
             return true;
         }
@@ -1296,7 +1295,7 @@ public:
         unsigned int pel1 = image->get(pixelVal1); //Gets the pixel value of Point 1
         unsigned int pel2 = image->get(pixelVal2); //Gets pixel value of Point 2
         int width = image->ncols();
-        int height = image->nrows();
+        //int height = image->nrows();
         
         int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
         int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
@@ -1706,7 +1705,7 @@ OneBitImageView* stablePathDetection1(T &image)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
-    OneBitImageView *new1 = slf1.myCloneImage(image);
+    //OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     //slf1.constructGraphWeights(image);
@@ -1722,7 +1721,7 @@ OneBitImageView* stablePathDetectionDraw(T &image)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
-    OneBitImageView *new1 = slf1.myCloneImage(image);
+    //OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     //slf1.myVerticalErodeImage(new1, image.ncols(), image.nrows());
     //slf1.constructGraphWeights(image);
@@ -1749,7 +1748,7 @@ GreyScaleImageView* displayWeights(T &image) //Currently doesn't work...
     {
         for (int row = 0; row < nrows - 1; row++)
         {
-            new1->set(Point(col, row), (1 * slf1.graphWeight[row*ncols+col].weight_up) + (1 * slf1.graphWeight[row*ncols+col].weight_down) + (1 * slf1.graphWeight[row*ncols+col].weight_hor));
+            new1->set(Point(col, row), (2 * slf1.graphWeight[row*ncols+col].weight_up) + (2 * slf1.graphWeight[row*ncols+col].weight_down) + (2 * slf1.graphWeight[row*ncols+col].weight_hor));
             //new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down);
         }
     }
