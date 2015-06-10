@@ -230,7 +230,7 @@ public:
         
         for (int i = 0; i < numPaths; i++)
         {
-            for (int x = 0; x < numPix; x++)
+            for (int x = 0; x < validStaves[i].size(); x++)
             {
                 image->set(validStaves[i][x], 1);
             }
@@ -1534,9 +1534,9 @@ public:
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
 
-    #ifdef TRIMDEST
-            ::trimPath(medianStaff, (2 * staffDistance), startx, endx);
-    #endif
+//    #ifdef TRIMDEST
+            trimPath(medianStaff, (2 * staffDistance), startx, endx);
+//    #endif
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
                 set_it = setsOfValidStaves.erase(set_it);
@@ -1569,6 +1569,8 @@ public:
             set_it++;
         }
         
+        //validStaves.clear();
+        
         for (int i = 0; i < setsOfValidStaves.size(); i++)
         {
             vector <vector<Point> > &setOfStaves = setsOfValidStaves[i];
@@ -1580,7 +1582,60 @@ public:
         }
     }
     
-    void smoothStaffLine (vector<Point> &staff, int halfWindowSize)
+    void trimPath(vector<unsigned char> &vec, int window, int &startX, int &endX)
+    {
+        startX = 0;
+        
+        while((!vec[startX]) && (startX < (vec.size() / 2)))
+        {
+            startX++;
+        }
+        
+        int i;
+        int sum = 0;
+        
+        for (i = startX; i < (startX + window); i++)
+        {
+            sum += vec[i];
+        }
+        
+        for (; i < (vec.size() / 2); i++)
+        {
+            sum += vec[i];
+            sum -= vec[i - window];
+            if (sum < (window * 1 * 0.9)) //Original code accounted for greyscale, may be problematic
+            {
+                startX = i + 1;
+            }
+        }
+        
+        endX = vec.size() - 1;
+        
+        while ((!vec[endX]) && (endX > (vec.size() / 2)))
+        {
+            endX--;
+        }
+        
+        sum = 0;
+        
+        for (i = endX; i > endX - window; i--)
+        {
+            sum += vec[i];
+        }
+        
+        for (; i > (vec.size() / 2); i--)
+        {
+            sum += vec[i];
+            sum -= vec[i + window];
+            
+            if (sum < (window * 1 * 0.9)) //Original code accounted for greyscale
+            {
+                endX = i - 1;
+            }
+        }
+    }
+    
+    void smoothStaffLine(vector<Point> &staff, int halfWindowSize)
     {
         if (staff.size() < ((halfWindowSize * 2) + 1))
         {
@@ -1706,7 +1761,7 @@ public:
                 y += (height / 10);
                 counter = 0;
             }
-            for (int x = 0; x < width - 1; x++)
+            for (int x = width/10; x < width - 1; x++)
             {
                 image->set(Point(x, y), 1);
                 image->set(Point(x, y + 1), 1);
