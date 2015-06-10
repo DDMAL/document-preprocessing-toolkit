@@ -37,7 +37,7 @@ using namespace Gamera;
 
 #define CUSTOM_STAFF_LINE_HEIGHT 99999999
 #define CUSTOM_STAFF_SPACE_HEIGHT 99999999
-#define ALLOWED_DISSIMILARITY 4
+#define ALLOWED_DISSIMILARITY 2
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 3
 
 //Copied from stableStaffLineFinder.h
@@ -224,9 +224,9 @@ public:
 
     void drawPaths(vector <vector<Point> > &validStaves, OneBitImageView *image)
     {
-        unsigned long numPaths = validStaves.size();
-        unsigned long numPix = validStaves[0].size();
-        printf("numPaths: %lu, numPix: %lu\n", numPaths, numPix);
+        int numPaths = validStaves.size();
+        int numPix = validStaves[0].size();
+        printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
         
         for (int i = 0; i < numPaths; i++)
         {
@@ -665,7 +665,6 @@ public:
                     }
                 }
                 
-                printf("Line 792\n");
                 bestStaff = stablePaths[i];
                 
                 double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
@@ -712,12 +711,23 @@ public:
                             continue;
                         }
                         
-                        if (verRun[((row + j) * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight)) //If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
-                        {
-                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        }
+//                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
+//                        if (verRun[((row + j) * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
+//                        {
+//                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                        }
                         
+//                        Trial method to get rid of problem where imgErode stablePaths are not deleted. 
+//                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
+//                        {
+//                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                        }
+                        
+                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
                             continue;
@@ -984,7 +994,8 @@ public:
         {
             int col = vec[i].x();
             int row = vec[i].y();
-            unsigned char pel = image->get(getPointView(((row * image->ncols()) + col), image->ncols(), image->nrows()));
+            //unsigned char pel = image->get(getPointView(((row * image->ncols()) + col), image->ncols(), image->nrows()));
+            unsigned char pel = image->get(Point(col, row));
             sumOfValues += pel;
         }
         
@@ -1439,7 +1450,7 @@ public:
                     singleSet.push_back(validStaves[i]);
                 }
                 
-                if (singleSet.size() > 2) //Paper writers wanted more complex rules to validate sets
+                if (singleSet.size() >= 2) //Paper writers wanted more complex rules to validate sets
                 {
                     setsOfValidStaves.push_back(singleSet);
                     printf("SET SIZE = %lu\n", singleSet.size());
@@ -1686,17 +1697,41 @@ public:
     {
         int height = image->nrows();
         int width = image->ncols();
+        int counter = 0;
         
-        for (int y = height/3; y < height-1; y += (height / 2))
+        for (int y = height/5; y < height - 2; y += (height / 20))
         {
+            if (counter > 4)
+            {
+                y += (height / 10);
+                counter = 0;
+            }
             for (int x = 0; x < width - 1; x++)
             {
                 image->set(Point(x, y), 1);
+                image->set(Point(x, y + 1), 1);
             }
+            counter++;
         }
         
         return image;
     }
+    
+//    OneBitImageView* lineDraw(OneBitImageView *image)
+//    {
+//        int height = image->nrows();
+//        int width = image->ncols();
+//        
+//        for (int y = height/5; y < height-1; y += (height / 2))
+//        {
+//            for (int x = 0; x < width - 1; x++)
+//            {
+//                image->set(Point(x, y), 1);
+//            }
+//        }
+//        
+//        return image;
+//    }
 };
 
 //===================================================================================================
