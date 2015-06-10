@@ -82,7 +82,7 @@ public:
     //OneBitImageView *primaryImage;
 
     //=========================================================================================
-    //                          Image Cloners/Eroders
+    //                          Image Cloners/Eroders and Point Functions
     //=========================================================================================
 
     template <class T>
@@ -239,7 +239,7 @@ public:
     }
 
     //=========================================================================================
-    //                          Functions
+    //                          Functions w/ Templates
     //=========================================================================================
     
     template<class T>
@@ -453,110 +453,50 @@ public:
         
         return y;
     }
-
-    double staffDissimilarity(vector<Point> &staff1, vector<Point> &staff2)
-    {
-        double currAvg1 = 0;
-        double currAvg2 = 0;
-        
-        for (size_t i = 0; i < staff1.size(); i++)
-        {
-            currAvg1 += staff1[i].y();
-            currAvg2 += staff2[i].y();
-        }
-
-        currAvg1 /= staff1.size();
-        currAvg2 /= staff2.size();
-        double avgDiff = 0;
-
-        for (size_t i = 0; i < staff1.size(); i++)
-        {
-            double curr_dif = abs(staff1[i].y() - staff2[i].y() - currAvg1 + currAvg2);
-            avgDiff += (curr_dif * curr_dif);
-        }
-        
-        avgDiff /= staff1.size();
-        avgDiff = sqrt(avgDiff);
-        return avgDiff;
-    }
-
-    int sumOfValuesInVector (vector<Point>& vec, OneBitImageView *image)
-    {
-        //size_t len = vec.size();
-        int sumOfValues = 0;
-        int startCol = 0;
-        int endCol = image->ncols() - 1;
-        
-        for (int i = startCol; i <= endCol; i++)
-        {
-            int col = vec[i].x();
-            int row = vec[i].y();
-            unsigned char pel = image->get(getPointView(((row * image->ncols()) + col), image->ncols(), image->nrows()));
-            sumOfValues += pel;
-        }
-        
-        return sumOfValues;
-    }
-
-    bool tooMuchWhite (vector<Point> &vec, OneBitImageView *image, double minBlackPerc)
-    {
-        int sumOfValues = sumOfValuesInVector(vec, image);
-        //size_t len = vec.size();
-        int startCol = 0;
-        int endCol = image->ncols() - 1;
-        int usedSize = endCol-startCol + 1;
-        
-        if (sumOfValues < 1 * (1 - minBlackPerc) * (usedSize))
-        {
-            return true;
-        }
-        
-        return false;
-    }
-
+    
     template<class T>
-    int findAllStablePaths(T &image, int startCol, int endCol, vector <vector<Point> > &stablePaths) 
+    int findAllStablePaths(T &image, int startCol, int endCol, vector <vector<Point> > &stablePaths)
     {
         stablePaths.clear();
         int width = image.ncols();
         int height = image.nrows();
         vector<int> startRow_i;
-
+        
         int endCol_i = width - 1 - startCol;
         int startCol_i = width - 1 - endCol;
-
-        for (int row = 0; row < height; row++) 
+        
+        for (int row = 0; row < height; row++)
         {
             graphPath[row*width + startCol_i].weight = static_cast<weight_t>(0);
             graphPath[row*width + startCol_i].start = Point(startCol_i, row);
         }
-
+        
         for (int col = startCol_i + 1; col <= endCol_i; col++) //Creates path from right to left
         {
-            for (int row = 0; row < height; row++) 
-            {  
+            for (int row = 0; row < height; row++)
+            {
                 weight_t weight10, weight20, weight30;
                 weight_t value1, value2, value3;
                 weight10 = weight20 = weight30 = TOP_VALUE;
                 value1 = value2 = value3 = TOP_VALUE;
                 
-                if (row > 0) 
+                if (row > 0)
                 {
                     weight10 = graphWeight[(row * width) + width - 1 - col].weight_up;
                     value1 = weight10 + graphPath[((row - 1) * width) + (col - 1)].weight;
                 }
-
+                
                 weight20 = graphWeight[row*width + width-1-col].weight_hor;
                 value2 = weight20 + graphPath[(row)*width + (col-1)].weight;
-            
+                
                 if (row < height-1)
                 {
-                    weight30 = graphWeight[row*width + width-1-col].weight_down; 
+                    weight30 = graphWeight[row*width + width-1-col].weight_down;
                     value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
-                }   
-
+                }
+                
                 if ((value3)<= (value2) && (value3)<= (value1))
-                {               
+                {
                     graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
                     graphPath[(row)*width + (col)].weight = value3;
                     graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
@@ -572,21 +512,21 @@ public:
                     graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
                     graphPath[(row)*width + (col)].weight = value1;
                     graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
-                }   
+                }
             }
         }
-
+        
         for (int i = 0; i < height; i++)
         {
             startRow_i.push_back(graphPath[i*width + endCol_i].start.y());
         }
-
+        
         for (int row = 0; row < height; row++)
         {
             graphPath[row*width + startCol].weight = static_cast<weight_t>(0.0);
             graphPath[row*width + startCol].start = Point(startCol, row);
         }
-
+        
         for (int col = startCol+1; col <= endCol; col++)
         {
             for (int row = 0; row < height; row++)
@@ -594,23 +534,23 @@ public:
                 weight_t weight10, weight20, weight30;
                 weight_t value1, value2, value3;
                 weight10 = weight20 = weight30 = TOP_VALUE;
-                value1 = value2 = value3  = TOP_VALUE; 
-
+                value1 = value2 = value3  = TOP_VALUE;
+                
                 if (row > 0)
                 {
                     weight10 = graphWeight[(row-1)*width + col-1].weight_down;
                     value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
                 }
-
-                weight20 = graphWeight[row*width + col-1].weight_hor; 
+                
+                weight20 = graphWeight[row*width + col-1].weight_hor;
                 value2 = weight20 + graphPath[(row+0)*width + (col-1)].weight;
-
+                
                 if (row < height-1)
                 {
-                    weight30 = graphWeight[(row+1)*width + col-1].weight_up; 
+                    weight30 = graphWeight[(row+1)*width + col-1].weight_up;
                     value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
                 }
-
+                
                 if ((value3)<= (value2) && (value3)<= (value1))
                 {
                     graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
@@ -623,7 +563,7 @@ public:
                     graphPath[(row)*width + (col)].weight = value2;
                     graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
                 }
-                else 
+                else
                 {
                     graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
                     graphPath[(row)*width + (col)].weight = value1;
@@ -631,11 +571,11 @@ public:
                 }
             }
         }
-
+        
         for (int i = 0; i < height; i++)
         {
             int startR = graphPath[i*width + endCol].start.y();
-
+            
             if (startRow_i[startR] == i)
             {
                 Point p = Point(endCol, i);
@@ -658,8 +598,181 @@ public:
         //findStaffHeightandDistance(image, stablePaths); 
         return 0;
     }
+    
+    template<class T>
+    OneBitImageView* stableStaffDetection(vector <vector <Point> > &validStaves, T &image)
+    {
+        constructGraphWeights(image);
+        OneBitImageView *imageCopy = myCloneImage(image);
+        OneBitImageView *imgErode = myCloneImage(image);
+        OneBitImageView *imageErodedCopy = myCloneImage(image);
+        myVerticalErodeImage(imgErode, image.ncols(), image.nrows());
+        myVerticalErodeImage(imageErodedCopy, image.ncols(), image.nrows());
+        
+        vector<int> npaths;
+        
+        bool first_time = 1;
+        double blackPerc;
+        vector<Point> bestStaff;
+        
+        int nrows = imageCopy->nrows();
+        int ncols = imageCopy->ncols();
+        
+        while(1)
+        {
+            vector <vector<Point> > stablePaths;
+            int curr_n_paths = 0;
+            printf("About to findAllStablePaths\n");
+            findAllStablePathsView(imageCopy, 0, ncols - 1, stablePaths);
+            printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
+            
+            if (first_time && stablePaths.size() > 0)
+            {
+                printf("Line 757\n");
+                first_time = 0;
+                bestStaff.clear();
+                size_t bestSumOfValues = INT_MAX;
+                size_t bestStaffIdx = 0;
+                vector<size_t> allSumOfValues;
+                
+                printf("Line 764\n");
+                
+                for (size_t c = 0; c < stablePaths.size(); c++)
+                {
+                    size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imgErode);
+                    
+                    if ((sumOfValues / (1.0 * (stablePaths[c].size()))) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
+                    {
+                        allSumOfValues.push_back(sumOfValues);
+                    }
+                    
+                    if (sumOfValues < bestSumOfValues)
+                    {
+                        bestSumOfValues = sumOfValues;
+                        bestStaffIdx = c;
+                    }
+                }
+                printf("Line 778\n");
+                
+                vector<size_t> copy_allSumOfValues = allSumOfValues;
+                sort(allSumOfValues.begin(), allSumOfValues.end());
+                size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
+                int i;
+                
+                for (i = 0; i < allSumOfValues.size(); i++)
+                {
+                    printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+                    
+                    if (copy_allSumOfValues[i] == medianSumOfValues)
+                    {
+                        break;
+                    }
+                }
+                
+                printf("Line 792\n");
+                bestStaff = stablePaths[i];
+                
+                double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
+                blackPerc = max(MIN_BLACK_PER, bestBlackPerc * 0.8);
+                cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
+            }
+            
+            for (size_t i = 0; i < stablePaths.size(); i++)
+            {
+                vector<Point> staff = stablePaths[i];
+                
+                if (tooMuchWhite(staff, imgErode, blackPerc))
+                {
+                    continue;
+                }
+                
+                double dissimilarity = staffDissimilarity(bestStaff, staff);
+                printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
+                {
+                    printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    continue;
+                }
+                
+                validStaves.push_back(staff);
+                curr_n_paths++;
+                
+                int path_half_width2 = max(staffLineHeight, staffSpaceDistance/2);
+                
+                //Erasing paths from our image, must create a copy of our image
+                for (size_t i = 0; i<staff.size(); i++)
+                {
+                    //printf("Staff Size: %lu\n", staff.size());
+                    int col = staff[i].x();
+                    int row = staff[i].y();
+                    
+                    //ERASE PATHS ALREADY SELECTED!
+                    for (int j =-path_half_width2; j <= path_half_width2; j++)
+                    {
+                        // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
+                        // printf("Currently erasing lines\n");
+                        if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
+                        {
+                            continue;
+                        }
+                        
+                        //                        if (verRun[((row + j) * ncols) + col] < (1.5 * staffLineHeight)) //If a vertical run of pixels that is less than 1.5 times the staffLineHeight is along the path, set it to white
+                        //                        {
+                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        //}
+                        // deleteOnePath(staff, imageCopy);
+                        // deleteOnePath(staff, imgErode);
+                        if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
+                        {
+                            continue;
+                        }
+                        
+                        if (col == ncols - 1)
+                        {
+                            continue;
+                        }
+                        
+                        if (row + j > 0)
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
+                        }
+                        graphWeight[((row + j) * ncols) + col].weight_hor = 8;
+                        
+                        if (row + j < nrows - 1)
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_down = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_down = TOP_VALUE;
+                        }
+                    }
+                }
+            }
+            npaths.push_back(curr_n_paths);
+            
+            if (curr_n_paths == 0)
+            {
+                //return imageCopy;
+                break;
+            }
+        }
+        postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
+        printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
+        OneBitImageView *blank = clear(image);
+        drawPaths(validStaves, blank);
+        //return blank;
+        
+        return imageCopy;
+    }
 
     //TODO: increase speed with vector iterators
+    //Currently not being used
     template<class T>
     void findStaffHeightandDistance(T &image, vector<vector<Point> >&stablePaths)
     {
@@ -749,91 +862,8 @@ public:
     }
 
     //=============================================================================
-    template <class T> //HELPER FUNCTION
-    T findMostRepresentedValueOnSortedVector(vector<T>& vec)
-    {
-        T run = vec[0];
-        int freq = 0;
-        int maxFreq = 0;
-        T maxRun = run;
-
-        for (unsigned i = 0; i< vec.size(); i++)
-        {
-            if (vec[i] == run)
-            {
-                freq ++;
-            }
-            
-            if (freq > maxFreq)
-            {
-                maxFreq = freq;
-                maxRun = run;
-            }
-            
-            if (vec[i] != run)
-            {
-                freq = 0;
-                run = vec[i];
-            }
-        }
-        
-        return maxRun;
-    }
+    //                          HELPER FUNCTION
     //=============================================================================
-    
-    //template <class T>
-    void findStaffLineHeightandDistanceFinal(OneBitImageView *image)
-    {
-        int width = image->ncols();
-        int height = image->nrows();
-        vector<int> values;
-        vector<int> runs[2];
-        vector<int> sum2runs;
-        runs[0].resize(height + 1, 0);
-        runs[1].resize(height + 1, 0);
-        
-        for (int c = 0; c < width; c++)
-        {
-            for (int r = 0; r < height; r++)
-            {
-                unsigned int pel = image->get(Point(c, r));
-                
-                if (pel) //Pixel is black
-                {
-                    ++runs[1][verRun[(r * width) + c]];
-                    ++runs[0][verDistance[(r * width) + c]];
-                    r += verRun[(r * width) + c];
-                }
-            }
-        }
-        
-        //Find most repeated
-        {
-            int maxcounter = 0;
-            
-            for (int i = 0; i < runs[0].size(); i++)
-            {
-                if (runs[0][i] >= maxcounter)
-                {
-                    maxcounter = runs[0][i];
-                    staffSpaceDistance = i;
-                }
-            }
-        }
-        {
-            int maxcounter = 0;
-            
-            for (int i = 0; i < runs[1].size(); i++)
-            {
-                if (runs[1][i] > maxcounter)
-                {
-                    maxcounter = runs[1][i];
-                    staffLineHeight = i;
-                }
-            }
-        }
-        cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
-    }
     
     template <class T>
     void findStaffLineHeightandDistanceFinalTemplate(T &image)
@@ -888,191 +918,469 @@ public:
         }
         cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
     }
-
-
-    //Used for testing
-    int fillValues() 
+    
+    template <class T>
+    T findMostRepresentedValueOnSortedVector(vector<T>& vec)
     {
-        int x;
-        
-        for (x = 0; x < staffLineHeight; x++) 
+        T run = vec[0];
+        int freq = 0;
+        int maxFreq = 0;
+        T maxRun = run;
+
+        for (unsigned i = 0; i< vec.size(); i++)
         {
-            verRun[x] = 1;
+            if (vec[i] == run)
+            {
+                freq ++;
+            }
+            
+            if (freq > maxFreq)
+            {
+                maxFreq = freq;
+                maxRun = run;
+            }
+            
+            if (vec[i] != run)
+            {
+                freq = 0;
+                run = vec[i];
+            }
         }
         
-        return x;
+        return maxRun;
+    }
+    
+    double staffDissimilarity(vector<Point> &staff1, vector<Point> &staff2)
+    {
+        double currAvg1 = 0;
+        double currAvg2 = 0;
+        
+        for (size_t i = 0; i < staff1.size(); i++)
+        {
+            currAvg1 += staff1[i].y();
+            currAvg2 += staff2[i].y();
+        }
+        
+        currAvg1 /= staff1.size();
+        currAvg2 /= staff2.size();
+        double avgDiff = 0;
+        
+        for (size_t i = 0; i < staff1.size(); i++)
+        {
+            double curr_dif = abs(staff1[i].y() - staff2[i].y() - currAvg1 + currAvg2);
+            avgDiff += (curr_dif * curr_dif);
+        }
+        
+        avgDiff /= staff1.size();
+        avgDiff = sqrt(avgDiff);
+        return avgDiff;
+    }
+    
+    int sumOfValuesInVector (vector<Point>& vec, OneBitImageView *image)
+    {
+        //size_t len = vec.size();
+        int sumOfValues = 0;
+        int startCol = 0;
+        int endCol = image->ncols() - 1;
+        
+        for (int i = startCol; i <= endCol; i++)
+        {
+            int col = vec[i].x();
+            int row = vec[i].y();
+            unsigned char pel = image->get(getPointView(((row * image->ncols()) + col), image->ncols(), image->nrows()));
+            sumOfValues += pel;
+        }
+        
+        return sumOfValues;
+    }
+    
+    bool tooMuchWhite (vector<Point> &vec, OneBitImageView *image, double minBlackPerc)
+    {
+        int sumOfValues = sumOfValuesInVector(vec, image);
+        //size_t len = vec.size();
+        int startCol = 0;
+        int endCol = image->ncols() - 1;
+        int usedSize = endCol-startCol + 1;
+        
+        if (sumOfValues < 1 * (1 - minBlackPerc) * (usedSize))
+        {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    //===================================================================================================
+    //================================== OneBitImageView Functions ======================================
+    //===================================================================================================
+    
+    int findAllStablePathsView(OneBitImageView *image, int startCol, int endCol, vector <vector<Point> > &stablePaths)
+    {
+        stablePaths.clear();
+        int width = image->ncols();
+        int height = image->nrows();
+        vector<int> startRow_i;
+        
+        int endCol_i = width - 1 - startCol;
+        int startCol_i = width - 1 - endCol;
+        
+        for (int row = 0; row < height; row++)
+        {
+            graphPath[(row * width) + startCol_i].weight = static_cast<weight_t>(0);
+            graphPath[(row * width) + startCol_i].start = Point(startCol_i, row);
+        }
+        
+        for (int col = startCol_i + 1; col <= endCol_i; col++) //Creates path from right to left
+        {
+            for (int row = 0; row < height; row++)
+            {
+                weight_t weight10, weight20, weight30;
+                weight_t value1, value2, value3;
+                weight10 = weight20 = weight30 = TOP_VALUE;
+                value1 = value2 = value3 = TOP_VALUE;
+                
+                if (row > 0)
+                {
+                    weight10 = graphWeight[(row*width) + width-1-col].weight_up;
+                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
+                }
+                
+                weight20 = graphWeight[row*width + width-1-col].weight_hor;
+                value2 = weight20 + graphPath[(row)*width + (col-1)].weight;
+                
+                if (row < height - 1)
+                {
+                    weight30 = graphWeight[row*width + width-1-col].weight_down;
+                    value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
+                }
+                
+                if ((value3)<= (value2) && (value3)<= (value1))
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
+                    graphPath[(row)*width + (col)].weight = value3;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
+                }
+                else if ((value2)<= (value1) && (value2)<= (value3))
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col - 1, row);
+                    graphPath[(row)*width + (col)].weight = value2;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
+                }
+                else
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
+                    graphPath[(row)*width + (col)].weight = value1;
+                    graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
+                }
+            }
+        }
+        
+        for (int i = 0; i < height; i++)
+        {
+            startRow_i.push_back(graphPath[i*width + endCol_i].start.y());
+        }
+        
+        for (int row = 0; row < height; row++)
+        {
+            graphPath[row*width + startCol].weight = static_cast<weight_t>(0.0);
+            graphPath[row*width + startCol].start = Point(startCol, row);
+        }
+        
+        for (int col = startCol+1; col <= endCol; col++)
+        {
+            for (int row = 0; row < height; row++)
+            {
+                weight_t weight10, weight20, weight30;
+                weight_t value1, value2, value3;
+                weight10 = weight20 = weight30 = TOP_VALUE;
+                value1 = value2 = value3  = TOP_VALUE;
+                
+                if (row > 0)
+                {
+                    weight10 = graphWeight[(row-1)*width + col-1].weight_down;
+                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
+                }
+                
+                weight20 = graphWeight[row*width + col-1].weight_hor;
+                value2 = weight20 + graphPath[(row+0)*width + (col-1)].weight;
+                
+                if (row < height-1)
+                {
+                    weight30 = graphWeight[(row+1)*width + col-1].weight_up;
+                    value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
+                }
+                
+                if ((value3)<= (value2) && (value3)<= (value1))
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
+                    graphPath[(row)*width + (col)].weight = value3;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
+                }
+                else if ((value2)<= (value1) && (value2)<= (value3))
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row);
+                    graphPath[(row)*width + (col)].weight = value2;
+                    graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
+                }
+                else
+                {
+                    graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
+                    graphPath[(row)*width + (col)].weight = value1;
+                    graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
+                }
+            }
+        }
+        
+        for (int i = 0; i < height; i++)
+        {
+            int startR = graphPath[i*width + endCol].start.y();
+            
+            if (startRow_i[startR] == i)
+            {
+                Point p = Point(endCol, i);
+                vector<Point> contour;
+                contour.resize(endCol - startCol + 1);
+                int pos = endCol - startCol;
+                contour[pos] = p;
+                pos--;
+                
+                while (p.x() != startCol)
+                {
+                    p = graphPath[(p.y() * width) + p.x()].previous;
+                    contour[pos] = p;
+                    pos--;
+                }
+                
+                stablePaths.push_back(contour);
+            }
+        }
+        return 0;
+    }
+    
+    void constructGraphWeightsView(OneBitImageView *image)
+    {
+        unsigned char WHITE = 0;
+        int cols = image->ncols();
+        int rows = image->nrows();
+        
+        //Find vertical run values
+        // ***USE VECTOR ITERATORS WITH ROW ON THE OUTSIDE TO INCREASE PERFORMANCE IF THERE'S TIME***
+        cout <<"About to find vertical runs" <<endl;
+        
+        for (int c = 0; c < cols; c++)
+        {
+            int run = 0;
+            unsigned char val = WHITE;
+            
+            for (int r = 0; r < rows; r++)
+            {
+                unsigned char pel = image->get(Point(c, r));
+                
+                if (pel == val)
+                {
+                    run++;
+                }
+                else
+                {
+                    int len = run;
+                    
+                    for (int row = r - 1; len > 0; len--, row--)
+                    {
+                        verRun[(row * cols) + c] = run;
+                    }
+                    val = !val; //Changes value from 0 to 1 or from 1 to
+                    run = 1;
+                }
+            }
+            
+            if (run > 0)
+            {
+                //Last run on the column
+                int len = run;
+                
+                for (int row = rows - 1; len > 0; len--, row--)
+                {
+                    verRun[(row * cols) + c] = run;
+                }
+            }
+        }
+        cout <<"Done finding vertical runs" <<endl;
+        
+        //Find Vertical Distance
+        for (int c = 0; c < cols; c++)
+        {
+            for (int r = 0; r < rows; r++)
+            {
+                //cout <<"Finding vertical distance of Point(" <<c <<", " <<r <<")" <<endl;
+                unsigned char pel = image->get(Point(c, r));
+                int row = r;
+                unsigned char curr_pel = pel;
+                
+                while ((row > 0) && (curr_pel == pel))
+                {
+                    row--;
+                    curr_pel = image->get(Point(c, row));
+                }
+                
+                int run1 = 1;
+                
+                while ((row > 0) && (curr_pel != pel))
+                {
+                    row--;
+                    curr_pel = image->get(Point(c, row));
+                    run1++;
+                }
+                
+                row = r;
+                curr_pel = pel;
+                
+                while ((row < rows - 1) && (curr_pel == pel))
+                {
+                    row++;
+                    curr_pel = image->get(Point(c, row));
+                }
+                
+                int run2 = 1;
+                
+                while ((row < rows - 1) && (curr_pel != pel))
+                {
+                    row++;
+                    curr_pel = image->get(Point(c, row));
+                    run2++;
+                }
+                
+                verDistance[(r * cols) + c] = min(run1, run2);
+            }
+        }
+        
+        if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
+        {
+            findStaffLineHeightandDistanceFinal(image);
+        }
+        
+        //Find Graph Weights
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols - 1; c++)
+            {
+                graphWeight[(r * cols) + c].weight_hor = weightFunctionView(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
+                
+                if (r > 0)
+                {
+                    graphWeight[(r * cols) + c].weight_up = weightFunctionView(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
+                }
+                else
+                {
+                    graphWeight[(r * cols) + c].weight_up = TOP_VALUE;
+                }
+                
+                if (r < rows - 1)
+                {
+                    graphWeight[(r * cols) + c].weight_down = weightFunctionView(image, Point(c, r), Point(c + 1, r + 1), NEIGHBOUR8);
+                }
+                else
+                {
+                    graphWeight[(r * cols) + c].weight_down = TOP_VALUE;
+                }
+            }
+        }
+        
+        // for (int x = 0; x < rows * cols; x++)
+        // {
+        //     printf("Value: %d -> verDistance: %d -> verRun: %d\n", x, verDistance[x], verRun[x]);
+        // }
+    }
+    
+    weight_t weightFunctionView(OneBitImageView *image, Point pixelVal1, Point pixelVal2, stableStaffLineFinder::NEIGHBOUR neigh)
+    {
+        unsigned int pel1 = image->get(pixelVal1); //Gets the pixel value of Point 1
+        unsigned int pel2 = image->get(pixelVal2); //Gets pixel value of Point 2
+        int width = image->ncols();
+        int height = image->nrows();
+        
+        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
+        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
+        int vRun1 = verRun[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
+        int vRun2 = verRun[(pixelVal2.y() * width) + pixelVal2.x()];
+        
+        int pel = max(pel1, pel2); //pel set to 1 if either pixel is black
+        
+        //Weights for a 4-Neighborhood
+        int y1 = 4; //Black pixels
+        int y0 = 8; //White pixels
+        
+        if (neigh == NEIGHBOUR8) //Weights for an 8-Neighborhood
+        {
+            y1 = 6; //Black
+            y0 = 12; //White
+        }
+        
+        int y = (pel == 0 ? y0:y1);
+        
+        if ( (pel) && ( (min(vRun1, vRun2) <= staffLineHeight)) )
+        {
+            --y;
+        }
+        
+        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
+        {
+            y++;
+        }
+        
+        return y;
     }
 
-    template<class T>
-    OneBitImageView* stableStaffDetection(vector <vector <Point> > &validStaves, T &image)
+    void findStaffLineHeightandDistanceFinal(OneBitImageView *image)
     {
-        constructGraphWeights(image);
-        OneBitImageView *imageCopy = myCloneImage(image);
-        OneBitImageView *imgErode = myCloneImage(image);
-        OneBitImageView *imageErodedCopy = myCloneImage(image);
-        myVerticalErodeImage(imgErode, image.ncols(), image.nrows());
-        myVerticalErodeImage(imageErodedCopy, image.ncols(), image.nrows());
-
-        vector<int> npaths;
-
-        bool first_time = 1;
-        double blackPerc;
-        vector<Point> bestStaff;
-
-        int nrows = imageCopy->nrows();
-        int ncols = imageCopy->ncols();
-
-        while(1)
+        int width = image->ncols();
+        int height = image->nrows();
+        vector<int> values;
+        vector<int> runs[2];
+        vector<int> sum2runs;
+        runs[0].resize(height + 1, 0);
+        runs[1].resize(height + 1, 0);
+        
+        for (int c = 0; c < width; c++)
         {
-            vector <vector<Point> > stablePaths;
-            int curr_n_paths = 0;
-            printf("About to findAllStablePaths\n");
-            findAllStablePathsView(imageCopy, 0, ncols - 1, stablePaths);
-            printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
-            
-            if (first_time && stablePaths.size() > 0)
+            for (int r = 0; r < height; r++)
             {
-                printf("Line 757\n");
-                first_time = 0;
-                bestStaff.clear();
-                size_t bestSumOfValues = INT_MAX;
-                size_t bestStaffIdx = 0;
-                vector<size_t> allSumOfValues;
-
-                printf("Line 764\n");
+                unsigned int pel = image->get(Point(c, r));
                 
-                for (size_t c = 0; c < stablePaths.size(); c++)
+                if (pel) //Pixel is black
                 {
-                    size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imgErode);
-                    
-                    if ((sumOfValues / (1.0 * (stablePaths[c].size()))) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
-                    {
-                        allSumOfValues.push_back(sumOfValues);
-                    }
-                    
-                    if (sumOfValues < bestSumOfValues)
-                    {
-                        bestSumOfValues = sumOfValues;
-                        bestStaffIdx = c;
-                    }
+                    ++runs[1][verRun[(r * width) + c]];
+                    ++runs[0][verDistance[(r * width) + c]];
+                    r += verRun[(r * width) + c];
                 }
-                printf("Line 778\n");
-
-                vector<size_t> copy_allSumOfValues = allSumOfValues;
-                sort(allSumOfValues.begin(), allSumOfValues.end());
-                size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
-                int i;
-                
-                for (i = 0; i < allSumOfValues.size(); i++)
-                {
-                    printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
-                    
-                    if (copy_allSumOfValues[i] == medianSumOfValues)
-                    {
-                        break;
-                    }
-                }
-
-                printf("Line 792\n");
-                bestStaff = stablePaths[i];
-
-                double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
-                blackPerc = max(MIN_BLACK_PER, bestBlackPerc * 0.8);
-                cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
-            }
-
-            for (size_t i = 0; i < stablePaths.size(); i++)
-            {
-                vector<Point> staff = stablePaths[i];
-
-                if (tooMuchWhite(staff, imgErode, blackPerc))
-                {
-                    continue;
-                }
-                
-                double dissimilarity = staffDissimilarity(bestStaff, staff);
-                printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
-                if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
-                {
-                    printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
-                    continue;
-                }
-
-                validStaves.push_back(staff);
-                curr_n_paths++;
-
-                int path_half_width2 = max(staffLineHeight, staffSpaceDistance/2);
-
-                //Erasing paths from our image, must create a copy of our image
-                for (size_t i = 0; i<staff.size(); i++)
-                {
-                    //printf("Staff Size: %lu\n", staff.size());
-                    int col = staff[i].x();
-                    int row = staff[i].y();
-
-                    //ERASE PATHS ALREADY SELECTED!
-                    for (int j =-path_half_width2; j <= path_half_width2; j++)
-                    {
-                        // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
-                        // printf("Currently erasing lines\n");
-                        if ( ((row + j) > nrows - 1) || ((row+j) < 0) )
-                        {
-                            continue;
-                        }
-                        
-//                        if (verRun[((row + j) * ncols) + col] < (1.5 * staffLineHeight)) //If a vertical run of pixels that is less than 1.5 times the staffLineHeight is along the path, set it to white
-//                        {        
-                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        //}
-                        // deleteOnePath(staff, imageCopy);
-                        // deleteOnePath(staff, imgErode);
-                        if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
-                        {
-                            continue;
-                        }
-                        
-                        if (col == ncols - 1)
-                        {
-                            continue;
-                        }
-                        
-                        if (row + j > 0)
-                        {
-                            graphWeight[((row + j) * ncols) + col].weight_up = 12;
-                        }
-                        else
-                        {
-                            graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
-                        }
-                        graphWeight[((row + j) * ncols) + col].weight_hor = 8;
-                        
-                        if (row + j < nrows - 1)
-                        {
-                            graphWeight[((row + j) * ncols) + col].weight_down = 12;
-                        }
-                        else
-                        {
-                            graphWeight[((row + j) * ncols) + col].weight_down = TOP_VALUE;
-                        }
-                    } 
-                }
-            }
-            npaths.push_back(curr_n_paths);
-            
-            if (curr_n_paths == 0)
-            {
-                //return imageCopy;
-                break;
             }
         }
-        postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
-        printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
-        OneBitImageView *blank = clear(image);
-        drawPaths(validStaves, blank);
-        //return blank;
-
-        return imageCopy;
+        
+        //Find most repeated
+        {
+            int maxcounter = 0;
+            
+            for (int i = 0; i < runs[0].size(); i++)
+            {
+                if (runs[0][i] >= maxcounter)
+                {
+                    maxcounter = runs[0][i];
+                    staffSpaceDistance = i;
+                }
+            }
+        }
+        {
+            int maxcounter = 0;
+            
+            for (int i = 0; i < runs[1].size(); i++)
+            {
+                if (runs[1][i] > maxcounter)
+                {
+                    maxcounter = runs[1][i];
+                    staffLineHeight = i;
+                }
+            }
+        }
+        cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
     }
 
     void postProcessing(vector <vector<Point> > &validStaves, int staffDistance, OneBitImageView *imageErodedCopy)
@@ -1264,8 +1572,6 @@ public:
         }
     }
 
-
-
     double simplifiedAvgDistance(vector<Point> &staff1, vector<Point> &staff2)
     {
         if ((staff1.size() == 0) || (staff2.size() == 0))
@@ -1340,326 +1646,6 @@ public:
             
             medianStaff.push_back(Point(c, y));
         }
-    }
-
-    //===================================================================================================
-    //================================== OneBitImageView Functions ======================================
-    //===================================================================================================
-
-    int findAllStablePathsView(OneBitImageView *image, int startCol, int endCol, vector <vector<Point> > &stablePaths) 
-    {
-        stablePaths.clear();
-        int width = image->ncols();
-        int height = image->nrows();
-        vector<int> startRow_i;
-
-        int endCol_i = width - 1 - startCol;
-        int startCol_i = width - 1 - endCol;
-
-        for (int row = 0; row < height; row++) 
-        {
-            graphPath[(row * width) + startCol_i].weight = static_cast<weight_t>(0);
-            graphPath[(row * width) + startCol_i].start = Point(startCol_i, row);
-        }
-
-        for (int col = startCol_i + 1; col <= endCol_i; col++) //Creates path from right to left
-        {
-            for (int row = 0; row < height; row++) 
-            {  
-                weight_t weight10, weight20, weight30;
-                weight_t value1, value2, value3;
-                weight10 = weight20 = weight30 = TOP_VALUE;
-                value1 = value2 = value3 = TOP_VALUE;
-                
-                if (row > 0) 
-                {
-                    weight10 = graphWeight[(row*width) + width-1-col].weight_up;
-                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
-                }
-
-                weight20 = graphWeight[row*width + width-1-col].weight_hor;
-                value2 = weight20 + graphPath[(row)*width + (col-1)].weight;
-            
-                if (row < height - 1)
-                {
-                    weight30 = graphWeight[row*width + width-1-col].weight_down; 
-                    value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
-                }   
-
-                if ((value3)<= (value2) && (value3)<= (value1))
-                {               
-                    graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
-                    graphPath[(row)*width + (col)].weight = value3;
-                    graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
-                }
-                else if ((value2)<= (value1) && (value2)<= (value3))
-                {
-                    graphPath[(row)*width + (col)].previous = Point(col - 1, row);
-                    graphPath[(row)*width + (col)].weight = value2;
-                    graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
-                }
-                else
-                {
-                    graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
-                    graphPath[(row)*width + (col)].weight = value1;
-                    graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
-                }   
-            }
-        }
-
-        for (int i = 0; i < height; i++)
-        {
-            startRow_i.push_back(graphPath[i*width + endCol_i].start.y());
-        }
-
-        for (int row = 0; row < height; row++)
-        {
-            graphPath[row*width + startCol].weight = static_cast<weight_t>(0.0);
-            graphPath[row*width + startCol].start = Point(startCol, row);
-        }
-
-        for (int col = startCol+1; col <= endCol; col++)
-        {
-            for (int row = 0; row < height; row++)
-            {
-                weight_t weight10, weight20, weight30;
-                weight_t value1, value2, value3;
-                weight10 = weight20 = weight30 = TOP_VALUE;
-                value1 = value2 = value3  = TOP_VALUE; 
-
-                if (row > 0)
-                {
-                    weight10 = graphWeight[(row-1)*width + col-1].weight_down;
-                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
-                }
-
-                weight20 = graphWeight[row*width + col-1].weight_hor; 
-                value2 = weight20 + graphPath[(row+0)*width + (col-1)].weight;
-
-                if (row < height-1)
-                {
-                    weight30 = graphWeight[(row+1)*width + col-1].weight_up; 
-                    value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
-                }
-
-                if ((value3)<= (value2) && (value3)<= (value1))
-                {
-                    graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
-                    graphPath[(row)*width + (col)].weight = value3;
-                    graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
-                }
-                else if ((value2)<= (value1) && (value2)<= (value3))
-                {
-                    graphPath[(row)*width + (col)].previous = Point(col-1, row);
-                    graphPath[(row)*width + (col)].weight = value2;
-                    graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
-                }
-                else 
-                {
-                    graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
-                    graphPath[(row)*width + (col)].weight = value1;
-                    graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
-                }
-            }
-        }
-
-        for (int i = 0; i < height; i++)
-        {
-            int startR = graphPath[i*width + endCol].start.y();
-
-            if (startRow_i[startR] == i)
-            {
-                Point p = Point(endCol, i);
-                vector<Point> contour;
-                contour.resize(endCol - startCol + 1);
-                int pos = endCol - startCol;
-                contour[pos] = p;
-                pos--;
-                
-                while (p.x() != startCol)
-                {
-                    p = graphPath[(p.y() * width) + p.x()].previous;
-                    contour[pos] = p;
-                    pos--;
-                }
-                
-                stablePaths.push_back(contour);
-            }
-        }
-        return 0;
-    }
-
-    void constructGraphWeightsView(OneBitImageView *image) 
-    {
-        unsigned char WHITE = 0;
-        int cols = image->ncols();
-        int rows = image->nrows();
-
-        //Find vertical run values
-        // ***USE VECTOR ITERATORS WITH ROW ON THE OUTSIDE TO INCREASE PERFORMANCE IF THERE'S TIME***
-        cout <<"About to find vertical runs" <<endl;
-        
-        for (int c = 0; c < cols; c++) 
-        {
-            int run = 0;
-            unsigned char val = WHITE;
-            
-            for (int r = 0; r < rows; r++) 
-            {
-                unsigned char pel = image->get(Point(c, r));
-                
-                if (pel == val) 
-                {
-                    run++;
-                }
-                else
-                {
-                    int len = run;
-                    
-                    for (int row = r - 1; len > 0; len--, row--) 
-                    {
-                        verRun[(row * cols) + c] = run;
-                    }
-                    val = !val; //Changes value from 0 to 1 or from 1 to 
-                    run = 1;
-                }
-            }
-            
-            if (run > 0) 
-            {
-                //Last run on the column
-                int len = run;
-                
-                for (int row = rows - 1; len > 0; len--, row--) 
-                {
-                    verRun[(row * cols) + c] = run;
-                }
-            }
-        }
-        cout <<"Done finding vertical runs" <<endl;
-
-        //Find Vertical Distance
-        for (int c = 0; c < cols; c++) 
-        {
-            for (int r = 0; r < rows; r++) 
-            {
-                //cout <<"Finding vertical distance of Point(" <<c <<", " <<r <<")" <<endl;
-                unsigned char pel = image->get(Point(c, r));
-                int row = r;
-                unsigned char curr_pel = pel;
-                
-                while ((row > 0) && (curr_pel == pel))
-                {
-                    row--;
-                    curr_pel = image->get(Point(c, row));
-                }
-
-                int run1 = 1;
-                
-                while ((row > 0) && (curr_pel != pel))
-                {
-                    row--;
-                    curr_pel = image->get(Point(c, row));
-                    run1++;
-                }
-
-                row = r;
-                curr_pel = pel;
-                
-                while ((row < rows - 1) && (curr_pel == pel))
-                {
-                    row++;
-                    curr_pel = image->get(Point(c, row));
-                }
-
-                int run2 = 1;
-                
-                while ((row < rows - 1) && (curr_pel != pel))
-                {
-                    row++;
-                    curr_pel = image->get(Point(c, row));
-                    run2++;
-                }
-
-                verDistance[(r * cols) + c] = min(run1, run2);
-            }
-        }
-        
-        if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
-        {
-            findStaffLineHeightandDistanceFinal(image);
-        }
-
-        //Find Graph Weights
-        for (int r = 0; r < rows; r++) 
-        {
-            for (int c = 0; c < cols - 1; c++) 
-            {
-                graphWeight[(r * cols) + c].weight_hor = weightFunctionView(image, Point(c, r), Point(c + 1, r), NEIGHBOUR4);
-                
-                if (r > 0)
-                {
-                    graphWeight[(r * cols) + c].weight_up = weightFunctionView(image, Point(c, r), Point(c + 1, r - 1), NEIGHBOUR8);
-                }
-                else
-                {
-                    graphWeight[(r * cols) + c].weight_up = TOP_VALUE;
-                }
-                
-                if (r < rows - 1)
-                {
-                    graphWeight[(r * cols) + c].weight_down = weightFunctionView(image, Point(c, r), Point(c + 1, r + 1), NEIGHBOUR8);
-                }
-                else
-                {
-                    graphWeight[(r * cols) + c].weight_down = TOP_VALUE;
-                }
-            }
-        }
-
-        // for (int x = 0; x < rows * cols; x++)
-        // {
-        //     printf("Value: %d -> verDistance: %d -> verRun: %d\n", x, verDistance[x], verRun[x]);
-        // }       
-    }
-
-    weight_t weightFunctionView(OneBitImageView *image, Point pixelVal1, Point pixelVal2, stableStaffLineFinder::NEIGHBOUR neigh) 
-    {
-        unsigned int pel1 = image->get(pixelVal1); //Gets the pixel value of Point 1
-        unsigned int pel2 = image->get(pixelVal2); //Gets pixel value of Point 2
-        int width = image->ncols();
-        int height = image->nrows();
-
-        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
-        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
-        int vRun1 = verRun[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
-        int vRun2 = verRun[(pixelVal2.y() * width) + pixelVal2.x()];
-
-        int pel = max(pel1, pel2); //pel set to 1 if either pixel is black
-        
-        //Weights for a 4-Neighborhood
-        int y1 = 4; //Black pixels
-        int y0 = 8; //White pixels
-        
-        if (neigh == NEIGHBOUR8) //Weights for an 8-Neighborhood
-        {
-            y1 = 6; //Black
-            y0 = 12; //White
-        }
-        
-        int y = (pel == 0 ? y0:y1);
-        
-        if ( (pel) && ( (min(vRun1, vRun2) <= staffLineHeight)) )
-        {
-            --y;
-        }
-        
-        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
-        {
-            y++;
-        }
-        
-        return y;
     }
 
     //===================================================================================================
