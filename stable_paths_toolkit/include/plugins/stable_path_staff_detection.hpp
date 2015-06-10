@@ -1535,7 +1535,7 @@ public:
             //2 trim staffs from start to nvalid
             for (int i = 0; i < setOfStaves.size(); i++)
             {
-                //smoothStaffLine(setOfStaves[i], 2 * staffDistance);
+                smoothStaffLine(setOfStaves[i], 2 * staffDistance);
 
                 vector<Point>::iterator it = setOfStaves[i].begin();
                 
@@ -1566,6 +1566,39 @@ public:
             {
                 validStaves.push_back(setOfStaves[s]);
             }
+        }
+    }
+    
+    void smoothStaffLine (vector<Point> &staff, int halfWindowSize)
+    {
+        if (staff.size() < ((halfWindowSize * 2) + 1))
+        {
+            return;
+        }
+        
+        vector<Point> cpStaff = staff;
+        int accumY = 0;
+        
+        for (int i = 0; i < (halfWindowSize * 2); i++)
+        {
+            accumY += cpStaff[i].y();
+            //staff[i/2].y = accumY/(i+1);
+            staff[i / 2] = Point(staff[i / 2].x(), (accumY / (i + 1)));
+        }
+        
+        for (int i = halfWindowSize; i < (staff.size() - halfWindowSize); i++)
+        {
+            accumY += cpStaff[i + halfWindowSize].y();
+            staff[i] = Point(staff[i].x(), (accumY / ((halfWindowSize * 2) + 1)));
+            accumY -= cpStaff[i - halfWindowSize].y();
+        }
+        
+        accumY = 0;
+        
+        for (int i = 0; i < (halfWindowSize * 2); i++)
+        {
+            accumY += cpStaff[staff.size() - 1 - i].y();
+            staff[staff.size() - 1 - (i / 2)] = Point(staff[staff.size() - 1 - (i / 2)].x(), (accumY / (i + 1)));
         }
     }
 
