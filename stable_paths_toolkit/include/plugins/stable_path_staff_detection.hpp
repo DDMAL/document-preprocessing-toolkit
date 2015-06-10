@@ -613,8 +613,8 @@ public:
         double blackPerc;
         vector<Point> bestStaff;
         
-        unsigned long nrows = imageCopy->nrows();
-        unsigned long ncols = imageCopy->ncols();
+        int nrows = imageCopy->nrows();
+        int ncols = imageCopy->ncols();
         
         while(1)
         {
@@ -702,8 +702,8 @@ public:
                 for (size_t i = 0; i<staff.size(); i++)
                 {
                     //printf("Staff Size: %lu\n", staff.size());
-                    unsigned long col = staff[i].x();
-                    unsigned long row = staff[i].y();
+                    int col = staff[i].x();
+                    int row = staff[i].y();
                     
                     //ERASE PATHS ALREADY SELECTED!
                     for (int j =-path_half_width2; j <= path_half_width2; j++)
@@ -785,8 +785,8 @@ public:
             for (int j=0; j < staff.size(); j++)
             {
                 Point curr = staff[j];
-                unsigned long col = curr.x();
-                unsigned long row = curr.y();
+                int col = curr.x();
+                int row = curr.y();
                 unsigned char pel = image.get(getPoint(row*(image.ncols()) + col, image));
                 int runBlack = -1;
                 
