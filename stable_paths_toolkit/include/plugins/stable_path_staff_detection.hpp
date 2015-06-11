@@ -35,11 +35,6 @@
 #include "gamera.hpp"
 #include "png.h"
 #include "knnmodule.hpp"
-//extern "C"
-//{
-#include "png_support.hpp"
-//}
-// #include "pixel.hpp"
 
 using namespace std;
 using namespace Gamera;
@@ -87,6 +82,9 @@ public:
 
     typedef ImageData<GreyScalePixel> GreyScaleImageData;
     typedef ImageView<GreyScaleImageData> GreyScaleImageView;
+    
+    typedef ImageData<RGBPixel> RGBImageData;
+    typedef ImageView<RGBImageData> RGBImageView;
     
     //OneBitImageView *primaryImage;
 
@@ -157,6 +155,26 @@ public:
             }
         }
 
+        return dest_view;
+    }
+    
+    template<class T>
+    OneBitImageView* myCloneImagePNG(T &image)
+    {
+        int width = image.png_get_image_width();
+        int height = image.png_get_image_height();
+        
+        OneBitImageData* dest_data = new OneBitImageData(Dim(width, height));
+        OneBitImageView* dest_view = new OneBitImageView(*dest_data);
+        
+        for (size_t r = 0; r < height; r++)
+        {
+            for (size_t c = 0; c < width; c++)
+            {
+                //dest_view->set(Point(c, r), image.get(Point(c, r)));
+            }
+        }
+        
         return dest_view;
     }
 
@@ -1902,6 +1920,16 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
     slf1.drawPaths(validStaves, blank);
     //slf1.~stableStaffLineFinder(); //deletes arrays
     return blank;
+}
+
+template<class T>
+RGBImageView* drawColorfulStablePaths(T &image)
+{
+    stableStaffLineFinder slf1 (image);
+    RGBImageData *data1 = new RGBImageData(image.size());
+    RGBImageView *new1 = new RGBImageView(*data1);
+    
+    
 }
 
 #endif
