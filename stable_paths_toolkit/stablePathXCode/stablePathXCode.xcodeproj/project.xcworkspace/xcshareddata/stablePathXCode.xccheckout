@@ -5,13 +5,15 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>247C66F8-2B2A-4BFC-B1DE-1C9106F69448</string>
+	<string>9C9794D4-595B-47B7-80E1-A78EBD04A056</string>
 	<key>IDESourceControlProjectName</key>
 	<string>stablePathXCode</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>440A9E8F-1B79-4B9B-BD70-31A5F7BE1061</key>
 		<string>ssh://github.com/DDMAL/document-preprocessing-toolkit.git</string>
+		<key>ED07C5D7-2068-4F40-83FE-7648E13C31FC</key>
+		<string>svn://svn.code.sf.net/p/gamera/code/trunk/gamera</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>stable_paths_toolkit/stablePathXCode/stablePathXCode.xcodeproj/project.xcworkspace</string>
@@ -19,6 +21,13 @@
 	<dict>
 		<key>440A9E8F-1B79-4B9B-BD70-31A5F7BE1061</key>
 		<string>../../../..</string>
+		<key>ED07C5D7-2068-4F40-83FE-7648E13C31FC</key>
+		<string>../../../../../gamera</string>
+	</dict>
+	<key>IDESourceControlProjectRepositoryRootDictionary</key>
+	<dict>
+		<key>ED07C5D7-2068-4F40-83FE-7648E13C31FC</key>
+		<string>svn://svn.code.sf.net/p/gamera/code</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>ssh://github.com/DDMAL/document-preprocessing-toolkit.git</string>
@@ -29,12 +38,26 @@
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
+			<key>IDESourceControlRepositoryBranchesRelativeLocationKey</key>
+			<string>branches</string>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlRepositoryTagsRelativeLocationKey</key>
+			<string>tags</string>
+			<key>IDESourceControlRepositoryTrunkRelativeLocationKey</key>
+			<string>trunk</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>ED07C5D7-2068-4F40-83FE-7648E13C31FC</string>
+			<key>IDESourceControlWCCName</key>
+			<string>gamera</string>
+		</dict>
+		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>440A9E8F-1B79-4B9B-BD70-31A5F7BE1061</string>
 			<key>IDESourceControlWCCName</key>
-			<string>document-preprocessing-toolkit</string>
+			<string>stablePathXCode</string>
 		</dict>
 	</array>
 </dict>

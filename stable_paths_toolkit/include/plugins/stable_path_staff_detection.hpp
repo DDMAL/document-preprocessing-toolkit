@@ -24,12 +24,21 @@
             - Big difference is that in original code the values are in grayscale
             - Currently being implemented only for one bit images
     */
+#ifndef STABLE_PATH_STAFF_DETECTION
+#define STABLE_PATH_STAFF_DETECTION
 
 #include <vector>
 #include <algorithm>
+#include <string>
+#include <stdexcept>
 #include "gameramodule.hpp"
 #include "gamera.hpp"
-
+#include "png.h"
+#include "knnmodule.hpp"
+//extern "C"
+//{
+#include "png_support.hpp"
+//}
 // #include "pixel.hpp"
 
 using namespace std;
@@ -1894,3 +1903,5 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
     //slf1.~stableStaffLineFinder(); //deletes arrays
     return blank;
 }
+
+#endif
