@@ -894,6 +894,186 @@ public:
             staffSpaceDistance = findMostRepresentedValueOnSortedVector<int>(runs[1]);
         }
     }
+    
+    template<class T>
+    vector <vector <vector<Point> > > returnSetsOfStablePaths(vector <vector <Point> > &validStaves, T &image)
+    {
+        constructGraphWeights(image);
+        OneBitImageView *imageCopy = myCloneImage(image);
+        OneBitImageView *imgErode = myCloneImage(image);
+        OneBitImageView *imageErodedCopy = myCloneImage(image);
+        myVerticalErodeImage(imgErode, image.ncols(), image.nrows());
+        myVerticalErodeImage(imageErodedCopy, image.ncols(), image.nrows());
+        
+        vector<int> npaths;
+        
+        bool first_time = 1;
+        double blackPerc;
+        vector<Point> bestStaff;
+        
+        int nrows = imageCopy->nrows();
+        int ncols = imageCopy->ncols();
+        
+        while(1)
+        {
+            vector <vector<Point> > stablePaths;
+            int curr_n_paths = 0;
+            printf("About to findAllStablePaths\n");
+            findAllStablePathsView(imageCopy, 0, ncols - 1, stablePaths);
+            printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
+            
+            if (first_time && (stablePaths.size() > 0))
+            {
+                first_time = 0;
+                bestStaff.clear();
+                size_t bestSumOfValues = INT_MAX;
+                size_t bestStaffIdx = 0;
+                vector<size_t> allSumOfValues;
+                
+                for (size_t c = 0; c < stablePaths.size(); c++)
+                {
+                    size_t sumOfValues = sumOfValuesInVector(stablePaths[c], imgErode);
+                    
+                    if ((sumOfValues / (1.0 * (stablePaths[c].size()))) > MIN_BLACK_PER) //Checks to make sure percentage of black values are larger than the minimum black percentage allowed
+                    {
+                        allSumOfValues.push_back(sumOfValues);
+                    }
+                    
+                    if (sumOfValues < bestSumOfValues)
+                    {
+                        bestSumOfValues = sumOfValues;
+                        bestStaffIdx = c;
+                    }
+                }
+                
+                vector<size_t> copy_allSumOfValues = allSumOfValues; //Still not sure why this is necessary
+                sort(allSumOfValues.begin(), allSumOfValues.end());
+                //Must deal with empty allSumOfValues in case of completely blank image/image with no initial stablePaths
+                size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
+                int i;
+                
+                for (i = 0; i < allSumOfValues.size(); i++)
+                {
+                    printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+                    
+                    if (copy_allSumOfValues[i] == medianSumOfValues)
+                    {
+                        break;
+                    }
+                }
+                
+                bestStaff = stablePaths[i];
+                
+                double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
+                blackPerc = max(MIN_BLACK_PER, bestBlackPerc * 0.8);
+                cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
+            }
+            
+            for (size_t i = 0; i < stablePaths.size(); i++)
+            {
+                vector<Point> staff = stablePaths[i];
+                
+                if (tooMuchWhite(staff, imgErode, blackPerc))
+                {
+                    continue;
+                }
+                
+                double dissimilarity = staffDissimilarity(bestStaff, staff);
+                printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
+                {
+                    printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    continue;
+                }
+                
+                validStaves.push_back(staff);
+                curr_n_paths++;
+                
+                int path_half_width2 = max(staffLineHeight, staffSpaceDistance/2);
+                
+                //Erasing paths from our image, must create a copy of our image
+                for (size_t i = 0; i<staff.size(); i++)
+                {
+                    //printf("Staff Size: %lu\n", staff.size());
+                    int col = staff[i].x();
+                    int row = staff[i].y();
+                    
+                    //ERASE PATHS ALREADY SELECTED!
+                    for (int j =-path_half_width2; j <= path_half_width2; j++)
+                    {
+                        // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
+                        // printf("Currently erasing lines\n");
+                        if ( ((row + j) > nrows - 1) || ((row + j) < 0) )
+                        {
+                            continue;
+                        }
+                        
+                        //                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
+                        //                        if (verRun[((row + j) * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
+                        //                        {
+                        //                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        //                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        //                        }
+                        
+                        //                        Trial method to get rid of problem where imgErode stablePaths are not deleted.
+                        //                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
+                        //                        {
+                        //                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        //                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        //                        }
+                        
+                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        
+                        if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
+                        {
+                            continue;
+                        }
+                        
+                        if (col == ncols - 1)
+                        {
+                            continue;
+                        }
+                        
+                        if (row + j > 0)
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_up = TOP_VALUE;
+                        }
+                        
+                        graphWeight[((row + j) * ncols) + col].weight_hor = 8;
+                        
+                        if (row + j < nrows - 1)
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_down = 12;
+                        }
+                        else
+                        {
+                            graphWeight[((row + j) * ncols) + col].weight_down = TOP_VALUE;
+                        }
+                    }
+                }
+            }
+            
+            npaths.push_back(curr_n_paths);
+            
+            if (curr_n_paths == 0)
+            {
+                //return imageCopy;
+                break;
+            }
+        }
+        return postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
+//        printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
+//        OneBitImageView *blank = clear(image);
+        //drawPaths(validStaves, blank);
+        //return blank;
+        
+        //return imageCopy;
+    }
 
     //=============================================================================
     //                          HELPER FUNCTION
@@ -1418,13 +1598,14 @@ public:
         cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
     }
 
-    void postProcessing(vector <vector<Point> > &validStaves, int staffDistance, OneBitImageView *imageErodedCopy)
+    vector <vector <vector<Point> > > postProcessing(vector <vector<Point> > &validStaves, int staffDistance, OneBitImageView *imageErodedCopy)
     {
+        vector <vector <vector<Point> > > setsOfValidStaves;
         cout <<"Postprocessing Image\n";
         
         if (!validStaves.size())
         {
-            return;
+            return setsOfValidStaves;
         }
 
         //Uncross Lines
@@ -1463,7 +1644,7 @@ public:
         printf("maxStaffDistance = %d\n", maxStaffDistance);
 
         //Organize in sets
-        vector <vector <vector<Point> > > setsOfValidStaves;
+//        vector <vector <vector<Point> > > setsOfValidStaves;
         int start = 0;
         
         for (size_t nvalid = 0; nvalid < validStaves.size(); nvalid++)
@@ -1607,6 +1788,8 @@ public:
                 validStaves.push_back(setOfStaves[s]);
             }
         }
+        
+        return setsOfValidStaves;
     }
     
     void trimPath(vector<unsigned char> &vec, int window, int &startX, int &endX)
@@ -1928,8 +2111,22 @@ RGBImageView* drawColorfulStablePaths(T &image)
     stableStaffLineFinder slf1 (image);
     RGBImageData *data1 = new RGBImageData(image.size());
     RGBImageView *new1 = new RGBImageView(*data1);
+    vector<vector <Point> > validStaves;
+    vector< vector <vector<Point> > > setsOfValidStaves;
+    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, image);
+    int redCount, blueCount, greenCount;
     
-    
+    for (int set = 0; set < setsOfValidStaves.size(); set++)
+    {
+        for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
+        {
+            for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
+            {
+                new1->set(setsOfValidStaves[set][staff][line], RGBPixel((set * 100), 255 - (set * 100), 255 - (set)));
+            }
+        }
+    }
+    return new1;
 }
 
 #endif
