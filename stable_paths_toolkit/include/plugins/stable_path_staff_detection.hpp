@@ -39,10 +39,10 @@
 using namespace std;
 using namespace Gamera;
 
-#define CUSTOM_STAFF_LINE_HEIGHT 99999999
-#define CUSTOM_STAFF_SPACE_HEIGHT 99999999
-#define ALLOWED_DISSIMILARITY 2
-#define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 3
+#define CUSTOM_STAFF_LINE_HEIGHT 0
+#define CUSTOM_STAFF_SPACE_HEIGHT 0
+#define ALLOWED_DISSIMILARITY 3
+#define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -73,8 +73,8 @@ public:
     NODE* graphPath;
     NODEGRAPH* graphWeight;
 
-    int staffLineHeight = 0;
-    int staffSpaceDistance = 0;
+    int staffLineHeight;
+    int staffSpaceDistance;
     time_t globalStart;
 
     typedef ImageData<OneBitPixel> OneBitImageData;
@@ -279,8 +279,8 @@ public:
 //        OneBitImageView *copy = myCloneImage(image);
 //        findStaffLineHeightandDistanceFinal(copy);
 //        delete copy;
-//        staffLineHeight = CUSTOM_STAFF_LINE_HEIGHT;
-//        staffSpaceDistance = CUSTOM_STAFF_SPACE_HEIGHT;
+        staffLineHeight = CUSTOM_STAFF_LINE_HEIGHT;
+        staffSpaceDistance = CUSTOM_STAFF_SPACE_HEIGHT;
         //primaryImage = myCloneImage(image);
     }
 
@@ -1187,6 +1187,10 @@ public:
         
         avgDiff /= staff1.size();
         avgDiff = sqrt(avgDiff);
+        if (avgDiff > 1933)
+        {
+            cout <<"Here's the culprit" <<endl;
+        }
         return avgDiff;
     }
     
@@ -1743,7 +1747,7 @@ public:
             int startx = 0, endx = ncolsEroded - 1;
 
 //    #ifdef TRIMDEST
-            trimPath(medianStaff, (2 * staffDistance), startx, endx);
+            //trimPath(medianStaff, (2 * staffDistance), startx, endx);
 //    #endif
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
@@ -2114,17 +2118,38 @@ RGBImageView* drawColorfulStablePaths(T &image)
     vector<vector <Point> > validStaves;
     vector< vector <vector<Point> > > setsOfValidStaves;
     setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, image);
-    int redCount, blueCount, greenCount;
+    int redCount, blueCount, greenCount, counter;
+    redCount = blueCount = greenCount = counter = 0;
     
     for (int set = 0; set < setsOfValidStaves.size(); set++)
     {
+        if (counter == 1)
+        {
+            redCount = 255;
+            greenCount = 0;
+        }
+        else if (counter == 2)
+        {
+            greenCount = 150;
+            blueCount = 0;
+            redCount = 0;
+        }
+        else if (counter == 3)
+        {
+            blueCount = 175;
+            redCount = 0;
+            counter = 0;
+        }
+        
         for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
         {
             for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
             {
-                new1->set(setsOfValidStaves[set][staff][line], RGBPixel((set * 100), 255 - (set * 100), 255 - (set)));
+                new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
             }
         }
+        
+        counter++;
     }
     return new1;
 }
