@@ -223,8 +223,8 @@ public:
 
     void deletePaths(vector <vector<Point> > &validStaves, OneBitImageView *image)
     {
-        unsigned long numPaths = validStaves.size();
-        unsigned long numPix = validStaves[0].size();
+        int numPaths = validStaves.size();
+        int numPix = validStaves[0].size();
         printf("numPaths: %lu, numPix: %lu\n", numPaths, numPix);
         
         for (int i = 0; i < numPaths; i++)
@@ -241,7 +241,7 @@ public:
 
     void deleteOnePath(vector<Point> path, OneBitImageView *image)
     {
-        unsigned long size = path.size();
+        int size = path.size();
         
         for (int i = 0; i < size; i++)
         {
@@ -739,11 +739,11 @@ public:
                         }
                         
 //                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
-//                        if (verRun[((row + j) * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
-//                        {
-//                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                        }
+                        if (verRun[((row + j) * ncols) + col] < ((ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1)) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
+                        {
+                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        }
                         
 //                        Trial method to get rid of problem where imgErode stablePaths are not deleted. 
 //                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
@@ -752,8 +752,8 @@ public:
 //                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 //                        }
                         
-                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
@@ -975,6 +975,7 @@ public:
                 
                 if (tooMuchWhite(staff, imgErode, blackPerc))
                 {
+                    printf("Too much white\n");
                     continue;
                 }
                 
@@ -992,7 +993,7 @@ public:
                 int path_half_width2 = max(staffLineHeight, staffSpaceDistance/2);
                 
                 //Erasing paths from our image, must create a copy of our image
-                for (size_t i = 0; i<staff.size(); i++)
+                for (size_t i = 0; i < staff.size(); i++)
                 {
                     //printf("Staff Size: %lu\n", staff.size());
                     int col = staff[i].x();
@@ -1067,12 +1068,6 @@ public:
             }
         }
         return postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
-//        printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
-//        OneBitImageView *blank = clear(image);
-        //drawPaths(validStaves, blank);
-        //return blank;
-        
-        //return imageCopy;
     }
 
     //=============================================================================
