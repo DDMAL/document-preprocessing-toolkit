@@ -1166,8 +1166,8 @@ public:
     
     double staffDissimilarity(vector<Point> &staff1, vector<Point> &staff2)
     {
-        double currAvg1 = 0;
-        double currAvg2 = 0;
+        unsigned long currAvg1 = 0;
+        unsigned long currAvg2 = 0;
         
         for (size_t i = 0; i < staff1.size(); i++)
         {
