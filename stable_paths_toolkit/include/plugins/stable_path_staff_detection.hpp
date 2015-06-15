@@ -35,6 +35,7 @@
 #include "gamera.hpp"
 #include "png.h"
 #include "knnmodule.hpp"
+#include <time.h>
 
 using namespace std;
 using namespace Gamera;
@@ -86,7 +87,7 @@ public:
     typedef ImageData<RGBPixel> RGBImageData;
     typedef ImageView<RGBImageData> RGBImageView;
     
-    //OneBitImageView *primaryImage;
+    OneBitImageView *primaryImage;
 
     //=========================================================================================
     //                          Image Cloners/Eroders and Point Functions
@@ -276,12 +277,12 @@ public:
         verRun = new int[image.nrows() * image.ncols()];
         verDistance = new int[image.nrows() * image.ncols()];
         memset (verDistance, 0, sizeof(int) * image.nrows() * image.ncols());
-//        OneBitImageView *copy = myCloneImage(image);
+        //OneBitImageView *copy = myCloneImage(image);
 //        findStaffLineHeightandDistanceFinal(copy);
 //        delete copy;
         staffLineHeight = CUSTOM_STAFF_LINE_HEIGHT;
         staffSpaceDistance = CUSTOM_STAFF_SPACE_HEIGHT;
-        //primaryImage = myCloneImage(image);
+        primaryImage = new OneBitImageView(image);
     }
 
     ~stableStaffLineFinder ()
@@ -1563,7 +1564,11 @@ public:
                 if (pel) //Pixel is black
                 {
                     ++runs[1][verRun[(r * width) + c]];
-                    ++runs[0][verDistance[(r * width) + c]];
+                    r += verRun[(r * width) + c];
+                }
+                else //Pixel is white
+                {
+                    ++runs[0][verRun[(r * width) + c]];
                     r += verRun[(r * width) + c];
                 }
             }
