@@ -87,7 +87,10 @@ public:
     typedef ImageData<RGBPixel> RGBImageData;
     typedef ImageView<RGBImageData> RGBImageView;
     
-    OneBitImageView *primaryImage;
+    OneBitImageData *primaryImageData; //Will be the data for the image being input from the python side
+    OneBitImageView *primaryImage; //Will be the view for the image being input from the python side
+    int imageWidth;
+    int imageHeight;
 
     //=========================================================================================
     //                          Image Cloners/Eroders and Point Functions
@@ -270,19 +273,20 @@ public:
     //=========================================================================================
     
     template<class T>
-    stableStaffLineFinder(T &image)
+    stableStaffLineFinder(T &image) //Initializes the stableStaffLineFinder class and its values
     {
-        graphPath = new NODE[image.nrows() * image.ncols()];
-        graphWeight = new NODEGRAPH[image.nrows() * image.ncols()];
-        verRun = new int[image.nrows() * image.ncols()];
-        verDistance = new int[image.nrows() * image.ncols()];
-        memset (verDistance, 0, sizeof(int) * image.nrows() * image.ncols());
-        //OneBitImageView *copy = myCloneImage(image);
-//        findStaffLineHeightandDistanceFinal(copy);
-//        delete copy;
-        staffLineHeight = CUSTOM_STAFF_LINE_HEIGHT;
-        staffSpaceDistance = CUSTOM_STAFF_SPACE_HEIGHT;
-        primaryImage = new OneBitImageView(image);
+        primaryImage = myCloneImage(image);
+        imageWidth = image.ncols();
+        imageHeight = image.nrows();
+        
+        staffLineHeight = CUSTOM_STAFF_LINE_HEIGHT; //Set to 0 unless specified by user
+        staffSpaceDistance = CUSTOM_STAFF_SPACE_HEIGHT; //Set to 0 unless specified by user
+        
+        graphPath = new NODE[imageWidth * imageHeight];
+        graphWeight = new NODEGRAPH[imageWidth * imageHeight];
+        verRun = new int[imageWidth * imageHeight];
+        verDistance = new int[imageWidth * imageHeight];
+        memset (verDistance, 0, (sizeof(int) * imageWidth * imageHeight));
     }
 
     ~stableStaffLineFinder ()
