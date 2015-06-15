@@ -478,7 +478,7 @@ public:
             
             for (int i = 0; i < runs[1].size(); i++)
             {
-                if (runs[1][i] > maxcounter)
+                if (runs[1][i] >= maxcounter)
                 {
                     maxcounter = runs[1][i];
                     staffLineHeight = i;
@@ -1545,8 +1545,17 @@ OneBitImageView* stablePathDetection1(T &image, int staffline_height, int staffs
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
-    slf1.staffLineHeight = staffline_height;
-    slf1.staffSpaceDistance = staffspace_height;
+    
+    if (staffline_height)
+    {
+        slf1.staffLineHeight = staffline_height;
+    }
+    
+    if (staffspace_height)
+    {
+        slf1.staffSpaceDistance = staffspace_height;
+    }
+    
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     
     return slf1.stableStaffDetection(validStaves);
