@@ -225,6 +225,27 @@ public:
     {
         printf("(%lu, %lu)\n", p.x(), p.y());
     }
+    
+    template<class T>
+    OneBitImageView* subtractImage(T &initialImage, T &deleteImage)
+    {
+        int width = initialImage.ncols();
+        int height = initialImage.nrows();
+        OneBitImageView *result = myCloneImage(initialImage);
+        
+        for (int h = 0; h < height; h++)
+        {
+            for (int w = 0; w < width; w++)
+            {
+                if (initialImage.get(Point(w, h)) == deleteImage.get(Point(w, h)))
+                {
+                    result->set(Point(w, h), 0);
+                }
+            }
+        }
+        
+        return result;
+    }
 
     //=========================================================================================
     //=============================Primary Functions===========================================
@@ -616,14 +637,14 @@ public:
 //                        }
                         
 //                        Trial method to get rid of problem where imgErode stablePaths are not deleted. 
-//                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
-//                        {
-//                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                        }
+                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
+                        {
+                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        }
                         
-                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
@@ -960,7 +981,8 @@ public:
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
             
-            trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
+            //trimIndividualPaths(setOfStaves, (2 * staffSpaceDistance));
+            //trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
             
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
@@ -1030,7 +1052,7 @@ public:
         {
             sum += vec[i];
             sum -= vec[i - window];
-            if (sum < (window * 1 * 0.9)) //Original code accounted for greyscale, may be problematic
+            if (sum < (window * 1.0 * 0.9)) //Original code accounted for greyscale, may be problematic
             {
                 startX = i + 1;
             }
@@ -1061,6 +1083,22 @@ public:
             }
         }
     }
+    
+//    void trimIndividualPaths(vector <vector <Point>> &setOfStaves, int window)
+//    {
+//        for (int i = 0; i < setOfStaves.size(); i++)
+//        {
+//            for (int y = 0; y < imageWidth; y++)
+//            {
+//                if (primaryImage->get(setOfStaves[i][y])) //if a black pixel is found, end trimming
+//                {
+//                    continue;
+//                }
+//                
+//                setOfStaves[i].erase([y]);
+//            }
+//        }
+//    }
     
     void smoothStaffLine(vector<Point> &staff, int halfWindowSize)
     {
