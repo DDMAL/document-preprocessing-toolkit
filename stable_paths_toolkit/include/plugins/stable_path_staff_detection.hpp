@@ -35,6 +35,7 @@
 #include "gamera.hpp"
 #include "png.h"
 #include "knnmodule.hpp"
+#include "plugins/arithmetic.hpp"
 #include <time.h>
 
 using namespace std;
@@ -659,7 +660,7 @@ public:
                 break;
             }
         }
-        postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
+        postProcessing(validStaves, imageErodedCopy);
         printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
         delete imgErode;
         delete imageErodedCopy;
@@ -810,7 +811,7 @@ public:
         return 0;
     }
     
-    vector <vector <vector<Point> > > postProcessing(vector <vector<Point> > &validStaves, int staffDistance, OneBitImageView *imageErodedCopy)
+    vector <vector <vector<Point> > > postProcessing(vector <vector<Point> > &validStaves, OneBitImageView *imageErodedCopy)
     {
         vector <vector <vector<Point> > > setsOfValidStaves;
         cout <<"Postprocessing Image\n";
@@ -844,13 +845,13 @@ public:
         //staffDistance similar to staffLineHeightValue
         int maxStaffDistance;
         
-        if (abs(staffDistance - staffLineHeight) < (0.5 * max(staffDistance, staffLineHeight)))
+        if (abs(staffSpaceDistance - staffLineHeight) < (0.5 * max(staffSpaceDistance, staffLineHeight)))
         {
-            maxStaffDistance = max(3 * staffDistance, 3 * staffLineHeight);
+            maxStaffDistance = max(3 * staffSpaceDistance, 3 * staffLineHeight);
         }
         else
         {
-            maxStaffDistance = max(2 * staffDistance, 2 * staffLineHeight);
+            maxStaffDistance = max(2 * staffSpaceDistance, 2 * staffLineHeight);
         }
         
         printf("maxStaffDistance = %d\n", maxStaffDistance);
@@ -954,9 +955,8 @@ public:
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
             
-            //    #ifdef TRIMDEST
-            //trimPath(medianStaff, (2 * staffDistance), startx, endx);
-            //    #endif
+            trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
+            
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
                 set_it = setsOfValidStaves.erase(set_it);
@@ -966,7 +966,7 @@ public:
             //2 trim staffs from start to nvalid
             for (int i = 0; i < setOfStaves.size(); i++)
             {
-                smoothStaffLine(setOfStaves[i], 2 * staffDistance);
+                smoothStaffLine(setOfStaves[i], 2 * staffSpaceDistance);
                 
                 vector<Point>::iterator it = setOfStaves[i].begin();
                 
@@ -1262,7 +1262,7 @@ public:
                 break;
             }
         }
-        return postProcessing(validStaves, staffSpaceDistance, imageErodedCopy);
+        return postProcessing(validStaves, imageErodedCopy);
     }
 
     //=============================================================================
@@ -1654,5 +1654,55 @@ RGBImageView* drawColorfulStablePaths(T &image)
     
     return new1;
 }
+
+//template<class T>
+//RGBImageView* deletionStablePathDetection(T &image)
+//{
+//    stableStaffLineFinder slf1 (image);
+//    RGBImageData *data1 = new RGBImageData(image.size());
+//    RGBImageView *new1 = new RGBImageView(*data1);
+//    vector<vector <Point> > validStaves;
+//    OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
+//    OneBitImageView subtractedImage = subtract_images(image, *firstPass);
+//    validStaves.clear();
+//    stableStaffLineFinder slf2 (subtractedImage);
+//    vector< vector <vector<Point> > > setsOfValidStaves;
+//    setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, subtractedImage);
+//    int redCount, blueCount, greenCount, counter;
+//    redCount = blueCount = greenCount = counter = 0;
+//    
+//    for (int set = 0; set < setsOfValidStaves.size(); set++)
+//    {
+//        if (counter == 1)
+//        {
+//            redCount = 255;
+//            greenCount = 0;
+//        }
+//        else if (counter == 2)
+//        {
+//            greenCount = 150;
+//            blueCount = 0;
+//            redCount = 0;
+//        }
+//        else if (counter == 3)
+//        {
+//            blueCount = 175;
+//            redCount = 0;
+//            counter = 0;
+//        }
+//        
+//        for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
+//        {
+//            for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
+//            {
+//                new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+//            }
+//        }
+//        
+//        counter++;
+//    }
+//    
+//    return new1;
+//}
 
 #endif
