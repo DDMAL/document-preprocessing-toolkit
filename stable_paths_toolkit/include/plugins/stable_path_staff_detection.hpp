@@ -449,12 +449,12 @@ public:
                 if (pel) //Pixel is black
                 {
                     ++runs[1][verRun[(r * width) + c]];
-                    r += verRun[(r * width) + c];
+                    r += verRun[(r * width) + c] - 1;
                 }
                 else //Pixel is white
                 {
                     ++runs[0][verRun[(r * width) + c]];
-                    r += verRun[(r * width) + c];
+                    r += verRun[(r * width) + c] - 1;
                 }
             }
         }
@@ -1556,7 +1556,7 @@ OneBitImageView* stablePathDetection1(T &image, int staffline_height, int staffs
         slf1.staffSpaceDistance = staffspace_height;
     }
     
-    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    printf("Rows (image.nrows()): %lu, Rows (imageHeight): %d Columns (image.ncols()): %lu Columns (imageWidth): %d\n", image.nrows(), slf1.imageHeight, image.ncols(), slf1.imageWidth);
     
     return slf1.stableStaffDetection(validStaves);
 }
