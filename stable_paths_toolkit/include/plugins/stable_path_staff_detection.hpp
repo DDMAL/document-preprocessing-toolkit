@@ -546,7 +546,7 @@ public:
                     return imageCopy;
                 }
                 
-                vector<size_t> copy_allSumOfValues = allSumOfValues; 
+                vector<size_t> copy_allSumOfValues = allSumOfValues;
                 sort(allSumOfValues.begin(), allSumOfValues.end());
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
                 int i;
@@ -955,12 +955,12 @@ public:
                 }
                 
                 sort(medianValue.begin(), medianValue.end());
-                medianStaff.push_back(medianValue[medianValue.size() / 5]); //Assumes stafflines in groups of 5
+                medianStaff.push_back(medianValue[medianValue.size() - 1]);
             }
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
             
-            //trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
+            trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
             
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
