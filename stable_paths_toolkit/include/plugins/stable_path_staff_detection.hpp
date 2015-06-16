@@ -309,51 +309,51 @@ public:
         cout <<"Done finding vertical runs" <<endl;
         
         //Find Vertical Distance
-        for (int c = 0; c < cols; c++)
-        {
-            for (int r = 0; r < rows; r++)
-            {
-                //cout <<"Finding vertical distance of Point(" <<c <<", " <<r <<")" <<endl;
-                unsigned char pel = primaryImage->get(Point(c, r));
-                int row = r;
-                unsigned char curr_pel = pel;
-                
-                while ((row > 0) && (curr_pel == pel))
-                {
-                    row--;
-                    curr_pel = primaryImage->get(Point(c, row));
-                }
-                
-                int run1 = 1;
-                
-                while ((row > 0) && (curr_pel != pel))
-                {
-                    row--;
-                    curr_pel = primaryImage->get(Point(c, row));
-                    run1++;
-                }
-                
-                row = r;
-                curr_pel = pel;
-                
-                while ((row < rows - 1) && (curr_pel == pel))
-                {
-                    row++;
-                    curr_pel = primaryImage->get(Point(c, row));
-                }
-                
-                int run2 = 1;
-                
-                while ((row < rows - 1) && (curr_pel != pel))
-                {
-                    row++;
-                    curr_pel = primaryImage->get(Point(c, row));
-                    run2++;
-                }
-                
-                verDistance[(r * cols) + c] = min(run1, run2);
-            }
-        }
+//        for (int c = 0; c < cols; c++)
+//        {
+//            for (int r = 0; r < rows; r++)
+//            {
+//                //cout <<"Finding vertical distance of Point(" <<c <<", " <<r <<")" <<endl;
+//                unsigned char pel = primaryImage->get(Point(c, r));
+//                int row = r;
+//                unsigned char curr_pel = pel;
+//                
+//                while ((row > 0) && (curr_pel == pel))
+//                {
+//                    row--;
+//                    curr_pel = primaryImage->get(Point(c, row));
+//                }
+//                
+//                int run1 = 1;
+//                
+//                while ((row > 0) && (curr_pel != pel))
+//                {
+//                    row--;
+//                    curr_pel = primaryImage->get(Point(c, row));
+//                    run1++;
+//                }
+//                
+//                row = r;
+//                curr_pel = pel;
+//                
+//                while ((row < rows - 1) && (curr_pel == pel))
+//                {
+//                    row++;
+//                    curr_pel = primaryImage->get(Point(c, row));
+//                }
+//                
+//                int run2 = 1;
+//                
+//                while ((row < rows - 1) && (curr_pel != pel))
+//                {
+//                    row++;
+//                    curr_pel = primaryImage->get(Point(c, row));
+//                    run2++;
+//                }
+//                
+//                verDistance[(r * cols) + c] = min(run1, run2);
+//            }
+//        }
         
         if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
         {
@@ -399,8 +399,8 @@ public:
         unsigned int pel2 = primaryImage->get(pixelVal2); //Gets pixel value of Point 2
         int width = imageWidth;
         
-        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
-        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
+//        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
+//        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
         int vRun1 = verRun[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
         int vRun2 = verRun[(pixelVal2.y() * width) + pixelVal2.x()];
         
@@ -418,15 +418,15 @@ public:
         
         int y = (pel == 0 ? y0:y1);
         
-        if ( (pel) && ( (min(vRun1, vRun2) <= staffLineHeight)) )
+        if ( (pel) && ( (min(vRun1, vRun2) <= (staffLineHeight))) ) //+2 added to add some leeway
         {
             --y;
         }
         
-        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
-        {
-            y++;
-        }
+//        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
+//        {
+//            y++;
+//        }
         
         return y;
     }
@@ -540,9 +540,14 @@ public:
                     }
                 }
                 
-                vector<size_t> copy_allSumOfValues = allSumOfValues; //Still not sure why this is necessary
+                if (!allSumOfValues.size())
+                {
+                    cout <<"There are no valid stable paths in your image. Sorry.\n";
+                    return imageCopy;
+                }
+                
+                vector<size_t> copy_allSumOfValues = allSumOfValues; 
                 sort(allSumOfValues.begin(), allSumOfValues.end());
-                //Must deal with empty allSumOfValues in case of completely blank image/image with no initial stablePaths
                 size_t medianSumOfValues = allSumOfValues[allSumOfValues.size()/2];
                 int i;
                 
@@ -569,6 +574,7 @@ public:
                 
                 if (tooMuchWhite(staff, imgErode, blackPerc))
                 {
+                    cout <<"Too white, line being removed\n";
                     continue;
                 }
                 
@@ -603,11 +609,11 @@ public:
                         }
                         
 //                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
-                        if (verRun[((row + j) * ncols) + col] < ((ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1)) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
-                        {
-                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        }
+//                        if (verRun[((row + j) * ncols) + col] < ((ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1)) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
+//                        {
+//                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+//                        }
                         
 //                        Trial method to get rid of problem where imgErode stablePaths are not deleted. 
 //                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
@@ -616,8 +622,8 @@ public:
 //                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 //                        }
                         
-//                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
+                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
@@ -857,12 +863,11 @@ public:
         printf("maxStaffDistance = %d\n", maxStaffDistance);
         
         //Organize in sets
-        //        vector <vector <vector<Point> > > setsOfValidStaves;
         int start = 0;
         
         for (size_t nvalid = 0; nvalid < validStaves.size(); nvalid++)
         {
-            if (nvalid == validStaves.size() - 1 || simplifiedAvgDistance(validStaves[nvalid], validStaves[nvalid + 1]) > maxStaffDistance)
+            if ((nvalid == validStaves.size() - 1) || (simplifiedAvgDistance(validStaves[nvalid], validStaves[nvalid + 1]) > maxStaffDistance))
             {
                 vector <vector<Point> > singleSet;
                 
@@ -955,7 +960,7 @@ public:
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
             
-            trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
+            //trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
             
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
@@ -1195,7 +1200,7 @@ public:
                     int row = staff[i].y();
                     
                     //ERASE PATHS ALREADY SELECTED!
-                    for (int j =-path_half_width2; j <= path_half_width2; j++)
+                    for (int j = -path_half_width2; j <= path_half_width2; j++)
                     {
                         // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         // printf("Currently erasing lines\n");
@@ -1357,7 +1362,7 @@ public:
         int endCol = image->ncols() - 1;
         double usedSize = endCol - startCol + 1.0;
         
-        if (sumOfValues < (1.0 - minBlackPerc) * (usedSize))
+        if (sumOfValues < ((1.0 - minBlackPerc) * (usedSize)))
         {
             return true;
         }
