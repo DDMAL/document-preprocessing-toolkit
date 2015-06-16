@@ -356,7 +356,7 @@ public:
         
         if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
         {
-            findStaffLineHeightandDistance();
+            findStaffLineHeightAndDistance();
         }
         
         //Find Graph Weights
@@ -430,7 +430,7 @@ public:
         return y;
     }
     
-    void findStaffLineHeightandDistance()
+    void findStaffLineHeightAndDistance()
     {
         int width = imageWidth;
         int height = imageHeight;
