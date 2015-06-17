@@ -45,6 +45,7 @@ using namespace Gamera;
 #define CUSTOM_STAFF_SPACE_HEIGHT 0
 #define ALLOWED_DISSIMILARITY 3
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
+#define ALLOWED_VERTICAL_BLACK_PERCENTAGE .98
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -961,28 +962,29 @@ public:
             vector <vector<Point> > &setOfStaves = *set_it; //setsOfValidStaves[i]
             
             //Compute the median staff in terms of color
-            vector<unsigned char> medianStaff;
-            
-            for (int c = 0; c < ncolsEroded; c++)
-            {
-                vector <unsigned char> medianValue;
-                
-                for (int i = 0; i < setOfStaves.size(); i++)
-                {
-                    int x = setOfStaves[i][c].x();
-                    int y = setOfStaves[i][c].y();
-                    unsigned char pel = imageErodedCopy->get(getPointView((y * ncolsEroded) + x, ncolsEroded, nrowsEroded));
-                    medianValue.push_back(pel);
-                }
-                
-                sort(medianValue.begin(), medianValue.end());
-                medianStaff.push_back(medianValue[medianValue.size() - 1]);
-            }
+//            vector<unsigned char> medianStaff;
+//            
+//            for (int c = 0; c < ncolsEroded; c++)
+//            {
+//                vector <unsigned char> medianValue;
+//                
+//                for (int i = 0; i < setOfStaves.size(); i++)
+//                {
+//                    int x = setOfStaves[i][c].x();
+//                    int y = setOfStaves[i][c].y();
+//                    unsigned char pel = imageErodedCopy->get(getPointView((y * ncolsEroded) + x, ncolsEroded, nrowsEroded));
+//                    medianValue.push_back(pel);
+//                }
+//                
+//                sort(medianValue.begin(), medianValue.end());
+//                medianStaff.push_back(medianValue[medianValue.size() - 1]);
+//            }
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
             
             //trimIndividualPaths(setOfStaves, (2 * staffSpaceDistance));
             //trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
+            blackPercentageTrimEdges(setOfStaves, startx, endx);
             
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
@@ -1080,6 +1082,27 @@ public:
             if (sum < (window * 1 * 0.9)) //Original code accounted for greyscale
             {
                 endX = i - 1;
+            }
+        }
+    }
+    
+    void blackPercentageTrimEdges(vector< vector<Point> > &staffSystem, int &startX, int &endX)
+    {
+        //startX = 0;
+        for (int col = startX; col < (imageWidth / 3); col++) //Trim up to a third of the staff system
+        {
+            if (verticalBlackPercentage(col, staffSystem[0][col].y(), staffSystem[staffSystem.size() - 1][col].y()) > ALLOWED_VERTICAL_BLACK_PERCENTAGE)
+            {
+                startX++;
+            }
+        }
+        
+        //endX = imageWidth - 1;
+        for (int col = endX; col > (imageWidth - (imageWidth * (1.0 / 3.0))); col--) //Trim up to a third of the staff system
+        {
+            if (verticalBlackPercentage(col, staffSystem[0][col].y(), staffSystem[staffSystem.size() - 1][col].y()) > ALLOWED_VERTICAL_BLACK_PERCENTAGE)
+            {
+                endX--;
             }
         }
     }
@@ -1571,7 +1594,7 @@ public:
             numBlackPixels += primaryImage->get(Point(col, row));
         }
         
-        return (numBlackPixels / totalRows);
+        return (1.0 - (numBlackPixels / totalRows));
     }
 
 };
