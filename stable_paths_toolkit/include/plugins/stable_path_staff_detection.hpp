@@ -226,8 +226,8 @@ public:
         printf("(%lu, %lu)\n", p.x(), p.y());
     }
     
-    template<class T>
-    OneBitImageView* subtractImage(T &initialImage, T &deleteImage)
+    template<class T, class U>
+    OneBitImageView* subtractImage(T &initialImage, U &deleteImage)
     {
         int width = initialImage.ncols();
         int height = initialImage.nrows();
@@ -630,18 +630,18 @@ public:
                         }
                         
 //                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
-//                        if (verRun[((row + j) * ncols) + col] < ((ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1)) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
+                        if (verRun[((row + j) * ncols) + col] < ((ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1)) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
+                        {
+                            imageCopy->set(Point(col, (row + j)), 0);
+                            imgErode->set(Point(col, (row + j)), 0);
+                        }
+                        
+//                        Trial method to get rid of problem where imgErode stablePaths are not deleted. 
+//                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
 //                        {
 //                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 //                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 //                        }
-                        
-//                        Trial method to get rid of problem where imgErode stablePaths are not deleted. 
-                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
-                        {
-                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-                        }
                         
 //                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 //                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
@@ -1184,6 +1184,12 @@ public:
                     }
                 }
                 
+                if (!allSumOfValues.size())
+                {
+                    cout <<"There are no valid stable paths in your image. Sorry.\n";
+                    return postProcessing(validStaves, imageErodedCopy);
+                }
+                
                 vector<size_t> copy_allSumOfValues = allSumOfValues; //Still not sure why this is necessary
                 sort(allSumOfValues.begin(), allSumOfValues.end());
                 //Must deal with empty allSumOfValues in case of completely blank image/image with no initial stablePaths
@@ -1698,54 +1704,54 @@ RGBImageView* drawColorfulStablePaths(T &image)
     return new1;
 }
 
-//template<class T>
-//RGBImageView* deletionStablePathDetection(T &image)
-//{
-//    stableStaffLineFinder slf1 (image);
-//    RGBImageData *data1 = new RGBImageData(image.size());
-//    RGBImageView *new1 = new RGBImageView(*data1);
-//    vector<vector <Point> > validStaves;
-//    OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
-//    OneBitImageView subtractedImage = subtract_images(image, *firstPass);
-//    validStaves.clear();
-//    stableStaffLineFinder slf2 (subtractedImage);
-//    vector< vector <vector<Point> > > setsOfValidStaves;
-//    setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, subtractedImage);
-//    int redCount, blueCount, greenCount, counter;
-//    redCount = blueCount = greenCount = counter = 0;
-//    
-//    for (int set = 0; set < setsOfValidStaves.size(); set++)
-//    {
-//        if (counter == 1)
-//        {
-//            redCount = 255;
-//            greenCount = 0;
-//        }
-//        else if (counter == 2)
-//        {
-//            greenCount = 150;
-//            blueCount = 0;
-//            redCount = 0;
-//        }
-//        else if (counter == 3)
-//        {
-//            blueCount = 175;
-//            redCount = 0;
-//            counter = 0;
-//        }
-//        
-//        for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
-//        {
-//            for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
-//            {
-//                new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
-//            }
-//        }
-//        
-//        counter++;
-//    }
-//    
-//    return new1;
-//}
+template<class T>
+RGBImageView* deletionStablePathDetection(T &image)
+{
+    stableStaffLineFinder slf1 (image);
+    RGBImageData *data1 = new RGBImageData(image.size());
+    RGBImageView *new1 = new RGBImageView(*data1);
+    vector<vector <Point> > validStaves;
+    OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
+    OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
+    validStaves.clear();
+    stableStaffLineFinder slf2 (*subtractedImage);
+    vector< vector <vector<Point> > > setsOfValidStaves;
+    setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
+    int redCount, blueCount, greenCount, counter;
+    redCount = blueCount = greenCount = counter = 0;
+    
+    for (int set = 0; set < setsOfValidStaves.size(); set++)
+    {
+        if (counter == 1)
+        {
+            redCount = 255;
+            greenCount = 0;
+        }
+        else if (counter == 2)
+        {
+            greenCount = 150;
+            blueCount = 0;
+            redCount = 0;
+        }
+        else if (counter == 3)
+        {
+            blueCount = 175;
+            redCount = 0;
+            counter = 0;
+        }
+        
+        for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
+        {
+            for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
+            {
+                new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+            }
+        }
+        
+        counter++;
+    }
+    
+    return new1;
+}
 
 #endif

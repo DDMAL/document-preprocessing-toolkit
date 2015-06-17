@@ -32,17 +32,29 @@ class findStablePaths(PluginFunction):
     return_type = ImageType([ONEBIT], "pathsDrawn")
     self_type = ImageType([ONEBIT])
 
+class deletionStablePathDetection(PluginFunction):
+    """Runs stable path staff line deletion, subtracts the imperfect image, then reruns stable staff line detection again and returns the stafflines"""
+    category = "Stable Paths Toolkit"
+    return_type = ImageType([RGB], "deletionStablePathDetection")
+    self_type = ImageType([ONEBIT])
+
 class displayWeights(PluginFunction):
     """Displays the image in greyscale to demonstrate weights"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([GREYSCALE])
     self_type = ImageType([ONEBIT])
 
+class drawColorfulStablePaths(PluginFunction):
+    """Displays the image in greyscale to demonstrate weights"""
+    category = "Stable Paths Toolkit"
+    return_type = ImageType([RGB])
+    self_type = ImageType([ONEBIT])
+
 class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [returnGraphWeights, deleteStablePaths, findStablePaths, stablePathDetection1, displayWeights, stablePathDetectionDraw]
+    functions = [returnGraphWeights, deleteStablePaths, findStablePaths, stablePathDetection1, deletionStablePathDetection, displayWeights, stablePathDetectionDraw, drawColorfulStablePaths]
     author = "Your name here"
     url = "Your URL here"
 module = stablePaths()
