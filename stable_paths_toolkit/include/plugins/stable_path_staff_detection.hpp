@@ -1560,6 +1560,19 @@ public:
         
         return image;
     }
+    
+    double verticalBlackPercentage(int col, int startRow, int endRow)
+    {
+        double totalRows = endRow - startRow;
+        double numBlackPixels = 0.0;
+        
+        for (int row = startRow; row <= endRow; row++)
+        {
+            numBlackPixels += primaryImage->get(Point(col, row));
+        }
+        
+        return (numBlackPixels / totalRows);
+    }
 
 };
 
@@ -1751,6 +1764,32 @@ RGBImageView* deletionStablePathDetection(T &image)
         counter++;
     }
     
+    return new1;
+}
+
+template<class T>
+GreyScaleImageView* testForVerticalBlackPercentage(T &image)
+{
+    stableStaffLineFinder slf1 (image);
+    vector<vector <Point> > validStaves;
+    GreyScaleImageView *new1 = slf1.clearGrey(image);
+    OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
+    OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
+    validStaves.clear();
+    stableStaffLineFinder slf2 (*subtractedImage);
+    vector< vector <vector<Point> > > setsOfValidStaves;
+    setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
+    
+    for (int set = 0; set < setsOfValidStaves.size(); set++)
+    {
+        for (int col = 0; col < slf1.imageWidth; col++)
+        {
+            for (int y = setsOfValidStaves[set][0][col].y(); y < setsOfValidStaves[set][setsOfValidStaves[set].size() - 1][col].y(); y++)
+            {
+                new1->set(Point(col, y), (255.0 * slf1.verticalBlackPercentage(col, setsOfValidStaves[set][0][col].y(), setsOfValidStaves[set][setsOfValidStaves[set].size() - 1][col].y())));
+            }
+        }
+    }
     return new1;
 }
 
