@@ -45,7 +45,8 @@ using namespace Gamera;
 #define CUSTOM_STAFF_SPACE_HEIGHT 0
 #define ALLOWED_DISSIMILARITY 3
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
-#define ALLOWED_VERTICAL_BLACK_PERCENTAGE .98
+#define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
+#define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -440,7 +441,7 @@ public:
         
         int y = (pel == 0 ? y0:y1);
         
-        if ( (pel) && ( (min(vRun1, vRun2) <= (staffLineHeight))) ) //+2 added to add some leeway
+        if ( (pel) && ( (min(vRun1, vRun2) <= (staffLineHeight * ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION))))
         {
             --y;
         }
@@ -984,7 +985,7 @@ public:
             
             //trimIndividualPaths(setOfStaves, (2 * staffSpaceDistance));
             //trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
-            blackPercentageTrimEdges(setOfStaves, startx, endx);
+            //blackPercentageTrimEdges(setOfStaves, startx, endx);
             
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
