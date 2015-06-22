@@ -515,7 +515,6 @@ public:
     
     OneBitImageView* stableStaffDetection(vector <vector <Point> > &validStaves)
     {
-        //constructGraphWeights(image);
         OneBitImageView *imageCopy = myCloneImage(*primaryImage);
         OneBitImageView *imgErode = myCloneImage(*primaryImage);
         OneBitImageView *imageErodedCopy = myCloneImage(*primaryImage);
@@ -1414,7 +1413,6 @@ public:
         {
             int col = vec[i].x();
             int row = vec[i].y();
-            //unsigned char pel = image->get(getPointView(((row * image->ncols()) + col), image->ncols(), image->nrows()));
             unsigned char pel = image->get(Point(col, row));
             sumOfValues += pel;
         }
@@ -1425,7 +1423,6 @@ public:
     bool tooMuchWhite (vector<Point> &vec, OneBitImageView *image, double minBlackPerc)
     {
         int sumOfValues = sumOfValuesInVector(vec, image);
-        //size_t len = vec.size();
         int startCol = 0;
         int endCol = image->ncols() - 1;
         double usedSize = endCol - startCol + 1.0;
@@ -1674,7 +1671,6 @@ GreyScaleImageView* displayWeights(T &image) //Currently doesn't work...
         for (int row = 0; row < nrows - 1; row++)
         {
             new1->set(Point(col, row), (2 * slf1.graphWeight[row*ncols+col].weight_up) + (2 * slf1.graphWeight[row*ncols+col].weight_down) + (2 * slf1.graphWeight[row*ncols+col].weight_hor));
-            //new1->set(Point(col, row), slf1.graphWeight[row*ncols+col].weight_up + slf1.graphWeight[row*ncols+col].weight_down);
         }
     }
     
@@ -1814,6 +1810,7 @@ GreyScaleImageView* testForVerticalBlackPercentage(T &image)
             }
         }
     }
+    
     return new1;
 }
 
