@@ -47,7 +47,7 @@ using namespace Gamera;
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
 #define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
-#define ALLOWED_VERTICAL_HIT_PERCENTAGE .5
+#define ALLOWED_VERTICAL_HIT_PERCENTAGE .25
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -1120,8 +1120,29 @@ public:
             getBreakPoints(staffSets[set], breakValues[set], image);
         }
         
+        for (int set = 0; set < numSets; set++)
+        {
+            trimIndividualSet(staffSets[set], breakValues[set], trimmedSets);
+        }
+        
         return trimmedSets;
     }
+    
+    void trimIndividualSet(vector <vector <Point> > &staffSet, vector <int> &breakValues, vector <vector <vector <Point> > > &trimmedSets)
+    {
+        vector<Point>::iterator it = staffSet[0].begin();
+        int counter = 0;
+        
+        for (int breakValIndex = 0; breakValIndex < breakValues.size() - 1; breakValIndex++)
+        {
+            if (breakValIndex % 2)
+            {
+//                trimmedSets[0].insert(trimmedSets.end(), staffSet[breakValues[breakValIndex]], staffSet[breakValues[breakValIndex + 1]]);
+            }
+        }
+    }
+    
+//    void convertBreaksToIterators
     
     void getBreakPoints(vector <vector <Point> > &staffSet, vector <int> &breakValues, OneBitImageView *image) //Will be used to check hits of black pixels by a set of stable paths
     {
