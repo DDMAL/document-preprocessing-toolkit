@@ -47,6 +47,7 @@ using namespace Gamera;
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
 #define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
+#define ALLOWED_VERTICAL_HIT_PERCENTAGE .5
 
 //Copied from stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -1030,6 +1031,7 @@ public:
             }
         }
         
+        finalTrim(setsOfValidStaves, imageErodedCopy);
         return setsOfValidStaves;
     }
     
@@ -1107,6 +1109,72 @@ public:
         }
     }
     
+    vector <vector <vector <Point> > > finalTrim(vector <vector <vector <Point> > > &staffSets, OneBitImageView *image)
+    {
+        vector <vector <vector <Point> > > trimmedSets; //Will store the final, trimmed staff systems
+        vector <vector <int> > breakValues(staffSets.size()); //Will store the x values at which systems will be broken up. Assumed to store in sets of two with first number being the beginning of a desired staff system and the second number being the end of a desired staff system.
+        int numSets = staffSets.size();
+        
+        for (int set = 0; set < numSets; set++)
+        {
+            getBreakPoints(staffSets[set], breakValues[set], image);
+        }
+        
+        return trimmedSets;
+    }
+    
+    void getBreakPoints(vector <vector <Point> > &staffSet, vector <int> &breakValues, OneBitImageView *image) //Will be used to check hits of black pixels by a set of stable paths
+    {
+        int startingX = staffSet[0][0].x();
+        int endingX = staffSet[0][staffSet[0].size() - 1].x();
+        int setSize = staffSet.size();
+        int mishitCounter = 0;
+        int hitCounter = 0;
+        
+        for (int xVal = startingX; xVal <= endingX; xVal++)
+        {
+            int hitPercent = checkHitPercentage(staffSet, xVal, image);
+            
+            if (hitPercent <= ALLOWED_VERTICAL_HIT_PERCENTAGE)
+            {
+                mishitCounter++;
+            }
+            else if ((breakValues.size() % 2) && hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE)
+            {
+                hitCounter++;
+            }
+            
+            if (!(breakValues.size() % 2) && (mishitCounter > staffSpaceDistance))
+            {
+                breakValues.push_back(xVal - (mishitCounter - 1));
+                hitCounter = 0;
+            }
+            else if ((breakValues.size() % 2) && (hitCounter > staffSpaceDistance))
+            {
+                breakValues.push_back(xVal - (hitCounter - 1));
+                mishitCounter = 0;
+            }
+        }
+    }
+    
+    double checkHitPercentage(vector <vector <Point> > &staffSet, int xVal, OneBitImageView *image) //returns percentage of black pixels hit by staves sharing an x value
+    {
+        int numOfStaves = staffSet.size();
+        int numHits = 0; //Stores number of black pixels hit by a staves sharing an x value in one staff set
+        
+        for (int staff = 0; staff < numOfStaves; staff++)
+        {
+            if (image->get(staffSet[staff][xVal]))
+            {
+                numHits++;
+            }
+        }
+        
+        return (numHits / numOfStaves);
+    }
+    
+    
+    
 //    void trimIndividualPaths(vector <vector <Point>> &setOfStaves, int window)
 //    {
 //        for (int i = 0; i < setOfStaves.size(); i++)
@@ -1159,7 +1227,6 @@ public:
     template<class T>
     vector <vector <vector<Point> > > returnSetsOfStablePaths(vector <vector <Point> > &validStaves, T &image)
     {
-        //constructGraphWeights(image);
         OneBitImageView *imageCopy = myCloneImage(image);
         OneBitImageView *imgErode = myCloneImage(image);
         OneBitImageView *imageErodedCopy = myCloneImage(image);
@@ -1248,6 +1315,7 @@ public:
                 
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
                 printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                
                 if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
                 {
                     printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
@@ -1271,7 +1339,7 @@ public:
                     {
                         // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         // printf("Currently erasing lines\n");
-                        if ( ((row + j) > nrows - 1) || ((row + j) < 0) )
+                        if ( ((row + j) > (nrows - 1)) || ((row + j) < 0) )
                         {
                             continue;
                         }
@@ -1334,6 +1402,7 @@ public:
                 break;
             }
         }
+        
         return postProcessing(validStaves, imageErodedCopy);
     }
 
@@ -1395,10 +1464,12 @@ public:
         
         avgDiff /= staff1.size();
         avgDiff = sqrt(avgDiff);
+        
         if (avgDiff > 1933)
         {
             cout <<"Here's the culprit" <<endl;
         }
+        
         return avgDiff;
     }
     
