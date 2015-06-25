@@ -51,7 +51,13 @@ class testForVerticalBlackPercentage(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class drawColorfulStablePaths(PluginFunction):
-    """Displays the image in greyscale to demonstrate weights"""
+    """Displays the stable paths in sets of matching colors to demonstrate the systems found"""
+    category = "Stable Paths Toolkit"
+    return_type = ImageType([RGB])
+    self_type = ImageType([ONEBIT])
+
+class trimmedStablePaths(PluginFunction):
+    """Displays the trimmed stable paths"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
@@ -60,7 +66,7 @@ class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [returnGraphWeights, deleteStablePaths, testForVerticalBlackPercentage, findStablePaths, stablePathDetection1, deletionStablePathDetection, displayWeights, stablePathDetectionDraw, drawColorfulStablePaths]
+    functions = [returnGraphWeights, trimmedStablePaths, deleteStablePaths, testForVerticalBlackPercentage, findStablePaths, stablePathDetection1, deletionStablePathDetection, displayWeights, stablePathDetectionDraw, drawColorfulStablePaths]
     author = "Your name here"
     url = "Your URL here"
 module = stablePaths()

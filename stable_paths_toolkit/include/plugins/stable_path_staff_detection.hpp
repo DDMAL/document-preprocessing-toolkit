@@ -1031,8 +1031,8 @@ public:
             }
         }
         
-        return finalTrim(setsOfValidStaves, imageErodedCopy);
-        //return setsOfValidStaves;
+        //return finalTrim(setsOfValidStaves, imageErodedCopy);
+        return setsOfValidStaves;
     }
     
     void trimPath(vector<unsigned char> &vec, int window, int &startX, int &endX)
@@ -1180,13 +1180,19 @@ public:
             if (hitPercent <= ALLOWED_VERTICAL_HIT_PERCENTAGE)
             {
                 mishitCounter++;
+                
             }
             else if ((breakValues.size() % 2) && hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE)
             {
                 hitCounter++;
+                
+                if (hitCounter > mishitCounter)
+                {
+                    mishitCounter = 0;
+                }
             }
             
-            if (!(breakValues.size() % 2) && (mishitCounter > staffSpaceDistance))
+            if ((!(breakValues.size() % 2)) && (mishitCounter > staffSpaceDistance))
             {
                 breakValues.push_back(xVal - (mishitCounter - 1));
                 hitCounter = 0;
@@ -1206,13 +1212,38 @@ public:
         
         for (int staff = 0; staff < numOfStaves; staff++)
         {
-            if (image->get(staffSet[staff][xVal]))
+//            if (image->get(staffSet[staff][xVal]))
+            if (nearHit(image, staffSet[staff][xVal]))
             {
                 numHits++;
             }
         }
         
         return (numHits / numOfStaves);
+    }
+    
+    bool nearHit(OneBitImageView *image, Point pixel)
+    {
+        int startingY;
+        
+        if (pixel.y() - staffLineHeight > 0)
+        {
+            startingY = pixel.y() - staffLineHeight;
+        }
+        else
+        {
+            startingY = 0;
+        }
+        
+        for (int yVal = startingY; yVal < startingY + (2 * staffLineHeight) && yVal < imageHeight; yVal++)
+        {
+            if (image->get(Point(pixel.x(), yVal)))
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     
@@ -1922,6 +1953,60 @@ GreyScaleImageView* testForVerticalBlackPercentage(T &image)
                 new1->set(Point(col, y), (255.0 * slf1.verticalBlackPercentage(col, setsOfValidStaves[set][0][col].y(), setsOfValidStaves[set][setsOfValidStaves[set].size() - 1][col].y())));
             }
         }
+    }
+    
+    return new1;
+}
+
+template<class T>
+RGBImageView* trimmedStablePaths(T &image)
+{
+    stableStaffLineFinder slf1 (image);
+    RGBImageData *data1 = new RGBImageData(image.size());
+    RGBImageView *new1 = new RGBImageView(*data1);
+    vector<vector <Point> > validStaves;
+    OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
+    OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
+    validStaves.clear();
+    stableStaffLineFinder slf2 (*subtractedImage);
+    vector< vector <vector<Point> > > setsOfValidStaves;
+    setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
+    vector< vector <vector<Point> > > setsOfTrimmedPaths;
+    cout <<"About to commence finalTrim" <<endl;
+    setsOfTrimmedPaths = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
+    cout <<"Finished finalTrim" <<endl;
+    int redCount, blueCount, greenCount, counter;
+    redCount = blueCount = greenCount = counter = 0;
+    
+    for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+    {
+        if (counter == 1)
+        {
+            redCount = 255;
+            greenCount = 0;
+        }
+        else if (counter == 2)
+        {
+            greenCount = 150;
+            blueCount = 0;
+            redCount = 0;
+        }
+        else if (counter == 3)
+        {
+            blueCount = 175;
+            redCount = 0;
+            counter = 0;
+        }
+        
+        for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+        {
+            for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+            {
+                new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+            }
+        }
+        
+        counter++;
     }
     
     return new1;
