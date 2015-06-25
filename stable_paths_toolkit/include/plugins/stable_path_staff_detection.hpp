@@ -49,7 +49,7 @@ using namespace Gamera;
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .25
 
-//Copied from stableStaffLineFinder.h
+//Code heavily based on stableStaffLineFinder.h
 class stableStaffLineFinder {
 public:
     typedef int weight_t;
@@ -166,25 +166,25 @@ public:
         return dest_view;
     }
     
-    template<class T>
-    OneBitImageView* myCloneImagePNG(T &image)
-    {
-        int width = image.png_get_image_width();
-        int height = image.png_get_image_height();
-        
-        OneBitImageData* dest_data = new OneBitImageData(Dim(width, height));
-        OneBitImageView* dest_view = new OneBitImageView(*dest_data);
-        
-        for (size_t r = 0; r < height; r++)
-        {
-            for (size_t c = 0; c < width; c++)
-            {
-                //dest_view->set(Point(c, r), image.get(Point(c, r)));
-            }
-        }
-        
-        return dest_view;
-    }
+//    template<class T>
+//    OneBitImageView* myCloneImagePNG(T &image)
+//    {
+//        int width = image.png_get_image_width();
+//        int height = image.png_get_image_height();
+//        
+//        OneBitImageData* dest_data = new OneBitImageData(Dim(width, height));
+//        OneBitImageView* dest_view = new OneBitImageView(*dest_data);
+//        
+//        for (size_t r = 0; r < height; r++)
+//        {
+//            for (size_t c = 0; c < width; c++)
+//            {
+//                //dest_view->set(Point(c, r), image.get(Point(c, r)));
+//            }
+//        }
+//        
+//        return dest_view;
+//    }
 
     void myVerticalErodeImage(OneBitImageView * img, int width, int height)
     {
@@ -689,6 +689,7 @@ public:
                 break;
             }
         }
+        
         postProcessing(validStaves, imageErodedCopy);
         printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
         delete imgErode;
@@ -949,7 +950,6 @@ public:
                         y = prev_y - 1;
                     }
                     
-                    //setOfStaves[nvalid][c].y() = min(max(y, 0), nrowsEroded - 1);
                     setOfStaves[nvalid][c] = Point(setOfStaves[nvalid][c].x(), min(max(y, 0), nrowsEroded - 1));
                 }
             }
@@ -1246,8 +1246,6 @@ public:
         return false;
     }
     
-    
-    
 //    void trimIndividualPaths(vector <vector <Point>> &setOfStaves, int window)
 //    {
 //        for (int i = 0; i < setOfStaves.size(); i++)
@@ -1277,7 +1275,6 @@ public:
         for (int i = 0; i < (halfWindowSize * 2); i++)
         {
             accumY += cpStaff[i].y();
-            //staff[i/2].y = accumY/(i+1);
             staff[i / 2] = Point(staff[i / 2].x(), (accumY / (i + 1)));
         }
         
