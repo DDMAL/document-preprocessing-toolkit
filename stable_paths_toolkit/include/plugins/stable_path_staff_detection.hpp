@@ -1031,8 +1031,8 @@ public:
             }
         }
         
-        finalTrim(setsOfValidStaves, imageErodedCopy);
-        return setsOfValidStaves;
+        return finalTrim(setsOfValidStaves, imageErodedCopy);
+        //return setsOfValidStaves;
     }
     
     void trimPath(vector<unsigned char> &vec, int window, int &startX, int &endX)
@@ -1130,19 +1130,40 @@ public:
     
     void trimIndividualSet(vector <vector <Point> > &staffSet, vector <int> &breakValues, vector <vector <vector <Point> > > &trimmedSets)
     {
-        vector<Point>::iterator it = staffSet[0].begin();
-        int counter = 0;
-        
-        for (int breakValIndex = 0; breakValIndex < breakValues.size() - 1; breakValIndex++)
+        vector <vector<Point> > trimmedSet;
+        for (int breakValIndex = 1; breakValIndex < breakValues.size() - 1; breakValIndex = (breakValIndex + 2))
         {
-            if (breakValIndex % 2)
+            trimmedSet.clear();
+            
+            for (int staff = 0; staff < staffSet.size(); staff++)
             {
-//                trimmedSets[0].insert(trimmedSets.end(), staffSet[breakValues[breakValIndex]], staffSet[breakValues[breakValIndex + 1]]);
+                trimmedSet.push_back(trimIndividualStaff(staffSet[staff], breakValues[breakValIndex], breakValues[breakValIndex + 1]));
             }
+            
+            trimmedSets.push_back(trimmedSet);
         }
     }
     
-//    void convertBreaksToIterators
+    vector<Point> trimIndividualStaff(vector <Point> &staffLine, int startingX, int endingX)
+    {
+        vector<Point>::iterator staffIt1 = staffLine.begin();
+        vector<Point>::iterator staffIt2 = staffLine.begin();
+        vector<Point> trimmedStaff;
+        
+        while (staffIt1->x() != startingX)
+        {
+            staffIt1++;
+        }
+
+        while (staffIt2->x() != endingX)
+        {
+            staffIt2++;
+        }
+        
+        trimmedStaff.insert(trimmedStaff.begin(), staffIt1, staffIt2);
+        
+        return trimmedStaff;
+    }
     
     void getBreakPoints(vector <vector <Point> > &staffSet, vector <int> &breakValues, OneBitImageView *image) //Will be used to check hits of black pixels by a set of stable paths
     {
