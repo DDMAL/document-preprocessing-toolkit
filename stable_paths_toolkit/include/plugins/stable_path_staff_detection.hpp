@@ -1131,8 +1131,14 @@ public:
     void trimIndividualSet(vector <vector <Point> > &staffSet, vector <int> &breakValues, vector <vector <vector <Point> > > &trimmedSets)
     {
         vector <vector<Point> > trimmedSet;
-        for (int breakValIndex = 1; breakValIndex < breakValues.size() - 1; breakValIndex = (breakValIndex + 2))
+        int endVal = breakValues.size() - 1;
+        for (int breakValIndex = 1; breakValIndex < endVal; breakValIndex = (breakValIndex + 2))
         {
+//            if (!(breakValIndex) && (!(breakValues[breakValIndex])))
+//            {
+//                breakValIndex++;
+//            }
+            
             trimmedSet.clear();
             
             for (int staff = 0; staff < staffSet.size(); staff++)
@@ -1175,7 +1181,7 @@ public:
         
         for (int xVal = startingX; xVal <= endingX; xVal++)
         {
-            int hitPercent = checkHitPercentage(staffSet, xVal, image);
+            double hitPercent = checkHitPercentage(staffSet, xVal, image);
             
             if (hitPercent <= ALLOWED_VERTICAL_HIT_PERCENTAGE)
             {
@@ -1207,8 +1213,8 @@ public:
     
     double checkHitPercentage(vector <vector <Point> > &staffSet, int xVal, OneBitImageView *image) //returns percentage of black pixels hit by staves sharing an x value
     {
-        int numOfStaves = staffSet.size();
-        int numHits = 0; //Stores number of black pixels hit by a staves sharing an x value in one staff set
+        double numOfStaves = staffSet.size();
+        double numHits = 0.0; //Stores number of black pixels hit by a staves sharing an x value in one staff set
         
         for (int staff = 0; staff < numOfStaves; staff++)
         {
