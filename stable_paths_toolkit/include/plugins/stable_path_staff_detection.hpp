@@ -48,6 +48,7 @@ using namespace Gamera;
 #define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .25
+#define ALLOWED_OFFSET_NEARHIT 1
 
 //Code heavily based on stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -1502,14 +1503,14 @@ public:
         
         if (pixel.y() - staffLineHeight > 0)
         {
-            startingY = pixel.y() - staffLineHeight;
+            startingY = pixel.y() - staffLineHeight - ALLOWED_OFFSET_NEARHIT;
         }
         else
         {
             startingY = 0;
         }
         
-        for (int yVal = startingY; yVal < startingY + (2 * staffLineHeight) && yVal < imageHeight; yVal++)
+        for (int yVal = startingY; yVal < startingY + (2 * (staffLineHeight + ALLOWED_OFFSET_NEARHIT)) && yVal < imageHeight; yVal++)
         {
             if (image->get(Point(pixel.x(), yVal)))
             {
