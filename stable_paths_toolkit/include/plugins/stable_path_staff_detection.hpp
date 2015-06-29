@@ -62,11 +62,18 @@ public:
         weight_t weight;
         Point start;
     };
+    
     struct NODEGRAPH
     {
         weight_t weight_up;
         weight_t weight_hor;
         weight_t weight_down;
+    };
+    
+    struct BVAL
+    {
+        int breakVal;
+        int pixVal;
     };
 
     //Values taken from stableStaffLineFinder.cpp lines 106-107
@@ -1112,7 +1119,7 @@ public:
     vector <vector <vector <Point> > > finalTrim(vector <vector <vector <Point> > > &staffSets, OneBitImageView *image)
     {
         vector <vector <vector <Point> > > trimmedSets; //Will store the final, trimmed staff systems
-        vector <vector <int> > breakValues(staffSets.size()); //Will store the x values at which systems will be broken up. Assumed to store in sets of two with first number being the beginning of a desired staff system and the second number being the end of a desired staff system.
+        vector <vector <BVAL> > breakValues(staffSets.size()); //Will store the x values at which systems will be broken up. Assumed to store in sets of two with first number being the beginning of a desired staff system and the second number being the end of a desired staff system.
         int numSets = staffSets.size();
         
         for (int set = 0; set < numSets; set++)
@@ -1128,22 +1135,22 @@ public:
         return trimmedSets;
     }
     
-    void trimIndividualSet(vector <vector <Point> > &staffSet, vector <int> &breakValues, vector <vector <vector <Point> > > &trimmedSets)
+    void trimIndividualSet(vector <vector <Point> > &staffSet, vector <BVAL> &breakValues, vector <vector <vector <Point> > > &trimmedSets)
     {
         vector <vector<Point> > trimmedSet;
         int endVal = breakValues.size() - 1;
-        for (int breakValIndex = 1; breakValIndex < endVal; breakValIndex = (breakValIndex + 2))
+        for (int breakValIndex = 0; breakValIndex < endVal; breakValIndex = (breakValIndex + 2))
         {
-//            if (!(breakValIndex) && (!(breakValues[breakValIndex])))
-//            {
-//                breakValIndex++;
-//            }
+            if (!(breakValIndex) && (!(breakValues[breakValIndex].pixVal)))
+            {
+                breakValIndex++;
+            }
             
             trimmedSet.clear();
             
             for (int staff = 0; staff < staffSet.size(); staff++)
             {
-                trimmedSet.push_back(trimIndividualStaff(staffSet[staff], breakValues[breakValIndex], breakValues[breakValIndex + 1]));
+                trimmedSet.push_back(trimIndividualStaff(staffSet[staff], breakValues[breakValIndex].breakVal, breakValues[breakValIndex + 1].breakVal));
             }
             
             trimmedSets.push_back(trimmedSet);
@@ -1171,24 +1178,34 @@ public:
         return trimmedStaff;
     }
     
-    void getBreakPoints(vector <vector <Point> > &staffSet, vector <int> &breakValues, OneBitImageView *image) //Will be used to check hits of black pixels by a set of stable paths
+    void getBreakPoints(vector <vector <Point> > &staffSet, vector <BVAL> &breakValues, OneBitImageView *image) //Will be used to check hits of black pixels by a set of stable paths
     {
         int startingX = staffSet[0][0].x();
         int endingX = staffSet[0][staffSet[0].size() - 1].x();
         int setSize = staffSet.size();
         int mishitCounter = 0;
         int hitCounter = 0;
+        BVAL breakValue;
         
         for (int xVal = startingX; xVal <= endingX; xVal++)
         {
             double hitPercent = checkHitPercentage(staffSet, xVal, image);
+            int breakValuesSize = breakValues.size();
+            
+            if (!breakValuesSize)
+            {
+                breakValue.breakVal = 0;
+                breakValue.pixVal = (int)hitPercent; //Will be stored as a 1 or 0
+                breakValues.push_back(breakValue);
+                continue;
+            }
             
             if (hitPercent <= ALLOWED_VERTICAL_HIT_PERCENTAGE)
             {
                 mishitCounter++;
                 
             }
-            else if ((breakValues.size() % 2) && hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE)
+            else if (!(breakValues[breakValuesSize - 1].pixVal) && (hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE))
             {
                 hitCounter++;
                 
@@ -1198,16 +1215,34 @@ public:
                 }
             }
             
-            if ((!(breakValues.size() % 2)) && (mishitCounter > staffSpaceDistance))
+            if ((!(breakValuesSize) && (mishitCounter > staffSpaceDistance)) || ((breakValues[breakValuesSize - 1].pixVal) && (mishitCounter > staffSpaceDistance)))
             {
-                breakValues.push_back(xVal - (mishitCounter - 1));
+                breakValue.breakVal = xVal - (mishitCounter - 1);
+                breakValue.pixVal = 0;
+                breakValues.push_back(breakValue);
                 hitCounter = 0;
             }
-            else if ((breakValues.size() % 2) && (hitCounter > staffSpaceDistance))
+            else if ((!(breakValuesSize) && (hitCounter > staffSpaceDistance)) || (!(breakValues[breakValuesSize - 1].pixVal) && (hitCounter > staffSpaceDistance)))
             {
-                breakValues.push_back(xVal - (hitCounter - 1));
+                breakValue.breakVal = xVal - (hitCounter - 1);
+                breakValue.pixVal = 1;
+                breakValues.push_back(breakValue);
                 mishitCounter = 0;
             }
+        }
+        
+        //Stores a final breakValue for the right edge of the page
+        if (breakValues[breakValues.size() - 1].pixVal)
+        {
+            breakValue.breakVal = (imageWidth - 2); //Minus 2 because setsOfValidStaves does not reach right edge (To be visited)
+            breakValue.pixVal = 1;
+            breakValues.push_back(breakValue);
+        }
+        else
+        {
+            breakValue.breakVal = (imageWidth - 2); //Minus 2 because setsOfValidStaves does not reach right edge (To be visited)
+            breakValue.pixVal = 0;
+            breakValues.push_back(breakValue);
         }
     }
     
@@ -1218,7 +1253,6 @@ public:
         
         for (int staff = 0; staff < numOfStaves; staff++)
         {
-//            if (image->get(staffSet[staff][xVal]))
             if (nearHit(image, staffSet[staff][xVal]))
             {
                 numHits++;
@@ -1487,7 +1521,7 @@ public:
     //=============================================================================
     
     template <class T>
-    T findMostRepresentedValueOnSortedVector(vector<T>& vec)
+    T findMostRepresentedValueOnSortedVector(vector<T> &vec)
     {
         T run = vec[0];
         int freq = 0;
@@ -1540,11 +1574,6 @@ public:
         
         avgDiff /= staff1.size();
         avgDiff = sqrt(avgDiff);
-        
-        if (avgDiff > 1933)
-        {
-            cout <<"Here's the culprit" <<endl;
-        }
         
         return avgDiff;
     }
