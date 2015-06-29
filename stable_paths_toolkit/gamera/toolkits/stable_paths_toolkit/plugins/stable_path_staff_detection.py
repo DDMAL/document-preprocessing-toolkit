@@ -56,7 +56,13 @@ class drawColorfulStablePaths(PluginFunction):
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
 
-class trimmedStablePaths(PluginFunction):
+class trimmedStablePathsWithDeletion(PluginFunction):
+    """Displays the trimmed stable paths"""
+    category = "Stable Paths Toolkit"
+    return_type = ImageType([RGB])
+    self_type = ImageType([ONEBIT])
+
+class trimmedStablePathsWithoutDeletion(PluginFunction):
     """Displays the trimmed stable paths"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB])
@@ -66,7 +72,7 @@ class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [returnGraphWeights, trimmedStablePaths, deleteStablePaths, testForVerticalBlackPercentage, findStablePaths, stablePathDetection1, deletionStablePathDetection, displayWeights, stablePathDetectionDraw, drawColorfulStablePaths]
+    functions = [returnGraphWeights, trimmedStablePathsWithDeletion, trimmedStablePathsWithoutDeletion, deleteStablePaths, testForVerticalBlackPercentage, findStablePaths, stablePathDetection1, deletionStablePathDetection, displayWeights, stablePathDetectionDraw, drawColorfulStablePaths]
     author = "Your name here"
     url = "Your URL here"
 module = stablePaths()
