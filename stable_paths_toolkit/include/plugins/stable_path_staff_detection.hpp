@@ -1116,176 +1116,6 @@ public:
         }
     }
     
-    vector <vector <vector <Point> > > finalTrim(vector <vector <vector <Point> > > &staffSets, OneBitImageView *image)
-    {
-        vector <vector <vector <Point> > > trimmedSets; //Will store the final, trimmed staff systems
-        vector <vector <BVAL> > breakValues(staffSets.size()); //Will store the x values at which systems will be broken up. Assumed to store in sets of two with first number being the beginning of a desired staff system and the second number being the end of a desired staff system.
-        int numSets = staffSets.size();
-        
-        for (int set = 0; set < numSets; set++)
-        {
-            getBreakPoints(staffSets[set], breakValues[set], image);
-        }
-        
-        for (int set = 0; set < numSets; set++)
-        {
-            trimIndividualSet(staffSets[set], breakValues[set], trimmedSets);
-        }
-        
-        return trimmedSets;
-    }
-    
-    void trimIndividualSet(vector <vector <Point> > &staffSet, vector <BVAL> &breakValues, vector <vector <vector <Point> > > &trimmedSets)
-    {
-        vector <vector<Point> > trimmedSet;
-        int endVal = breakValues.size() - 1;
-        for (int breakValIndex = 0; breakValIndex < endVal; breakValIndex = (breakValIndex + 2))
-        {
-            if (!(breakValIndex) && (!(breakValues[breakValIndex].pixVal)))
-            {
-                breakValIndex++;
-            }
-            
-            trimmedSet.clear();
-            
-            for (int staff = 0; staff < staffSet.size(); staff++)
-            {
-                trimmedSet.push_back(trimIndividualStaff(staffSet[staff], breakValues[breakValIndex].breakVal, breakValues[breakValIndex + 1].breakVal));
-            }
-            
-            trimmedSets.push_back(trimmedSet);
-        }
-    }
-    
-    vector<Point> trimIndividualStaff(vector <Point> &staffLine, int startingX, int endingX)
-    {
-        vector<Point>::iterator staffIt1 = staffLine.begin();
-        vector<Point>::iterator staffIt2 = staffLine.begin();
-        vector<Point> trimmedStaff;
-        
-        while (staffIt1->x() != startingX)
-        {
-            staffIt1++;
-        }
-
-        while (staffIt2->x() != endingX)
-        {
-            staffIt2++;
-        }
-        
-        trimmedStaff.insert(trimmedStaff.begin(), staffIt1, staffIt2);
-        
-        return trimmedStaff;
-    }
-    
-    void getBreakPoints(vector <vector <Point> > &staffSet, vector <BVAL> &breakValues, OneBitImageView *image) //Will be used to check hits of black pixels by a set of stable paths
-    {
-        int startingX = staffSet[0][0].x();
-        int endingX = staffSet[0][staffSet[0].size() - 1].x();
-        int setSize = staffSet.size();
-        int mishitCounter = 0;
-        int hitCounter = 0;
-        BVAL breakValue;
-        
-        for (int xVal = startingX; xVal <= endingX; xVal++)
-        {
-            double hitPercent = checkHitPercentage(staffSet, xVal, image);
-            int breakValuesSize = breakValues.size();
-            
-            if (!breakValuesSize)
-            {
-                breakValue.breakVal = 0;
-                breakValue.pixVal = (int)hitPercent; //Will be stored as a 1 or 0
-                breakValues.push_back(breakValue);
-                continue;
-            }
-            
-            if (hitPercent <= ALLOWED_VERTICAL_HIT_PERCENTAGE)
-            {
-                mishitCounter++;
-                
-            }
-            else if (!(breakValues[breakValuesSize - 1].pixVal) && (hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE))
-            {
-                hitCounter++;
-                
-                if (hitCounter > mishitCounter)
-                {
-                    mishitCounter = 0;
-                }
-            }
-            
-            if ((!(breakValuesSize) && (mishitCounter > staffSpaceDistance)) || ((breakValues[breakValuesSize - 1].pixVal) && (mishitCounter > staffSpaceDistance)))
-            {
-                breakValue.breakVal = xVal - (mishitCounter - 1);
-                breakValue.pixVal = 0;
-                breakValues.push_back(breakValue);
-                hitCounter = 0;
-            }
-            else if ((!(breakValuesSize) && (hitCounter > staffSpaceDistance)) || (!(breakValues[breakValuesSize - 1].pixVal) && (hitCounter > staffSpaceDistance)))
-            {
-                breakValue.breakVal = xVal - (hitCounter - 1);
-                breakValue.pixVal = 1;
-                breakValues.push_back(breakValue);
-                mishitCounter = 0;
-            }
-        }
-        
-        //Stores a final breakValue for the right edge of the page
-        if (breakValues[breakValues.size() - 1].pixVal)
-        {
-            breakValue.breakVal = (imageWidth - 2); //Minus 2 because setsOfValidStaves does not reach right edge (To be visited)
-            breakValue.pixVal = 1;
-            breakValues.push_back(breakValue);
-        }
-        else
-        {
-            breakValue.breakVal = (imageWidth - 2); //Minus 2 because setsOfValidStaves does not reach right edge (To be visited)
-            breakValue.pixVal = 0;
-            breakValues.push_back(breakValue);
-        }
-    }
-    
-    double checkHitPercentage(vector <vector <Point> > &staffSet, int xVal, OneBitImageView *image) //returns percentage of black pixels hit by staves sharing an x value
-    {
-        double numOfStaves = staffSet.size();
-        double numHits = 0.0; //Stores number of black pixels hit by a staves sharing an x value in one staff set
-        
-        for (int staff = 0; staff < numOfStaves; staff++)
-        {
-            if (nearHit(image, staffSet[staff][xVal]))
-            {
-                numHits++;
-            }
-        }
-        
-        return (numHits / numOfStaves);
-    }
-    
-    bool nearHit(OneBitImageView *image, Point pixel)
-    {
-        int startingY;
-        
-        if (pixel.y() - staffLineHeight > 0)
-        {
-            startingY = pixel.y() - staffLineHeight;
-        }
-        else
-        {
-            startingY = 0;
-        }
-        
-        for (int yVal = startingY; yVal < startingY + (2 * staffLineHeight) && yVal < imageHeight; yVal++)
-        {
-            if (image->get(Point(pixel.x(), yVal)))
-            {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
 //    void trimIndividualPaths(vector <vector <Point>> &setOfStaves, int window)
 //    {
 //        for (int i = 0; i < setOfStaves.size(); i++)
@@ -1514,6 +1344,180 @@ public:
         }
         
         return postProcessing(validStaves, imageErodedCopy);
+    }
+    
+    //============================================================================
+    //                          finalTrim
+    //============================================================================
+    
+    vector <vector <vector <Point> > > finalTrim(vector <vector <vector <Point> > > &staffSets, OneBitImageView *image)
+    {
+        vector <vector <vector <Point> > > trimmedSets; //Will store the final, trimmed staff systems
+        vector <vector <BVAL> > breakValues(staffSets.size()); //Will store the x values at which systems will be broken up. Assumed to store in sets of two with first number being the beginning of a desired staff system and the second number being the end of a desired staff system.
+        int numSets = staffSets.size();
+        
+        for (int set = 0; set < numSets; set++)
+        {
+            getBreakPoints(staffSets[set], breakValues[set], image);
+        }
+        
+        for (int set = 0; set < numSets; set++)
+        {
+            trimIndividualSet(staffSets[set], breakValues[set], trimmedSets);
+        }
+        
+        return trimmedSets;
+    }
+    
+    void trimIndividualSet(vector <vector <Point> > &staffSet, vector <BVAL> &breakValues, vector <vector <vector <Point> > > &trimmedSets)
+    {
+        vector <vector<Point> > trimmedSet;
+        int endVal = breakValues.size() - 1;
+        for (int breakValIndex = 0; breakValIndex < endVal; breakValIndex = (breakValIndex + 2))
+        {
+            if (!(breakValIndex) && (!(breakValues[breakValIndex].pixVal)))
+            {
+                breakValIndex++;
+            }
+            
+            trimmedSet.clear();
+            
+            for (int staff = 0; staff < staffSet.size(); staff++)
+            {
+                trimmedSet.push_back(trimIndividualStaff(staffSet[staff], breakValues[breakValIndex].breakVal, breakValues[breakValIndex + 1].breakVal));
+            }
+            
+            trimmedSets.push_back(trimmedSet);
+        }
+    }
+    
+    vector<Point> trimIndividualStaff(vector <Point> &staffLine, int startingX, int endingX)
+    {
+        vector<Point>::iterator staffIt1 = staffLine.begin();
+        vector<Point>::iterator staffIt2 = staffLine.begin();
+        vector<Point> trimmedStaff;
+        
+        while (staffIt1->x() != startingX)
+        {
+            staffIt1++;
+        }
+        
+        while (staffIt2->x() != endingX)
+        {
+            staffIt2++;
+        }
+        
+        trimmedStaff.insert(trimmedStaff.begin(), staffIt1, staffIt2);
+        
+        return trimmedStaff;
+    }
+    
+    void getBreakPoints(vector <vector <Point> > &staffSet, vector <BVAL> &breakValues, OneBitImageView *image) //Will be used to check hits of black pixels by a set of stable paths
+    {
+        int startingX = staffSet[0][0].x();
+        int endingX = staffSet[0][staffSet[0].size() - 1].x();
+        int setSize = staffSet.size();
+        int mishitCounter = 0;
+        int hitCounter = 0;
+        BVAL breakValue;
+        
+        for (int xVal = startingX; xVal <= endingX; xVal++)
+        {
+            double hitPercent = checkHitPercentage(staffSet, xVal, image);
+            int breakValuesSize = breakValues.size();
+            
+            if (!breakValuesSize)
+            {
+                breakValue.breakVal = 0;
+                breakValue.pixVal = (int)hitPercent; //Will be stored as a 1 or 0
+                breakValues.push_back(breakValue);
+                continue;
+            }
+            
+            if ((breakValues[breakValuesSize - 1].pixVal) && (hitPercent <= ALLOWED_VERTICAL_HIT_PERCENTAGE))
+            {
+                mishitCounter++;
+                
+            }
+            else if (!(breakValues[breakValuesSize - 1].pixVal) && (hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE))
+            {
+                hitCounter++;
+                
+                if (hitCounter > mishitCounter)
+                {
+                    mishitCounter = 0;
+                }
+            }
+            
+            if ((!(breakValuesSize) && (mishitCounter > staffSpaceDistance)) || ((breakValues[breakValuesSize - 1].pixVal) && (mishitCounter > staffSpaceDistance)))
+            {
+                breakValue.breakVal = xVal - (mishitCounter - 1);
+                breakValue.pixVal = 0;
+                breakValues.push_back(breakValue);
+                hitCounter = 0;
+            }
+            else if ((!(breakValuesSize) && (hitCounter > staffSpaceDistance)) || (!(breakValues[breakValuesSize - 1].pixVal) && (hitCounter > staffSpaceDistance)))
+            {
+                breakValue.breakVal = xVal - (hitCounter - 1);
+                breakValue.pixVal = 1;
+                breakValues.push_back(breakValue);
+                mishitCounter = 0;
+            }
+        }
+        
+        //Stores a final breakValue for the right edge of the page
+        if (breakValues[breakValues.size() - 1].pixVal)
+        {
+            breakValue.breakVal = (imageWidth - 2); //Minus 2 because setsOfValidStaves does not reach right edge (To be visited)
+            breakValue.pixVal = 1;
+            breakValues.push_back(breakValue);
+        }
+        else
+        {
+            breakValue.breakVal = (imageWidth - 2); //Minus 2 because setsOfValidStaves does not reach right edge (To be visited)
+            breakValue.pixVal = 0;
+            breakValues.push_back(breakValue);
+        }
+    }
+    
+    double checkHitPercentage(vector <vector <Point> > &staffSet, int xVal, OneBitImageView *image) //returns percentage of black pixels hit by staves sharing an x value
+    {
+        double numOfStaves = staffSet.size();
+        double numHits = 0.0; //Stores number of black pixels hit by a staves sharing an x value in one staff set
+        
+        for (int staff = 0; staff < numOfStaves; staff++)
+        {
+            if (nearHit(image, staffSet[staff][xVal]))
+            {
+                numHits++;
+            }
+        }
+        
+        return (numHits / numOfStaves);
+    }
+    
+    bool nearHit(OneBitImageView *image, Point pixel)
+    {
+        int startingY;
+        
+        if (pixel.y() - staffLineHeight > 0)
+        {
+            startingY = pixel.y() - staffLineHeight;
+        }
+        else
+        {
+            startingY = 0;
+        }
+        
+        for (int yVal = startingY; yVal < startingY + (2 * staffLineHeight) && yVal < imageHeight; yVal++)
+        {
+            if (image->get(Point(pixel.x(), yVal)))
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     //=============================================================================
@@ -1991,7 +1995,7 @@ GreyScaleImageView* testForVerticalBlackPercentage(T &image)
 }
 
 template<class T>
-RGBImageView* trimmedStablePaths(T &image)
+RGBImageView* trimmedStablePathsWithDeletion(T &image)
 {
     stableStaffLineFinder slf1 (image);
     RGBImageData *data1 = new RGBImageData(image.size());
@@ -2006,6 +2010,56 @@ RGBImageView* trimmedStablePaths(T &image)
     vector< vector <vector<Point> > > setsOfTrimmedPaths;
     cout <<"About to commence finalTrim" <<endl;
     setsOfTrimmedPaths = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
+    cout <<"Finished finalTrim" <<endl;
+    int redCount, blueCount, greenCount, counter;
+    redCount = blueCount = greenCount = counter = 0;
+    
+    for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+    {
+        if (counter == 1)
+        {
+            redCount = 255;
+            greenCount = 0;
+        }
+        else if (counter == 2)
+        {
+            greenCount = 150;
+            blueCount = 0;
+            redCount = 0;
+        }
+        else if (counter == 3)
+        {
+            blueCount = 175;
+            redCount = 0;
+            counter = 0;
+        }
+        
+        for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+        {
+            for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+            {
+                new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+            }
+        }
+        
+        counter++;
+    }
+    
+    return new1;
+}
+
+template<class T>
+RGBImageView* trimmedStablePathsWithoutDeletion(T &image)
+{
+    stableStaffLineFinder slf1 (image);
+    RGBImageData *data1 = new RGBImageData(image.size());
+    RGBImageView *new1 = new RGBImageView(*data1);
+    vector<vector <Point> > validStaves;
+    vector< vector <vector<Point> > > setsOfValidStaves;
+    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
+    vector< vector <vector<Point> > > setsOfTrimmedPaths;
+    cout <<"About to commence finalTrim" <<endl;
+    setsOfTrimmedPaths = slf1.finalTrim(setsOfValidStaves, slf1.primaryImage);
     cout <<"Finished finalTrim" <<endl;
     int redCount, blueCount, greenCount, counter;
     redCount = blueCount = greenCount = counter = 0;
