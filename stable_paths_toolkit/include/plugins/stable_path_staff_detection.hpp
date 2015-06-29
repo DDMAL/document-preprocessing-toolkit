@@ -47,8 +47,9 @@ using namespace Gamera;
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
 #define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
-#define ALLOWED_VERTICAL_HIT_PERCENTAGE .25
+#define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
 #define ALLOWED_OFFSET_NEARHIT 1
+#define SMOOTH_STAFF_LINE_WINDOW 1
 
 //Code heavily based on stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -1004,7 +1005,7 @@ public:
             //2 trim staffs from start to nvalid
             for (int i = 0; i < setOfStaves.size(); i++)
             {
-                smoothStaffLine(setOfStaves[i], 2 * staffSpaceDistance);
+                smoothStaffLine(setOfStaves[i], SMOOTH_STAFF_LINE_WINDOW * staffSpaceDistance);
                 
                 vector<Point>::iterator it = setOfStaves[i].begin();
                 
@@ -1840,7 +1841,7 @@ OneBitImageView* stablePathDetectionDraw(T &image)
 }
 
 template<class T>
-GreyScaleImageView* displayWeights(T &image) //Currently doesn't work...
+GreyScaleImageView* displayWeights(T &image)
 {
     stableStaffLineFinder slf1 (image);
     int ncols = image.ncols();
