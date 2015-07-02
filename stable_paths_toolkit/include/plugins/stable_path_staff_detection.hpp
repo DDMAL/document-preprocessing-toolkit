@@ -49,7 +49,7 @@ using namespace Gamera;
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
 #define ALLOWED_OFFSET_NEARHIT 1
-#define SMOOTH_STAFF_LINE_WINDOW 1
+#define SMOOTH_STAFF_LINE_WINDOW 2
 
 //Code heavily based on stableStaffLineFinder.h
 class stableStaffLineFinder {
@@ -734,43 +734,43 @@ public:
                 
                 if (row > 0)
                 {
-                    weight10 = graphWeight[(row*width) + width-1-col].weight_up;
-                    value1 = weight10 + graphPath[(row-1)*width + (col-1)].weight;
+                    weight10 = graphWeight[(row * width) + width - 1 - col].weight_up;
+                    value1 = weight10 + graphPath[((row - 1) * width) + (col - 1)].weight;
                 }
                 
-                weight20 = graphWeight[row*width + width-1-col].weight_hor;
-                value2 = weight20 + graphPath[(row)*width + (col-1)].weight;
+                weight20 = graphWeight[(row * width) + width - 1 - col].weight_hor;
+                value2 = weight20 + graphPath[(row * width) + (col - 1)].weight;
                 
-                if (row < height - 1)
+                if (row < (height - 1))
                 {
-                    weight30 = graphWeight[row*width + width-1-col].weight_down;
-                    value3 = weight30 + graphPath[(row+1)*width + (col-1)].weight;
+                    weight30 = graphWeight[row*width + width - 1 - col].weight_down;
+                    value3 = weight30 + graphPath[(row + 1) * width + (col - 1)].weight;
                 }
                 
-                if ((value3)<= (value2) && (value3)<= (value1))
+                if ((value3 <= value2) && (value3 <= value1))
                 {
-                    graphPath[(row)*width + (col)].previous = Point(col-1, row+1);
-                    graphPath[(row)*width + (col)].weight = value3;
-                    graphPath[(row)*width + (col)].start = graphPath[(row+1)*width + (col-1)].start;
+                    graphPath[(row * width) + (col)].previous = Point(col - 1, row + 1);
+                    graphPath[(row * width) + (col)].weight = value3;
+                    graphPath[(row * width) + (col)].start = graphPath[(row + 1) * width + (col - 1)].start;
                 }
-                else if ((value2)<= (value1) && (value2)<= (value3))
+                else if ((value2 <= value1) && (value2 <= value3))
                 {
-                    graphPath[(row)*width + (col)].previous = Point(col - 1, row);
-                    graphPath[(row)*width + (col)].weight = value2;
-                    graphPath[(row)*width + (col)].start = graphPath[(row+0)*width + (col-1)].start;
+                    graphPath[(row * width) + (col)].previous = Point(col - 1, row);
+                    graphPath[(row * width) + (col)].weight = value2;
+                    graphPath[(row * width) + (col)].start = graphPath[(row + 0) * width + (col - 1)].start;
                 }
                 else
                 {
-                    graphPath[(row)*width + (col)].previous = Point(col-1, row-1);
-                    graphPath[(row)*width + (col)].weight = value1;
-                    graphPath[(row)*width + (col)].start = graphPath[(row-1)*width + (col-1)].start;
+                    graphPath[(row * width) + (col)].previous = Point(col-1, row-1);
+                    graphPath[(row * width) + (col)].weight = value1;
+                    graphPath[(row * width) + (col)].start = graphPath[(row - 1) * width + (col - 1)].start;
                 }
             }
         }
         
         for (int i = 0; i < height; i++)
         {
-            startRow_i.push_back(graphPath[i*width + endCol_i].start.y());
+            startRow_i.push_back(graphPath[(i * width) + endCol_i].start.y());
         }
         
         for (int row = 0; row < height; row++)
