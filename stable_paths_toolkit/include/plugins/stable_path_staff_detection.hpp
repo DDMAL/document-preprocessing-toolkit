@@ -743,7 +743,7 @@ public:
                 
                 if (row < (height - 1))
                 {
-                    weight30 = graphWeight[row*width + width - 1 - col].weight_down;
+                    weight30 = graphWeight[(row * width) + width - 1 - col].weight_down;
                     value3 = weight30 + graphPath[(row + 1) * width + (col - 1)].weight;
                 }
                 
@@ -757,7 +757,7 @@ public:
                 {
                     graphPath[(row * width) + (col)].previous = Point(col - 1, row);
                     graphPath[(row * width) + (col)].weight = value2;
-                    graphPath[(row * width) + (col)].start = graphPath[(row + 0) * width + (col - 1)].start;
+                    graphPath[(row * width) + (col)].start = graphPath[((row + 0) * width) + (col - 1)].start;
                 }
                 else
                 {
@@ -1005,7 +1005,7 @@ public:
             //2 trim staffs from start to nvalid
             for (int i = 0; i < setOfStaves.size(); i++)
             {
-                smoothStaffLine(setOfStaves[i], SMOOTH_STAFF_LINE_WINDOW * staffSpaceDistance);
+//                smoothStaffLine(setOfStaves[i], SMOOTH_STAFF_LINE_WINDOW * staffSpaceDistance);
                 
                 vector<Point>::iterator it = setOfStaves[i].begin();
                 
@@ -1764,6 +1764,25 @@ public:
         return image;
     }
     
+    OneBitImageView* lineDrawSmall(OneBitImageView *image)
+    {
+        int height = image->nrows();
+        int width = image->ncols();
+        int counter = 0;
+        
+        for (int y = 3; y < height - 2; y += 4)
+        {
+            for (int x = width/10; x < width - 1; x++)
+            {
+                image->set(Point(x, y), 1);
+//                image->set(Point(x, y + 1), 1);
+            }
+            counter++;
+        }
+        
+        return image;
+    }
+    
     double verticalBlackPercentage(int col, int startRow, int endRow)
     {
         double totalRows = endRow - startRow;
@@ -1806,7 +1825,7 @@ OneBitImageView* deleteStablePaths(T &image)
 }
 
 template<class T>
-OneBitImageView* stablePathDetection1(T &image, int staffline_height, int staffspace_height)
+OneBitImageView* removeStaves(T &image, int staffline_height, int staffspace_height)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
@@ -1827,7 +1846,7 @@ OneBitImageView* stablePathDetection1(T &image, int staffline_height, int staffs
 }
 
 template<class T>
-OneBitImageView* stablePathDetectionDraw(T &image)
+OneBitImageView* drawAllStablePaths(T &image)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image);
