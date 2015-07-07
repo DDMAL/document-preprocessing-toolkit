@@ -68,11 +68,24 @@ class trimmedStablePathsWithoutDeletion(PluginFunction):
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
 
+class setOfStablePathPoints(PluginFunction):
+    """Returns point values from sets of stable paths"""
+    category = "Stable Paths Toolkit"
+    return_type = Class("StaffSets")
+    self_type = ImageType([ONEBIT])
+
+class overlayStaves(PluginFunction):
+    """Overlays the found staves from one image onto another image"""
+    category = "Stable Paths Toolkit"
+    return_type = ImageType([RGB])
+    self_type = ImageType([RGB])
+    args = Args([ImageType(ONEBIT, 'Primary Image')])
+
 class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [returnGraphWeights, trimmedStablePathsWithDeletion, trimmedStablePathsWithoutDeletion, deleteStablePaths, testForVerticalBlackPercentage, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths, drawColorfulStablePaths]
+    functions = [returnGraphWeights, trimmedStablePathsWithDeletion, overlayStaves, setOfStablePathPoints, trimmedStablePathsWithoutDeletion, deleteStablePaths, testForVerticalBlackPercentage, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths, drawColorfulStablePaths]
     author = "Your name here"
     url = "Your URL here"
 module = stablePaths()

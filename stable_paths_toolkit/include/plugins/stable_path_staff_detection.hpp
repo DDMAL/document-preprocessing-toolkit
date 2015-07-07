@@ -51,6 +51,7 @@ using namespace Gamera;
 #define ALLOWED_OFFSET_NEARHIT 1
 #define SMOOTH_STAFF_LINE_WINDOW 2
 
+
 //Code heavily based on stableStaffLineFinder.h
 class stableStaffLineFinder {
 public:
@@ -1118,22 +1119,6 @@ public:
         }
     }
     
-//    void trimIndividualPaths(vector <vector <Point>> &setOfStaves, int window)
-//    {
-//        for (int i = 0; i < setOfStaves.size(); i++)
-//        {
-//            for (int y = 0; y < imageWidth; y++)
-//            {
-//                if (primaryImage->get(setOfStaves[i][y])) //if a black pixel is found, end trimming
-//                {
-//                    continue;
-//                }
-//                
-//                setOfStaves[i].erase([y]);
-//            }
-//        }
-//    }
-    
     void smoothStaffLine(vector<Point> &staff, int halfWindowSize)
     {
         if (staff.size() < ((halfWindowSize * 2) + 1))
@@ -1440,15 +1425,20 @@ public:
             {
                 mishitCounter++;
                 
+                if (hitCounter < mishitCounter)
+                {
+                    hitCounter = 0;
+                }
             }
             else if (!(breakValues[breakValuesSize - 1].pixVal) && (hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE))
             {
                 hitCounter++;
+                mishitCounter = 0;
                 
-                if (hitCounter > mishitCounter)
-                {
-                    mishitCounter = 0;
-                }
+//                if (hitCounter > mishitCounter)
+//                {
+//                    mishitCounter = 0;
+//                }
             }
             
             if ((!(breakValuesSize) && (mishitCounter > staffSpaceDistance)) || ((breakValues[breakValuesSize - 1].pixVal) && (mishitCounter > staffSpaceDistance)))
@@ -1525,6 +1515,23 @@ public:
     //=============================================================================
     //                          HELPER FUNCTIONS
     //=============================================================================
+    void fixLine(vector <Point> staff)
+    {
+        int size = staff.size();
+        int slopes[size];
+        
+        for (int point = 0; point < size - 1; point++)
+        {
+            if (!point)
+            {
+                slopes[point] = ((staff[point + 1].y() - staff[point].y()) / (staff[point + 1].x() - staff[point].x()));
+            }
+            else
+            {
+                slopes[point] = ((staff[point + 1].y() - staff[point - 1].y()) / (staff[point + 1].x() - staff[point - 1].x()));
+            }
+        }
+    }
     
     template <class T>
     T findMostRepresentedValueOnSortedVector(vector<T> &vec)
@@ -2055,8 +2062,10 @@ RGBImageView* trimmedStablePathsWithDeletion(T &image)
             counter = 0;
         }
         
+        
         for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
         {
+            slf2.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
             for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
             {
                 new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
@@ -2107,6 +2116,7 @@ RGBImageView* trimmedStablePathsWithoutDeletion(T &image)
         
         for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
         {
+            slf1.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
             for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
             {
                 new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
@@ -2117,6 +2127,99 @@ RGBImageView* trimmedStablePathsWithoutDeletion(T &image)
     }
     
     return new1;
+}
+
+template<class T>
+PyObject* setOfStablePathPoints(T &image)
+{
+    stableStaffLineFinder slf1 (image);
+    vector<vector <Point> > validStaves;
+    vector< vector <vector<Point> > > setsOfValidStaves;
+    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
+    
+    PyObject *return_list = PyList_New(0);
+    return return_list;
+}
+
+void copyONEBITToRGB(OneBitImageView primaryImage, RGBImageView dest)
+{
+    int width = primaryImage.width();
+    int height = primaryImage.height();
+    
+    for (int col = 0; col < width; col++)
+    {
+        for (int row = 0; row < height; row++)
+        {
+            int pixVal = primaryImage.get(Point(col, row));
+            if (pixVal)
+            {
+                dest.set(Point(col, row), RGBPixel(0, 0, 0));
+            }
+        }
+    }
+}
+
+void overlayRGBPixels(RGBImageView primaryImage, RGBImageView dest)
+{
+    int width = primaryImage.width();
+    int height = primaryImage.height();
+    
+    for (int col = 0; col < width; col++)
+    {
+        for (int row = 0; row < height; row++)
+        {
+            //            int pixVal = primaryImage->get(Point(col, row));
+            if (primaryImage.get(Point(col, row)) != RGBPixel(255, 255, 255))
+            {
+                dest.set(Point(col, row), RGBPixel(0, 0, 0));
+            }
+        }
+    }
+}
+
+template<class T, class U>
+RGBImageView *overlayStaves(T &staffImage, U &primaryImage)
+{
+    int width = staffImage.width();
+    int height = staffImage.height();
+    
+    if ((width != primaryImage.width()) || (height != primaryImage.height()))
+    {
+        cout <<"Sorry, those images are not the same size. Please pick two images of equal size.";
+        exit(1);
+    }
+    
+    RGBImageData *data = new RGBImageData(staffImage.size());
+    RGBImageView *result = new RGBImageView(*data);
+    
+    for (int col = 0; col < width; col++)
+    {
+        for (int row = 0; row < height; row++)
+        {
+            int pixVal = primaryImage.get(Point(col, row));
+            if (pixVal)
+            {
+                result->set(Point(col, row), RGBPixel(0, 0, 0));
+            }
+        }
+    }
+    
+    for (int col = 0; col < width; col++)
+    {
+        for (int row = 0; row < height; row++)
+        {
+            //            int pixVal = primaryImage->get(Point(col, row));
+            if (staffImage.get(Point(col, row)) != RGBPixel(255, 255, 255))
+            {
+                result->set(Point(col, row), staffImage.get(Point(col, row)));
+            }
+        }
+    }
+//    copyONEBITToRGB(*primaryImage, *result);
+//    overlayRGBPixels(*staffImage, *result);
+    
+    return result;
+
 }
 
 #endif
