@@ -910,11 +910,15 @@ public:
                     singleSet.push_back(validStaves[i]);
                 }
                 
-                if (singleSet.size() >= 2) //Paper writers wanted more complex rules to validate sets
-                {
-                    setsOfValidStaves.push_back(singleSet);
-                    printf("SET SIZE = %lu\n", singleSet.size());
-                }
+//                if (singleSet.size() >= 2) //Paper writers wanted more complex rules to validate sets
+//                {
+//                    setsOfValidStaves.push_back(singleSet);
+//                    printf("SET SIZE = %lu\n", singleSet.size());
+//                }
+                
+                //I want to include systems with only one staff. There will have to be rules written to make sure it actually should be included
+                setsOfValidStaves.push_back(singleSet);
+                printf("SET SIZE = %lu\n", singleSet.size());
                 
                 start = nvalid + 1;
             }
@@ -1515,22 +1519,57 @@ public:
     //=============================================================================
     //                          HELPER FUNCTIONS
     //=============================================================================
-    void fixLine(vector <Point> staff)
+    vector <double> findSlopes(vector <Point> staff)
     {
         int size = staff.size();
-        int slopes[size];
+        vector <double> slopes;
         
-        for (int point = 0; point < size - 1; point++)
+        for (int point = 0; point < size - staffSpaceDistance; point++)
         {
-            if (!point)
+            //Slopes normally would be (y1 - y2) / (x2 - x1) but the top left corner starts at 0,0 instead of the bottom left corner
+            if ((point - staffSpaceDistance) <= 0)
             {
-                slopes[point] = ((staff[point + 1].y() - staff[point].y()) / (staff[point + 1].x() - staff[point].x()));
+                double y2 = static_cast<double>(staff[point + staffSpaceDistance].y());
+                double y1 = static_cast<double>(staff[0].y());
+                double x2 = static_cast<double>(staff[point + staffSpaceDistance].x());
+                double x1 = static_cast<double>(staff[0].x());
+                slopes.push_back((y1 - y2) / (x2 - x1));
             }
             else
             {
-                slopes[point] = ((staff[point + 1].y() - staff[point - 1].y()) / (staff[point + 1].x() - staff[point - 1].x()));
+                double y2 = static_cast<double>(staff[point + staffSpaceDistance].y());
+                double y1 = static_cast<double>(staff[point - staffSpaceDistance].y());
+                double x2 = static_cast<double>(staff[point + staffSpaceDistance].x());
+                double x1 = static_cast<double>(staff[point - staffSpaceDistance].x());
+                slopes.push_back((y1 - y2) / (x2 - x1));
             }
         }
+        
+        return slopes;
+    }
+    
+    void fixStaffSystem(vector <vector <Point> > staffSystem)
+    {
+        int size = staffSystem.size();
+        vector <vector <double> > staffSlopes;
+        
+        for (int staff = 0; staff < size; staff++)
+        {
+            staffSlopes.push_back(findSlopes(staffSystem[staff]));
+        }
+        
+        vector <vector <double> > staffSlopesCopy;
+        staffSlopesCopy = staffSlopes;
+        vector <double> mostCommonSlopes;
+        
+        for (int staff = 0; staff < size; staff++)
+        {
+            sort(staffSlopesCopy[staff].begin(), staffSlopesCopy[staff].end());
+            mostCommonSlopes.push_back(findMostRepresentedValueOnSortedVector(staffSlopesCopy[staff]));
+        }
+        
+        double mostCommonSlope = findMostRepresentedValueOnSortedVector(mostCommonSlopes);
+        cout <<"The most common slope is " <<mostCommonSlope <<endl;
     }
     
     template <class T>
@@ -1913,18 +1952,18 @@ RGBImageView* drawColorfulStablePaths(T &image)
     
     for (int set = 0; set < setsOfValidStaves.size(); set++)
     {
-        if (counter == 1)
+        if (counter == 0)
         {
             redCount = 255;
             greenCount = 0;
         }
-        else if (counter == 2)
+        else if (counter == 1)
         {
             greenCount = 150;
             blueCount = 0;
             redCount = 0;
         }
-        else if (counter == 3)
+        else if (counter == 2)
         {
             blueCount = 175;
             redCount = 0;
@@ -1963,18 +2002,18 @@ RGBImageView* deletionStablePathDetection(T &image)
     
     for (int set = 0; set < setsOfValidStaves.size(); set++)
     {
-        if (counter == 1)
+        if (counter == 0)
         {
             redCount = 255;
             greenCount = 0;
         }
-        else if (counter == 2)
+        else if (counter == 1)
         {
             greenCount = 150;
             blueCount = 0;
             redCount = 0;
         }
-        else if (counter == 3)
+        else if (counter == 2)
         {
             blueCount = 175;
             redCount = 0;
@@ -2044,30 +2083,31 @@ RGBImageView* trimmedStablePathsWithDeletion(T &image)
     
     for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
     {
-        if (counter == 1)
+        if (counter == 0)
         {
             redCount = 255;
             greenCount = 0;
         }
-        else if (counter == 2)
+        else if (counter == 1)
         {
             greenCount = 150;
             blueCount = 0;
             redCount = 0;
         }
-        else if (counter == 3)
+        else if (counter == 2)
         {
             blueCount = 175;
             redCount = 0;
             counter = 0;
         }
         
-        
+        slf2.fixStaffSystem(setsOfTrimmedPaths[set]);
         for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
         {
             slf2.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
             for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
             {
+//                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
                 new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
             }
         }
@@ -2096,29 +2136,31 @@ RGBImageView* trimmedStablePathsWithoutDeletion(T &image)
     
     for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
     {
-        if (counter == 1)
+        if (counter == 0)
         {
             redCount = 255;
             greenCount = 0;
         }
-        else if (counter == 2)
+        else if (counter == 1)
         {
             greenCount = 150;
             blueCount = 0;
             redCount = 0;
         }
-        else if (counter == 3)
+        else if (counter == 2)
         {
             blueCount = 175;
             redCount = 0;
             counter = 0;
         }
         
+        slf1.fixStaffSystem(setsOfTrimmedPaths[set]);
         for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
         {
             slf1.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
             for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
             {
+//                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
                 new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
             }
         }
@@ -2168,7 +2210,7 @@ void overlayRGBPixels(RGBImageView primaryImage, RGBImageView dest)
     {
         for (int row = 0; row < height; row++)
         {
-            //            int pixVal = primaryImage->get(Point(col, row));
+//            int pixVal = primaryImage->get(Point(col, row));
             if (primaryImage.get(Point(col, row)) != RGBPixel(255, 255, 255))
             {
                 dest.set(Point(col, row), RGBPixel(0, 0, 0));
