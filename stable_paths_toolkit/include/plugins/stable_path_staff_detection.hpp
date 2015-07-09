@@ -1689,7 +1689,8 @@ public:
         
         if (withinTolerance(slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())), mostCommonSlope))
         {
-            cout<<"SUCCESS!! The required slope is " <<mostCommonSlope <<" and the slope of the connecting points is " <<slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())) <<endl;
+            cout<<"SUCCESS!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())) <<endl;
+            
             for (int point = 0; point <= deltaX; point++)
             {
                 if (deltaY)
@@ -1704,7 +1705,7 @@ public:
         }
         else
         {
-            cout<<"The required slope is " <<mostCommonSlope <<" but the slope of the connecting points is " <<slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())) <<endl;
+            cout<<"FAILURE!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())) <<endl;
         }
     }
     
@@ -2198,113 +2199,121 @@ GreyScaleImageView* testForVerticalBlackPercentage(T &image)
 }
 
 template<class T>
-RGBImageView* trimmedStablePathsWithDeletion(T &image)
+RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_fixing)
 {
-    stableStaffLineFinder slf1 (image);
-    RGBImageData *data1 = new RGBImageData(image.size());
-    RGBImageView *new1 = new RGBImageView(*data1);
-    vector<vector <Point> > validStaves;
-    OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
-    OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
-    validStaves.clear();
-    stableStaffLineFinder slf2 (*subtractedImage);
-    vector< vector <vector<Point> > > setsOfValidStaves;
-    setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
-    vector< vector <vector<Point> > > setsOfTrimmedPaths;
-    cout <<"About to commence finalTrim" <<endl;
-    setsOfTrimmedPaths = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
-    cout <<"Finished finalTrim" <<endl;
-    int redCount, blueCount, greenCount, counter;
-    redCount = blueCount = greenCount = counter = 0;
-    
-    for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+    if (with_deletion)
     {
-        if (counter == 0)
-        {
-            redCount = 255;
-            greenCount = 0;
-        }
-        else if (counter == 1)
-        {
-            greenCount = 150;
-            blueCount = 0;
-            redCount = 0;
-        }
-        else if (counter == 2)
-        {
-            blueCount = 175;
-            redCount = 0;
-            counter = 0;
-        }
+        stableStaffLineFinder slf1 (image);
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
+        OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
+        validStaves.clear();
+        stableStaffLineFinder slf2 (*subtractedImage);
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
+        vector< vector <vector<Point> > > setsOfTrimmedPaths;
+        cout <<"About to commence finalTrim" <<endl;
+        setsOfTrimmedPaths = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
         
-        slf2.fixStaffSystem(setsOfTrimmedPaths[set]);
-        for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
         {
-            slf2.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
-            for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+            if (counter == 0)
             {
-//                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
-                new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                redCount = 255;
+                greenCount = 0;
             }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = 0;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slf2.fixStaffSystem(setsOfTrimmedPaths[set]);
+            }
+            
+            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            {
+                slf2.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
+                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                {
+    //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
+                    new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
         }
         
-        counter++;
+        return new1;
     }
-    
-    return new1;
-}
-
-template<class T>
-RGBImageView* trimmedStablePathsWithoutDeletion(T &image)
-{
-    stableStaffLineFinder slf1 (image);
-    RGBImageData *data1 = new RGBImageData(image.size());
-    RGBImageView *new1 = new RGBImageView(*data1);
-    vector<vector <Point> > validStaves;
-    vector< vector <vector<Point> > > setsOfValidStaves;
-    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
-    vector< vector <vector<Point> > > setsOfTrimmedPaths;
-    cout <<"About to commence finalTrim" <<endl;
-    setsOfTrimmedPaths = slf1.finalTrim(setsOfValidStaves, slf1.primaryImage);
-    cout <<"Finished finalTrim" <<endl;
-    int redCount, blueCount, greenCount, counter;
-    redCount = blueCount = greenCount = counter = 0;
-    
-    for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+    else
     {
-        if (counter == 0)
-        {
-            redCount = 255;
-            greenCount = 0;
-        }
-        else if (counter == 1)
-        {
-            greenCount = 150;
-            blueCount = 0;
-            redCount = 0;
-        }
-        else if (counter == 2)
-        {
-            blueCount = 175;
-            redCount = 0;
-            counter = 0;
-        }
+        stableStaffLineFinder slf1 (image);
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
+        vector< vector <vector<Point> > > setsOfTrimmedPaths;
+        cout <<"About to commence finalTrim" <<endl;
+        setsOfTrimmedPaths = slf1.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
         
-        slf1.fixStaffSystem(setsOfTrimmedPaths[set]);
-        for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
         {
-            slf1.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
-            for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+            if (counter == 0)
             {
-//                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
-                new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                redCount = 255;
+                greenCount = 0;
             }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = 0;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slf1.fixStaffSystem(setsOfTrimmedPaths[set]);
+            }
+            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            {
+                slf1.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
+                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                {
+                    //                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
+                    new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
         }
         
-        counter++;
+        return new1;
     }
-    
-    return new1;
 }
 
 template<class T>
