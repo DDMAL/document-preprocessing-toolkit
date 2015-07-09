@@ -1682,17 +1682,24 @@ public:
     
     void fixLineSegment(vector <Point> &staff, int start, int end, double mostCommonSlope)
     {
-        int deltaX = staff[start].x() - staff[end].x();
+        int deltaX = abs(staff[end].x() - staff[start].x());
         int deltaY = abs(staff[start].y() - staff[end].y());
-        int horizontalStep = (deltaX / deltaY); //number of pixels in a "step" as line goes up or down
-        int horizontalStepCounter = 0;
+//        int horizontalStep = (deltaX / deltaY); //number of pixels in a "step" as line goes up or down
+//        int horizontalStepCounter = 0;
         
         if (withinTolerance(slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())), mostCommonSlope))
         {
             cout<<"SUCCESS!! The required slope is " <<mostCommonSlope <<" and the slope of the connecting points is " <<slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())) <<endl;
             for (int point = 0; point <= deltaX; point++)
             {
-                staff[start + point] = Point(staff[start + point].x(), staff[start].y() + (point / deltaY));
+                if (deltaY)
+                {
+                    staff[start + point] = Point(staff[start + point].x(), staff[start].y() - (point / deltaY));
+                }
+                else
+                {
+                    staff[start + point] = Point(staff[start + point].x(), staff[start].y());
+                }
             }
         }
         else
