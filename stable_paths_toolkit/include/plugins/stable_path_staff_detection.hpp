@@ -50,6 +50,7 @@ using namespace Gamera;
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
 #define ALLOWED_OFFSET_NEARHIT 1
 #define SMOOTH_STAFF_LINE_WINDOW 2
+#define SLOPE_TOLERANCE 1.1
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -77,6 +78,12 @@ public:
     {
         int breakVal;
         int pixVal;
+    };
+    
+    struct SLOPEBVAL
+    {
+        int breakVal;
+        bool start;
     };
 
     //Values taken from stableStaffLineFinder.cpp lines 106-107
@@ -1519,7 +1526,7 @@ public:
     //=============================================================================
     //                          HELPER FUNCTIONS
     //=============================================================================
-    vector <double> findSlopes(vector <Point> staff)
+    vector <double> findSlopes(vector <Point> &staff)
     {
         int size = staff.size();
         vector <double> slopes;
@@ -1548,10 +1555,11 @@ public:
         return slopes;
     }
     
-    void fixStaffSystem(vector <vector <Point> > staffSystem)
+    void fixStaffSystem(vector <vector <Point> > &staffSystem)
     {
         int size = staffSystem.size();
         vector <vector <double> > staffSlopes;
+        vector <vector <SLOPEBVAL> > breakVals(size);
         
         for (int staff = 0; staff < size; staff++)
         {
@@ -1570,6 +1578,75 @@ public:
         
         double mostCommonSlope = findMostRepresentedValueOnSortedVector(mostCommonSlopes);
         cout <<"The most common slope is " <<mostCommonSlope <<endl;
+        
+        findDissimilarSlopeBreakPoints(staffSlopes, breakVals, mostCommonSlope);
+    }
+    
+    void findDissimilarSlopeBreakPoints(vector <vector <double> > &staffSlopes, vector <vector <SLOPEBVAL> > &breakVals, double mostCommonSlope)
+    {
+        int size = staffSlopes.size();
+        
+        for (int staff = 0; staff < size; staff++)
+        {
+            findDissimilarSlopeBreakPointsSingleStaff(staffSlopes[staff], breakVals[staff], mostCommonSlope);
+        }
+    }
+    
+    void findDissimilarSlopeBreakPointsSingleStaff(vector <double> &staff, vector <SLOPEBVAL> &breakVals, double mostCommonSlope)
+    {
+        SLOPEBVAL breakValue;
+        int size = staff.size();
+        int mishitCounter = 0;
+        int hitCounter = 0;
+        
+        for (int point = 0; point < size; point++)
+        {
+            int breakValsSize = breakVals.size();
+            
+            if (withinTolorance(staff[point], mostCommonSlope))
+            {
+                hitCounter++;
+            }
+            else
+            {
+                mishitCounter++;
+            }
+            
+            if ((mishitCounter > staffSpaceDistance) && (!breakValsSize))
+            {
+                breakValue.breakVal = point - mishitCounter;
+                breakValue.start = true;
+                breakVals.push_back(breakValue);
+                hitCounter = 0;
+            }
+            else if ((mishitCounter > staffSpaceDistance) && !(breakVals.size() % 2))
+            {
+                breakValue.breakVal = point - mishitCounter;
+                breakValue.start = true;
+                breakVals.push_back(breakValue);
+                hitCounter = 0;
+            }
+            else if ((hitCounter > staffSpaceDistance) && (breakVals.size() % 2))
+            {
+                breakValue.breakVal = point - hitCounter;
+                breakValue.start = false;
+                breakVals.push_back(breakValue);
+                mishitCounter = 0;
+            }
+            
+        }
+    }
+    
+    bool withinTolorance(double slope, double mostCommonSlope)
+    {
+        if ((slope <= (SLOPE_TOLERANCE * mostCommonSlope)) && (slope >= (mostCommonSlope / SLOPE_TOLERANCE)))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     
     template <class T>
