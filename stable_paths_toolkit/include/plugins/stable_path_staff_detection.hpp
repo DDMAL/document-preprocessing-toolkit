@@ -50,7 +50,7 @@ using namespace Gamera;
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
 #define ALLOWED_OFFSET_NEARHIT 1
 #define SMOOTH_STAFF_LINE_WINDOW 2
-#define SLOPE_TOLERANCE 1.1
+#define SLOPE_TOLERANCE 1.3
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -1689,7 +1689,7 @@ public:
         
         if (withinTolerance(slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())), mostCommonSlope))
         {
-            cout<<"SUCCESS!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())) <<endl;
+            cout<<"SUCCESS!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
             
             for (int point = 0; point <= deltaX; point++)
             {
@@ -1705,7 +1705,7 @@ public:
         }
         else
         {
-            cout<<"FAILURE!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())) <<endl;
+            cout<<"FAILURE!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
         }
     }
     
