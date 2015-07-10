@@ -1588,25 +1588,33 @@ public:
         
         for (int staff = 0; staff < size; staff++)
         {
-            staffSlopes.push_back(findSlopes(staffSystem[staff]));
+            vector <double> slopeVals = findSlopes(staffSystem[staff]);
+            
+            if (!slopeVals.empty())
+            {
+                staffSlopes.push_back(slopeVals);
+            }
         }
         
-        vector <vector <double> > staffSlopesCopy;
-        staffSlopesCopy = staffSlopes;
-        vector <double> mostCommonSlopes;
-        
-        for (int staff = 0; staff < size; staff++)
+        if (!staffSlopes.empty())
         {
-            sort(staffSlopesCopy[staff].begin(), staffSlopesCopy[staff].end());
-            mostCommonSlopes.push_back(findMostRepresentedValueOnSortedVector(staffSlopesCopy[staff]));
+            vector <vector <double> > staffSlopesCopy;
+            staffSlopesCopy = staffSlopes;
+            vector <double> mostCommonSlopes;
+            
+            for (int staff = 0; staff < size; staff++)
+            {
+                sort(staffSlopesCopy[staff].begin(), staffSlopesCopy[staff].end());
+                mostCommonSlopes.push_back(findMostRepresentedValueOnSortedVector(staffSlopesCopy[staff]));
+            }
+            
+            double mostCommonSlope = findMostRepresentedValueOnSortedVector(mostCommonSlopes);
+            cout <<"The most common slope is " <<mostCommonSlope <<endl;
+            
+            findDissimilarSlopeBreakPoints(staffSlopes, breakVals, mostCommonSlope);
+            
+            changePointValuesForSystem(staffSystem, breakVals, mostCommonSlope);
         }
-        
-        double mostCommonSlope = findMostRepresentedValueOnSortedVector(mostCommonSlopes);
-        cout <<"The most common slope is " <<mostCommonSlope <<endl;
-        
-        findDissimilarSlopeBreakPoints(staffSlopes, breakVals, mostCommonSlope);
-        
-        changePointValuesForSystem(staffSystem, breakVals, mostCommonSlope);
     }
     
     void findDissimilarSlopeBreakPoints(vector <vector <double> > &staffSlopes, vector <vector <SLOPEBVAL> > &breakVals, double mostCommonSlope)
@@ -2113,6 +2121,7 @@ RGBImageView* drawColorfulStablePaths(T &image)
         {
             redCount = 255;
             greenCount = 0;
+            blueCount = 0;
         }
         else if (counter == 1)
         {
@@ -2124,7 +2133,7 @@ RGBImageView* drawColorfulStablePaths(T &image)
         {
             blueCount = 175;
             redCount = 0;
-            counter = 0;
+            counter = -1;
         }
         
         for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
@@ -2174,7 +2183,7 @@ RGBImageView* deletionStablePathDetection(T &image)
         {
             blueCount = 175;
             redCount = 0;
-            counter = 0;
+            counter = -1;
         }
         
         for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
@@ -2257,7 +2266,7 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
             {
                 blueCount = 175;
                 redCount = 0;
-                counter = 0;
+                counter = -1;
             }
             
             if (with_staff_fixing)
@@ -2312,7 +2321,7 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
             {
                 blueCount = 175;
                 redCount = 0;
-                counter = 0;
+                counter = -1;
             }
             
             if (with_staff_fixing)
