@@ -632,14 +632,14 @@ public:
                 int path_half_width2 = max(staffLineHeight, staffSpaceDistance/2);
                 
                 //Erasing paths from our image, must create a copy of our image
-                for (size_t i = 0; i<staff.size(); i++)
+                for (size_t i = 0; i < staff.size(); i++)
                 {
                     //printf("Staff Size: %lu\n", staff.size());
                     int col = staff[i].x();
                     int row = staff[i].y();
                     
                     //ERASE PATHS ALREADY SELECTED!
-                    for (int j =-path_half_width2; j <= path_half_width2; j++)
+                    for (int j = -path_half_width2; j <= path_half_width2; j++)
                     {
                         // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         // printf("Currently erasing lines\n");
@@ -673,6 +673,16 @@ public:
                         if (col == ncols - 1)
                         {
                             continue;
+                        }
+                        
+                        if (row + j - 1 > 0) //Change weight of row right above the first row being deleted
+                        {
+                            graphWeight[((row + j - 1) * ncols) + col].weight_down = 12;
+                        }
+                        
+                        if (row + j + 1 < nrows - 1) //Change weight of row right below the first row being deleted
+                        {
+                            graphWeight[((row + j + 1) * ncols) + col].weight_up = 12;
                         }
                         
                         if (row + j > 0)
@@ -1307,6 +1317,16 @@ public:
                         if (col == ncols - 1)
                         {
                             continue;
+                        }
+                        
+                        if (row + j - 1 > 0) //Change weight of row right above the first row being deleted
+                        {
+                            graphWeight[((row + j - 1) * ncols) + col].weight_down = 12;
+                        }
+                        
+                        if (row + j + 1 < nrows - 1) //Change weight of row right below the first row being deleted
+                        {
+                            graphWeight[((row + j + 1) * ncols) + col].weight_up = 12;
                         }
                         
                         if (row + j > 0)
@@ -2299,6 +2319,7 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
             {
                 slf1.fixStaffSystem(setsOfTrimmedPaths[set]);
             }
+            
             for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
             {
                 slf1.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
