@@ -1950,6 +1950,41 @@ public:
     //===================================================================================================
     //================================ Testing Functions ================================================
     //===================================================================================================
+    
+    void printStats(vector< vector <vector<Point> > > &setsOfValidStaves)
+    {
+        int numOfSets = setsOfValidStaves.size();
+        
+        for (int set = 0; set < numOfSets; set++)
+        {
+            int staffsInSet = setsOfValidStaves[set].size();
+            cout <<"######## SET #" <<set <<" INFO ########" <<endl;
+            cout <<"#-> Size = " <<staffsInSet <<endl;
+            
+            for (int staff = 0; staff < staffsInSet; staff++)
+            {
+                cout <<"#---> STAFF #" <<staff <<endl;
+                cout <<"#----> Percent hit = " <<percentHit(setsOfValidStaves[set][staff]) <<endl;
+            }
+            
+            cout <<"######################################" <<endl <<endl;
+        }
+    }
+    
+    double percentHit(vector <Point> staff)
+    {
+        double size = staff.size();
+        double totalHits = 0;
+        
+        for (int point = 0; point < size; point++)
+        {
+            if (primaryImage->get(Point(staff[point])))
+            {
+                totalHits++;
+            }
+        }
+        return (totalHits / size);
+    }
 
     OneBitImageView* lineDraw(OneBitImageView *image)
     {
@@ -2110,7 +2145,7 @@ RGBImageView* drawColorfulStablePaths(T &image)
     RGBImageData *data1 = new RGBImageData(image.size());
     RGBImageView *new1 = new RGBImageView(*data1);
     vector<vector <Point> > validStaves;
-    vector< vector <vector<Point> > > setsOfValidStaves;
+    vector <vector <vector<Point> > > setsOfValidStaves;
     setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, image);
     int redCount, blueCount, greenCount, counter;
     redCount = blueCount = greenCount = counter = 0;
@@ -2147,6 +2182,7 @@ RGBImageView* drawColorfulStablePaths(T &image)
         counter++;
     }
     
+    slf1.printStats(setsOfValidStaves);
     return new1;
 }
 
@@ -2287,6 +2323,8 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
             counter++;
         }
         
+        slf1.printStats(setsOfTrimmedPaths);
+        
         return new1;
     }
     else
@@ -2341,6 +2379,8 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
             
             counter++;
         }
+        
+        slf1.printStats(setsOfTrimmedPaths);
         
         return new1;
     }
