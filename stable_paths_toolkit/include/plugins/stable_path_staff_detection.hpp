@@ -51,6 +51,7 @@ using namespace Gamera;
 #define ALLOWED_OFFSET_NEARHIT 1
 #define SMOOTH_STAFF_LINE_WINDOW 2
 #define SLOPE_TOLERANCE 1.3
+#define VERBOSE_MODE 0
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -308,7 +309,10 @@ public:
         
         //Find vertical run values
         // ***USE VECTOR ITERATORS WITH ROW ON THE OUTSIDE TO INCREASE PERFORMANCE IF THERE'S TIME***
-        cout <<"About to find vertical runs" <<endl;
+        if (VERBOSE_MODE)
+        {
+            cout <<"About to find vertical runs" <<endl;
+        }
         
         for (int c = 0; c < cols; c++)
         {
@@ -347,7 +351,11 @@ public:
                 }
             }
         }
-        cout <<"Done finding vertical runs" <<endl;
+        
+        if (VERBOSE_MODE)
+        {
+            cout <<"Done finding vertical runs" <<endl;
+        }
         
         //Find Vertical Distance
 //        for (int c = 0; c < cols; c++)
@@ -528,7 +536,10 @@ public:
             }
         }
         
-        cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
+        if (VERBOSE_MODE)
+        {
+            cout <<"Staff Height = " <<staffLineHeight <<" Staff Distance = " <<staffSpaceDistance <<endl;
+        }
     }
     
     OneBitImageView* stableStaffDetection(vector <vector <Point> > &validStaves)
@@ -552,9 +563,18 @@ public:
         {
             vector <vector<Point> > stablePaths;
             int curr_n_paths = 0;
-            printf("About to findAllStablePaths\n");
+            
+            if (VERBOSE_MODE)
+            {
+                printf("About to findAllStablePaths\n");
+            }
+            
             findAllStablePaths(imageCopy, 0, ncols - 1, stablePaths);
-            printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
+            
+            if (VERBOSE_MODE)
+            {
+                printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
+            }
             
             if (first_time && (stablePaths.size() > 0))
             {
@@ -593,7 +613,10 @@ public:
                 
                 for (i = 0; i < allSumOfValues.size(); i++)
                 {
-                    printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+                    if (VERBOSE_MODE)
+                    {
+                        printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+                    }
                     
                     if (copy_allSumOfValues[i] == medianSumOfValues)
                     {
@@ -605,7 +628,11 @@ public:
                 
                 double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
                 blackPerc = max(MIN_BLACK_PER, bestBlackPerc * 0.8);
-                cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
+                
+                if (VERBOSE_MODE)
+                {
+                    cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
+                }
             }
             
             for (size_t i = 0; i < stablePaths.size(); i++)
@@ -614,12 +641,21 @@ public:
                 
                 if (tooMuchWhite(staff, imgErode, blackPerc))
                 {
-                    cout <<"Too white, line being removed\n";
+                    if (VERBOSE_MODE)
+                    {
+                        cout <<"Too white, line being removed\n";
+                    }
+                    
                     continue;
                 }
                 
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
-                printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                
+                if (VERBOSE_MODE)
+                {
+                    printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                }
+                
                 if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
                 {
                     printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
@@ -871,7 +907,11 @@ public:
     vector <vector <vector<Point> > > postProcessing(vector <vector<Point> > &validStaves, OneBitImageView *imageErodedCopy)
     {
         vector <vector <vector<Point> > > setsOfValidStaves;
-        cout <<"Postprocessing Image\n";
+        
+        if (VERBOSE_MODE)
+        {
+            cout <<"Postprocessing Image\n";
+        }
         
         if (!validStaves.size())
         {
@@ -911,7 +951,10 @@ public:
             maxStaffDistance = max(2 * staffSpaceDistance, 2 * staffLineHeight);
         }
         
-        printf("maxStaffDistance = %d\n", maxStaffDistance);
+        if (VERBOSE_MODE)
+        {
+            printf("maxStaffDistance = %d\n", maxStaffDistance);
+        }
         
         //Organize in sets
         int start = 0;
@@ -935,7 +978,11 @@ public:
                 
                 //I want to include systems with only one staff. There will have to be rules written to make sure it actually should be included
                 setsOfValidStaves.push_back(singleSet);
-                printf("SET SIZE = %lu\n", singleSet.size());
+                
+                if (VERBOSE_MODE)
+                {
+                    printf("SET SIZE = %lu\n", singleSet.size());
+                }
                 
                 start = nvalid + 1;
             }
@@ -1236,7 +1283,10 @@ public:
                 
                 for (i = 0; i < allSumOfValues.size(); i++)
                 {
-                    printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+                    if (VERBOSE_MODE)
+                    {
+                        printf("copy_allSumOfValues[%d] = %lu\n", i, copy_allSumOfValues[i]);
+                    }
                     
                     if (copy_allSumOfValues[i] == medianSumOfValues)
                     {
@@ -1248,7 +1298,11 @@ public:
                 
                 double bestBlackPerc = medianSumOfValues/(1.0 * bestStaff.size());
                 blackPerc = max(MIN_BLACK_PER, bestBlackPerc * 0.8);
-                cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
+                
+                if (VERBOSE_MODE)
+                {
+                    cout <<"bestBlackPerc: " <<bestBlackPerc <<" blackPerc: " <<blackPerc <<endl;
+                }
             }
             
             for (size_t i = 0; i < stablePaths.size(); i++)
@@ -1257,16 +1311,28 @@ public:
                 
                 if (tooMuchWhite(staff, imgErode, blackPerc))
                 {
-                    printf("Too much white\n");
+                    if (VERBOSE_MODE)
+                    {
+                        printf("Too much white\n");
+                    }
+                    
                     continue;
                 }
                 
                 double dissimilarity = staffDissimilarity(bestStaff, staff);
-                printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                
+                if (VERBOSE_MODE)
+                {
+                    printf ("\tDissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                }
                 
                 if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
                 {
-                    printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    if (VERBOSE_MODE)
+                    {
+                        printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    }
+                    
                     continue;
                 }
                 
@@ -1609,7 +1675,11 @@ public:
             }
             
             double mostCommonSlope = findMostRepresentedValueOnSortedVector(mostCommonSlopes);
-            cout <<"The most common slope is " <<mostCommonSlope <<endl;
+            
+            if (VERBOSE_MODE)
+            {
+                cout <<"The most common slope is " <<mostCommonSlope <<endl;
+            }
             
             findDissimilarSlopeBreakPoints(staffSlopes, breakVals, mostCommonSlope);
             
@@ -1717,7 +1787,10 @@ public:
         
         if (withinTolerance(slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())), mostCommonSlope))
         {
-            cout<<"SUCCESS!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
+            if (VERBOSE_MODE)
+            {
+                cout<<"SUCCESS!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
+            }
             
             for (int point = 0; point <= deltaX; point++)
             {
@@ -1733,7 +1806,10 @@ public:
         }
         else
         {
-            cout<<"FAILURE!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
+            if (VERBOSE_MODE)
+            {
+                cout<<"FAILURE!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
+            }
         }
     }
     
@@ -1958,7 +2034,7 @@ public:
         for (int set = 0; set < numOfSets; set++)
         {
             int staffsInSet = setsOfValidStaves[set].size();
-            cout <<"######## SET #" <<set <<" INFO ########" <<endl;
+            cout <<"######### SET #" <<set <<" INFO #########" <<endl;
             cout <<"#-> Size = " <<staffsInSet <<endl;
             
             for (int staff = 0; staff < staffsInSet; staff++)
