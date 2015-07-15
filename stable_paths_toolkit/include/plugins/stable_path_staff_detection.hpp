@@ -2135,6 +2135,12 @@ public:
 template<class T>
 RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRight, bool with_deletion, bool with_staff_fixing)
 {
+    if ((topLeft.x() >= bottomRight.x()) || (topLeft.y() >= bottomRight.y()))
+    {
+        cout <<"Invalid points, please try again" <<endl;
+        exit(1);
+    }
+    
     stableStaffLineFinder slf1;
     OneBitImageView *image1 = slf1.myCloneImage(image);
     OneBitImageView subimageView(*image1, topLeft, bottomRight);
