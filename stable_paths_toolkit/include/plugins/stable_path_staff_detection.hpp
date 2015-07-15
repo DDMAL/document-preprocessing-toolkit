@@ -2032,6 +2032,23 @@ public:
         }
     }
     
+    void drawGraphPaths(NODE* graphP, OneBitImageView *image)
+    {
+        for (int row = 0; row < imageHeight; row++)
+        {
+            cout <<"Row #" <<row <<endl;
+            Point start = graphP[((row + 1) * imageWidth) - 1].start;
+            Point previous = graphP[((row + 1) * imageWidth) - 1].previous;
+            while (start != previous)
+            {
+//                cout <<"Got here yo" <<endl;
+                image->set(previous, 1);
+                previous = graphP[(previous.y() * imageWidth) + previous.x()].previous;
+                start = graphP[(previous.y() * imageWidth) + previous.x()].start;
+            }
+        }
+    }
+    
     //===================================================================================================
     //================================ Testing Functions ================================================
     //===================================================================================================
@@ -2323,6 +2340,21 @@ OneBitImageView* drawAllStablePaths(T &image)
     slf1.stableStaffDetection(validStaves);
     OneBitImageView *blank = slf1.clear(image);
     slf1.drawPaths(validStaves, blank);
+    
+    return blank;
+}
+
+template<class T>
+OneBitImageView* drawAllGraphPaths(T &image)
+{
+    vector <vector<Point> > validStaves;
+    stableStaffLineFinder slf1 (image);
+    OneBitImageView *imageCopy = slf1.myCloneImage(image);
+    //OneBitImageView *new1 = slf1.myCloneImage(image);
+    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    slf1.findAllStablePaths(imageCopy, 0, slf1.imageWidth - 1, validStaves);
+    OneBitImageView *blank = slf1.clear(image);
+    slf1.drawGraphPaths(slf1.graphPath, blank);
     
     return blank;
 }
