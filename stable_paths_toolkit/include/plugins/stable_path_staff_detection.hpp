@@ -289,6 +289,15 @@ public:
         
         constructGraphWeights();
     }
+    
+    stableStaffLineFinder()
+    {
+        //Allows you to use the functions without having to compute anything
+        graphPath = new NODE[0];
+        graphWeight = new NODEGRAPH[0];
+        verRun = new int[0];
+        verDistance = new int[0];
+    }
 
     ~stableStaffLineFinder ()
     {
@@ -2123,6 +2132,137 @@ public:
 //===================================================================================================
 //================================ Plugins ==========================================================
 //===================================================================================================
+template<class T>
+RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRight, bool with_deletion, bool with_staff_fixing)
+{
+    stableStaffLineFinder slf1;
+    OneBitImageView *image1 = slf1.myCloneImage(image);
+    OneBitImageView subimageView(*image1, topLeft, bottomRight);
+    stableStaffLineFinder slfSub (subimageView);
+    
+    if (with_deletion)
+    {
+        stableStaffLineFinder slfSub (subimageView);
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        OneBitImageView *firstPass = slfSub.stableStaffDetection(validStaves);
+        OneBitImageView *subtractedImage = slfSub.subtractImage(subimageView, *firstPass);
+        validStaves.clear();
+        stableStaffLineFinder slf2 (*subtractedImage);
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
+        vector< vector <vector<Point> > > setsOfTrimmedPaths;
+        cout <<"About to commence finalTrim" <<endl;
+        setsOfTrimmedPaths = slf2.finalTrim(setsOfValidStaves, slfSub.primaryImage);
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
+        
+        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+        {
+            if (counter == 0)
+            {
+                redCount = 255;
+                greenCount = 0;
+            }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = -1;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slf2.fixStaffSystem(setsOfTrimmedPaths[set]);
+            }
+            
+            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            {
+                slf2.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
+                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                {
+                    //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
+                    int xVal = setsOfTrimmedPaths[set][staff][line].x() + topLeft.x();
+                    int yVal = setsOfTrimmedPaths[set][staff][line].y() + topLeft.y();
+                    new1->set(Point(xVal, yVal), RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
+        }
+        
+        slfSub.printStats(setsOfTrimmedPaths);
+        
+        return new1;
+    }
+    else
+    {
+        stableStaffLineFinder slfSub (subimageView);
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slfSub.returnSetsOfStablePaths(validStaves, *slfSub.primaryImage);
+        vector< vector <vector<Point> > > setsOfTrimmedPaths;
+        cout <<"About to commence finalTrim" <<endl;
+        setsOfTrimmedPaths = slfSub.finalTrim(setsOfValidStaves, slfSub.primaryImage);
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
+        
+        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+        {
+            if (counter == 0)
+            {
+                redCount = 255;
+                greenCount = 0;
+            }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = -1;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slfSub.fixStaffSystem(setsOfTrimmedPaths[set]);
+            }
+            
+            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            {
+                slfSub.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slfSub.staffSpaceDistance);
+                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                {
+                    //                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
+                    int xVal = setsOfTrimmedPaths[set][staff][line].x() + topLeft.x();
+                    int yVal = setsOfTrimmedPaths[set][staff][line].y() + topLeft.y();
+                    new1->set(Point(xVal, yVal), RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
+        }
+        
+        slfSub.printStats(setsOfTrimmedPaths);
+        
+        return new1;
+    }
+}
 
 template<class T>
 float returnGraphWeights(T &image) 
@@ -2530,6 +2670,7 @@ RGBImageView *overlayStaves(T &staffImage, U &primaryImage)
         for (int row = 0; row < height; row++)
         {
             int pixVal = primaryImage.get(Point(col, row));
+            
             if (pixVal)
             {
                 result->set(Point(col, row), RGBPixel(0, 0, 0));
