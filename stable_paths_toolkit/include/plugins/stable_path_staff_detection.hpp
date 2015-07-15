@@ -1621,206 +1621,6 @@ public:
     //=============================================================================
     //                          HELPER FUNCTIONS
     //=============================================================================
-    double slope(double x1, double x2, double y1, double y2)
-    {
-        return ((y1 - y2) / (x2 - x1));
-    }
-    
-    vector <double> findSlopes(vector <Point> &staff)
-    {
-        int size = staff.size();
-        vector <double> slopes;
-        
-        for (int point = 0; point < size - staffSpaceDistance; point++)
-        {
-            //Slopes normally would be (y1 - y2) / (x2 - x1) but the top left corner starts at 0,0 instead of the bottom left corner
-            if ((point - staffSpaceDistance) <= 0)
-            {
-                double y2 = static_cast<double>(staff[point + staffSpaceDistance].y());
-                double y1 = static_cast<double>(staff[0].y());
-                double x2 = static_cast<double>(staff[point + staffSpaceDistance].x());
-                double x1 = static_cast<double>(staff[0].x());
-                slopes.push_back(slope(x1, x2, y1, y2));
-            }
-            else
-            {
-                double y2 = static_cast<double>(staff[point + staffSpaceDistance].y());
-                double y1 = static_cast<double>(staff[point - staffSpaceDistance].y());
-                double x2 = static_cast<double>(staff[point + staffSpaceDistance].x());
-                double x1 = static_cast<double>(staff[point - staffSpaceDistance].x());
-                slopes.push_back(slope(x1, x2, y1, y2));
-            }
-        }
-        
-        return slopes;
-    }
-    
-    void fixStaffSystem(vector <vector <Point> > &staffSystem)
-    {
-        int size = staffSystem.size();
-        vector <vector <double> > staffSlopes;
-        vector <vector <SLOPEBVAL> > breakVals(size);
-        
-        for (int staff = 0; staff < size; staff++)
-        {
-            vector <double> slopeVals = findSlopes(staffSystem[staff]);
-            
-            if (!slopeVals.empty())
-            {
-                staffSlopes.push_back(slopeVals);
-            }
-        }
-        
-        if (!staffSlopes.empty())
-        {
-            vector <vector <double> > staffSlopesCopy;
-            staffSlopesCopy = staffSlopes;
-            vector <double> mostCommonSlopes;
-            
-            for (int staff = 0; staff < size; staff++)
-            {
-                sort(staffSlopesCopy[staff].begin(), staffSlopesCopy[staff].end());
-                mostCommonSlopes.push_back(findMostRepresentedValueOnSortedVector(staffSlopesCopy[staff]));
-            }
-            
-            double mostCommonSlope = findMostRepresentedValueOnSortedVector(mostCommonSlopes);
-            
-            if (VERBOSE_MODE)
-            {
-                cout <<"The most common slope is " <<mostCommonSlope <<endl;
-            }
-            
-            findDissimilarSlopeBreakPoints(staffSlopes, breakVals, mostCommonSlope);
-            
-            changePointValuesForSystem(staffSystem, breakVals, mostCommonSlope);
-        }
-    }
-    
-    void findDissimilarSlopeBreakPoints(vector <vector <double> > &staffSlopes, vector <vector <SLOPEBVAL> > &breakVals, double mostCommonSlope)
-    {
-        int size = staffSlopes.size();
-        
-        for (int staff = 0; staff < size; staff++)
-        {
-            findDissimilarSlopeBreakPointsSingleStaff(staffSlopes[staff], breakVals[staff], mostCommonSlope);
-        }
-    }
-    
-    void findDissimilarSlopeBreakPointsSingleStaff(vector <double> &staff, vector <SLOPEBVAL> &breakVals, double mostCommonSlope)
-    {
-        SLOPEBVAL breakValue;
-        int size = staff.size();
-        int mishitCounter = 0;
-        int hitCounter = 0;
-        
-        for (int point = 0; point < size; point++)
-        {
-            int breakValsSize = breakVals.size();
-            
-            if (withinTolerance(staff[point], mostCommonSlope))
-            {
-                hitCounter++;
-            }
-            else
-            {
-                mishitCounter++;
-            }
-            
-            if ((mishitCounter > staffSpaceDistance) && (!breakValsSize))
-            {
-                breakValue.breakVal = point - mishitCounter;
-                breakValue.start = true;
-                breakVals.push_back(breakValue);
-                hitCounter = 0;
-            }
-            else if ((mishitCounter > staffSpaceDistance) && !(breakVals.size() % 2))
-            {
-                breakValue.breakVal = point - mishitCounter;
-                breakValue.start = true;
-                breakVals.push_back(breakValue);
-                hitCounter = 0;
-            }
-            else if ((hitCounter > staffSpaceDistance) && (breakVals.size() % 2))
-            {
-                breakValue.breakVal = point - hitCounter;
-                breakValue.start = false;
-                breakVals.push_back(breakValue);
-                mishitCounter = 0;
-            }
-            
-        }
-    }
-    
-    bool withinTolerance(double slope, double mostCommonSlope)
-    {
-        if ((slope <= (SLOPE_TOLERANCE * mostCommonSlope)) && (slope >= (mostCommonSlope / SLOPE_TOLERANCE)))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    
-    void changePointValuesForSystem(vector <vector <Point> > &staffSystem, vector <vector <SLOPEBVAL> > &breakVals, double mostCommonSlope)
-    {
-        int size = staffSystem.size();
-        
-        for (int staff = 0; staff < size; staff++)
-        {
-            changePointValuesForStaff(staffSystem[staff], breakVals[staff], mostCommonSlope);
-        }
-    }
-    
-    void changePointValuesForStaff(vector <Point> &staff, vector <SLOPEBVAL> &breakVals, double mostCommonSlope)
-    {
-        int staffSize = staff.size();
-        int breakValsSize = breakVals.size();
-        
-        for (int bVal = 0; bVal < breakValsSize; bVal++)
-        {
-            if (breakVals[bVal].start && (bVal != (breakValsSize - 1)))
-            {
-                fixLineSegment(staff, breakVals[bVal].breakVal, breakVals[bVal + 1].breakVal, mostCommonSlope);
-            }
-        }
-    }
-    
-    void fixLineSegment(vector <Point> &staff, int start, int end, double mostCommonSlope)
-    {
-        int deltaX = abs(staff[end].x() - staff[start].x());
-        int deltaY = abs(staff[start].y() - staff[end].y());
-//        int horizontalStep = (deltaX / deltaY); //number of pixels in a "step" as line goes up or down
-//        int horizontalStepCounter = 0;
-        
-        if (withinTolerance(slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())), mostCommonSlope))
-        {
-            if (VERBOSE_MODE)
-            {
-                cout<<"SUCCESS!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
-            }
-            
-            for (int point = 0; point <= deltaX; point++)
-            {
-                if (deltaY)
-                {
-                    staff[start + point] = Point(staff[start + point].x(), staff[start].y() - (point / deltaY));
-                }
-                else
-                {
-                    staff[start + point] = Point(staff[start + point].x(), staff[start].y());
-                }
-            }
-        }
-        else
-        {
-            if (VERBOSE_MODE)
-            {
-                cout<<"FAILURE!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
-            }
-        }
-    }
     
     template <class T>
     T findMostRepresentedValueOnSortedVector(vector<T> &vec)
@@ -1829,7 +1629,7 @@ public:
         int freq = 0;
         int maxFreq = 0;
         T maxRun = run;
-
+        
         for (unsigned i = 0; i < vec.size(); i++)
         {
             if (vec[i] == run)
@@ -2041,10 +1841,214 @@ public:
             Point previous = graphP[((row + 1) * imageWidth) - 1].previous;
             while (start != previous)
             {
-//                cout <<"Got here yo" <<endl;
                 image->set(previous, 1);
                 previous = graphP[(previous.y() * imageWidth) + previous.x()].previous;
                 start = graphP[(previous.y() * imageWidth) + previous.x()].start;
+            }
+        }
+    }
+    
+    //============================================================================
+    //                          fixStaffSystem Functions
+    //============================================================================
+    
+    void fixStaffSystem(vector <vector <Point> > &staffSystem)
+    {
+        int size = staffSystem.size();
+        vector <vector <double> > staffSlopes;
+        vector <vector <SLOPEBVAL> > breakVals(size);
+        
+        for (int staff = 0; staff < size; staff++)
+        {
+            vector <double> slopeVals = findSlopes(staffSystem[staff]);
+            
+            if (!slopeVals.empty())
+            {
+                staffSlopes.push_back(slopeVals);
+            }
+        }
+        
+        if (!staffSlopes.empty())
+        {
+            vector <vector <double> > staffSlopesCopy;
+            staffSlopesCopy = staffSlopes;
+            vector <double> mostCommonSlopes;
+            
+            for (int staff = 0; staff < size; staff++)
+            {
+                sort(staffSlopesCopy[staff].begin(), staffSlopesCopy[staff].end());
+                mostCommonSlopes.push_back(findMostRepresentedValueOnSortedVector(staffSlopesCopy[staff]));
+            }
+            
+            double mostCommonSlope = findMostRepresentedValueOnSortedVector(mostCommonSlopes);
+            
+            if (VERBOSE_MODE)
+            {
+                cout <<"The most common slope is " <<mostCommonSlope <<endl;
+            }
+            
+            findDissimilarSlopeBreakPoints(staffSlopes, breakVals, mostCommonSlope);
+            
+            changePointValuesForSystem(staffSystem, breakVals, mostCommonSlope);
+        }
+    }
+    
+    void fixLineSegment(vector <Point> &staff, int start, int end, double mostCommonSlope)
+    {
+        int deltaX = abs(staff[end].x() - staff[start].x());
+        int deltaY = abs(staff[start].y() - staff[end].y());
+        //        int horizontalStep = (deltaX / deltaY); //number of pixels in a "step" as line goes up or down
+        //        int horizontalStepCounter = 0;
+        
+        if (withinTolerance(slope(static_cast<double>(staff[start].x()), static_cast<double>(staff[end].x()), static_cast<double>(staff[start].y()), static_cast<double>(staff[end].y())), mostCommonSlope))
+        {
+            if (VERBOSE_MODE)
+            {
+                cout<<"SUCCESS!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
+            }
+            
+            for (int point = 0; point <= deltaX; point++)
+            {
+                if (deltaY)
+                {
+                    staff[start + point] = Point(staff[start + point].x(), staff[start].y() - (point / deltaY));
+                }
+                else
+                {
+                    staff[start + point] = Point(staff[start + point].x(), staff[start].y());
+                }
+            }
+        }
+        else
+        {
+            if (VERBOSE_MODE)
+            {
+                cout<<"FAILURE!! Required slope: " <<mostCommonSlope <<" Actual slope: " <<slope((static_cast<double>(staff[start].x())), (static_cast<double>(staff[end].x())), (static_cast<double>(staff[start].y())), (static_cast<double>(staff[end].y()))) <<endl;
+            }
+        }
+    }
+    
+    double slope(double x1, double x2, double y1, double y2)
+    {
+        return ((y1 - y2) / (x2 - x1));
+    }
+    
+    vector <double> findSlopes(vector <Point> &staff)
+    {
+        int size = staff.size();
+        vector <double> slopes;
+        
+        for (int point = 0; point < size - staffSpaceDistance; point++)
+        {
+            //Slopes normally would be (y1 - y2) / (x2 - x1) but the top left corner starts at 0,0 instead of the bottom left corner
+            if ((point - staffSpaceDistance) <= 0)
+            {
+                double y2 = static_cast<double>(staff[point + staffSpaceDistance].y());
+                double y1 = static_cast<double>(staff[0].y());
+                double x2 = static_cast<double>(staff[point + staffSpaceDistance].x());
+                double x1 = static_cast<double>(staff[0].x());
+                slopes.push_back(slope(x1, x2, y1, y2));
+            }
+            else
+            {
+                double y2 = static_cast<double>(staff[point + staffSpaceDistance].y());
+                double y1 = static_cast<double>(staff[point - staffSpaceDistance].y());
+                double x2 = static_cast<double>(staff[point + staffSpaceDistance].x());
+                double x1 = static_cast<double>(staff[point - staffSpaceDistance].x());
+                slopes.push_back(slope(x1, x2, y1, y2));
+            }
+        }
+        
+        return slopes;
+    }
+    
+    void findDissimilarSlopeBreakPoints(vector <vector <double> > &staffSlopes, vector <vector <SLOPEBVAL> > &breakVals, double mostCommonSlope)
+    {
+        int size = staffSlopes.size();
+        
+        for (int staff = 0; staff < size; staff++)
+        {
+            findDissimilarSlopeBreakPointsSingleStaff(staffSlopes[staff], breakVals[staff], mostCommonSlope);
+        }
+    }
+    
+    void findDissimilarSlopeBreakPointsSingleStaff(vector <double> &staff, vector <SLOPEBVAL> &breakVals, double mostCommonSlope)
+    {
+        SLOPEBVAL breakValue;
+        int size = staff.size();
+        int mishitCounter = 0;
+        int hitCounter = 0;
+        
+        for (int point = 0; point < size; point++)
+        {
+            int breakValsSize = breakVals.size();
+            
+            if (withinTolerance(staff[point], mostCommonSlope))
+            {
+                hitCounter++;
+            }
+            else
+            {
+                mishitCounter++;
+            }
+            
+            if ((mishitCounter > staffSpaceDistance) && (!breakValsSize))
+            {
+                breakValue.breakVal = point - mishitCounter;
+                breakValue.start = true;
+                breakVals.push_back(breakValue);
+                hitCounter = 0;
+            }
+            else if ((mishitCounter > staffSpaceDistance) && !(breakVals.size() % 2))
+            {
+                breakValue.breakVal = point - mishitCounter;
+                breakValue.start = true;
+                breakVals.push_back(breakValue);
+                hitCounter = 0;
+            }
+            else if ((hitCounter > staffSpaceDistance) && (breakVals.size() % 2))
+            {
+                breakValue.breakVal = point - hitCounter;
+                breakValue.start = false;
+                breakVals.push_back(breakValue);
+                mishitCounter = 0;
+            }
+            
+        }
+    }
+    
+    bool withinTolerance(double slope, double mostCommonSlope)
+    {
+        if ((slope <= (SLOPE_TOLERANCE * mostCommonSlope)) && (slope >= (mostCommonSlope / SLOPE_TOLERANCE)))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    void changePointValuesForSystem(vector <vector <Point> > &staffSystem, vector <vector <SLOPEBVAL> > &breakVals, double mostCommonSlope)
+    {
+        int size = staffSystem.size();
+        
+        for (int staff = 0; staff < size; staff++)
+        {
+            changePointValuesForStaff(staffSystem[staff], breakVals[staff], mostCommonSlope);
+        }
+    }
+    
+    void changePointValuesForStaff(vector <Point> &staff, vector <SLOPEBVAL> &breakVals, double mostCommonSlope)
+    {
+        int staffSize = staff.size();
+        int breakValsSize = breakVals.size();
+        
+        for (int bVal = 0; bVal < breakValsSize; bVal++)
+        {
+            if (breakVals[bVal].start && (bVal != (breakValsSize - 1)))
+            {
+                fixLineSegment(staff, breakVals[bVal].breakVal, breakVals[bVal + 1].breakVal, mostCommonSlope);
             }
         }
     }
