@@ -50,6 +50,7 @@ using namespace Gamera;
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
 #define ALLOWED_OFFSET_NEARHIT 1
 #define SMOOTH_STAFF_LINE_WINDOW 2
+#define SLOPE_WINDOW 2
 #define SLOPE_TOLERANCE 1.3
 #define VERBOSE_MODE 0
 
@@ -2051,6 +2052,44 @@ public:
                 fixLineSegment(staff, breakVals[bVal].breakVal, breakVals[bVal + 1].breakVal, mostCommonSlope);
             }
         }
+    }
+    
+    //################## Trial Slope Functions ################
+    
+    double slopeOfWindow(vector<Point> staff, int start, int windowSize)
+    {
+        if (staff.size() < (windowSize + start))
+        {
+            cout <<"The staff is too small to find an accurate slope." <<endl;
+            return -999999999999;
+        }
+        
+        double totalY = 0.0;
+        double deltaX = static_cast<double>(windowSize);
+        
+        for (int point = start; start < (start + windowSize); point++)
+        {
+            totalY += static_cast<double>(staff[point].y());
+        }
+        
+        return (totalY / deltaX);
+    }
+    
+    vector <vector <double> > getWindowSlopesForSet(vector <vector <Point> > staffSet)
+    {
+        int setSize = staffSet.size();
+        int window = (SLOPE_WINDOW * staffSpaceDistance);
+        vector <vector <double> > slopes(setSize);
+        
+        for (int staff = 0; staff < setSize; staff++)
+        {
+            for (int winStart = 0; winStart < (staffSet[staff].size() - (window - 1)); winStart++)
+            {
+                slopes[staff].push_back(slopeOfWindow(staffSet[staff], winStart, window));
+            }
+        }
+        
+        return slopes;
     }
     
     //===================================================================================================
