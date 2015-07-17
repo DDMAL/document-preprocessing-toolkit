@@ -1705,8 +1705,18 @@ public:
         int startCol = 0;
         int endCol = image->ncols() - 1;
         double usedSize = endCol - startCol + 1.0;
+        double blackPerc;
         
-        if (sumOfValues < ((1.0 - minBlackPerc) * (usedSize)))
+        if (minBlackPerc > .5)
+        {
+            blackPerc = 1.0 - minBlackPerc;
+        }
+        else
+        {
+            blackPerc = minBlackPerc;
+        }
+        
+        if (sumOfValues < ((blackPerc) * (usedSize)))
         {
             return true;
         }
@@ -1837,7 +1847,7 @@ public:
     {
         for (int row = 0; row < imageHeight; row++)
         {
-            cout <<"Row #" <<row <<endl;
+//            cout <<"Row #" <<row <<endl;
             Point start = graphP[((row + 1) * imageWidth) - 1].start;
             Point previous = graphP[((row + 1) * imageWidth) - 1].previous;
             while (start != previous)
