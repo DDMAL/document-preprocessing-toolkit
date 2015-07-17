@@ -52,7 +52,7 @@ using namespace Gamera;
 #define SMOOTH_STAFF_LINE_WINDOW 2
 #define SLOPE_WINDOW 2
 #define SLOPE_TOLERANCE 1.3
-#define VERBOSE_MODE 0
+#define VERBOSE_MODE 1
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -1912,7 +1912,8 @@ public:
             {
                 if (deltaY)
                 {
-                    staff[start + point] = Point(staff[start + point].x(), staff[start].y() - (point / deltaY));
+//                    staff[start + point] = Point(staff[start + point].x(), staff[start].y() - (point / deltaY));
+                    staff[start + point] = Point(staff[start + point].x(), staff[start].y());
                 }
                 else
                 {
@@ -2020,7 +2021,7 @@ public:
     
     bool withinTolerance(double slope, double mostCommonSlope)
     {
-        if ((slope <= (SLOPE_TOLERANCE * mostCommonSlope)) && (slope >= (mostCommonSlope / SLOPE_TOLERANCE)))
+        if ((slope <= ((SLOPE_TOLERANCE * mostCommonSlope) + .05)) && (slope >= (mostCommonSlope / SLOPE_TOLERANCE) - .05))
         {
             return true;
         }
