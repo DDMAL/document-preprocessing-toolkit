@@ -45,7 +45,7 @@ using namespace Gamera;
 #define CUSTOM_STAFF_SPACE_HEIGHT 0
 #define ALLOWED_DISSIMILARITY 3
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
-#define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
+#define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 2
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
 #define ALLOWED_OFFSET_NEARHIT 1
@@ -55,6 +55,7 @@ using namespace Gamera;
 #define VERBOSE_MODE 1
 #define SLOPE_TOLERANCE_OFFSET .05
 #define ALLOWED_MIN_BLACK_PERC .5
+#define SSP_TOLERANCE 1.25
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -98,6 +99,7 @@ public:
     int* verDistance; //Minimum distance of a pixel of the same color NOT in the same run of pixels of the same color
     NODE* graphPath;
     NODEGRAPH* graphWeight;
+    bool* strongStaffPixels; //Array indicating which points are strong staff-pixels
 
     int staffLineHeight;
     int staffSpaceDistance;
@@ -289,6 +291,7 @@ public:
         verRun = new int[imageWidth * imageHeight];
         verDistance = new int[imageWidth * imageHeight];
         memset (verDistance, 0, (sizeof(int) * imageWidth * imageHeight));
+        strongStaffPixels = new bool[imageWidth * imageHeight];
         
         constructGraphWeights();
     }
@@ -421,6 +424,8 @@ public:
             findStaffLineHeightAndDistance();
         }
         
+        determineStrongStaffPixels();
+        
         //Find Graph Weights
         for (int r = 0; r < rows; r++)
         {
@@ -454,6 +459,72 @@ public:
         // }
     }
     
+    void determineStrongStaffPixels()
+    {
+        for (int col = 0; col < imageWidth; col++)
+        {
+            for (int row = 0; row < imageHeight; row++)
+            {
+                int currRun = verRun[(row * imageWidth) + col];
+                
+                if (currRun + 1 + row > imageHeight)
+                {
+                    continue;
+                }
+                
+                if ((currRun == staffLineHeight) && (primaryImage->get(Point(col, row))) && (verRun[((row + currRun) * imageWidth) + col] == staffSpaceDistance))
+                {
+                    setRunToTrue(currRun, col, row);
+                    row += currRun;
+                }
+            }
+        }
+    }
+    
+    bool acceptableStrongStaffPixel(int col, int row, int currRun)
+    {
+        if ((currRun >= row) && (primaryImage->get(Point(col, row))))
+        {
+            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
+            {
+                return true;
+            }
+        }
+        else if (((currRun < row) && (primaryImage->get(Point(col, row)))))
+        {
+            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
+            {
+                return true;
+            }
+            else if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row - currRun) * imageWidth) + col], staffSpaceDistance))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    bool currRunWithinTolerance(int currRun, int restriction)
+    {
+        if ((static_cast<double>(currRun) <= (static_cast<double>(restriction) * SSP_TOLERANCE)) && (static_cast<double>(currRun) >= (static_cast<double>(restriction) / SSP_TOLERANCE)))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    void setRunToTrue(int run, int col, int row)
+    {
+        for (int i = 0; i < run; i++)
+        {
+            strongStaffPixels[((row + i) * imageWidth) + col] = true;
+        }
+    }
+    
     weight_t weightFunction(OneBitImageView *image, Point pixelVal1, Point pixelVal2, NEIGHBOUR neigh)
     {
         unsigned int pel1 = primaryImage->get(pixelVal1); //Gets the pixel value of Point 1
@@ -480,6 +551,11 @@ public:
         int y = (pel == 0 ? y0:y1);
         
         if ( (pel) && ( (min(vRun1, vRun2) <= (staffLineHeight * ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION))))
+        {
+            --y;
+        }
+        
+        if (strongStaffPixels[(pixelVal1.y() * width) + pixelVal1.x()] || strongStaffPixels[(pixelVal2.y() * width) + pixelVal2.x()])
         {
             --y;
         }
