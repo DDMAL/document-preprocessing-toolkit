@@ -41,6 +41,7 @@
 using namespace std;
 using namespace Gamera;
 
+#define MIN_BLACK_PER 0.25
 #define CUSTOM_STAFF_LINE_HEIGHT 0
 #define CUSTOM_STAFF_SPACE_HEIGHT 0
 #define ALLOWED_DISSIMILARITY 3
@@ -55,7 +56,7 @@ using namespace Gamera;
 #define VERBOSE_MODE 1
 #define SLOPE_TOLERANCE_OFFSET .05
 #define ALLOWED_MIN_BLACK_PERC .5
-#define SSP_TOLERANCE 1.25
+#define SSP_TOLERANCE 1
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -92,7 +93,7 @@ public:
     };
 
     //Values taken from stableStaffLineFinder.cpp lines 106-107
-    const double MIN_BLACK_PER = 0.25;
+//    const double MIN_BLACK_PER = 0.25;
     static const weight_t TOP_VALUE = (INT_MAX/2);
 
     int* verRun; //length of vertical run of same color pixels. 
@@ -1588,7 +1589,6 @@ public:
     {
         int startingX = staffSet[0][0].x();
         int endingX = staffSet[0][staffSet[0].size() - 1].x();
-        int setSize = staffSet.size();
         int mishitCounter = 0;
         int hitCounter = 0;
         BVAL breakValue;
@@ -2131,7 +2131,6 @@ public:
     
     void changePointValuesForStaff(vector <Point> &staff, vector <SLOPEBVAL> &breakVals, double mostCommonSlope)
     {
-        int staffSize = staff.size();
         int breakValsSize = breakVals.size();
         
         for (int bVal = 0; bVal < breakValsSize; bVal++)
