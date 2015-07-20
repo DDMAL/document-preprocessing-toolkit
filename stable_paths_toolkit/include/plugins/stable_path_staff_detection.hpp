@@ -53,6 +53,8 @@ using namespace Gamera;
 #define SLOPE_WINDOW 2
 #define SLOPE_TOLERANCE 1.3
 #define VERBOSE_MODE 1
+#define SLOPE_TOLERANCE_OFFSET .05
+#define ALLOWED_MIN_BLACK_PERC .5
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -1707,7 +1709,7 @@ public:
         double usedSize = endCol - startCol + 1.0;
         double blackPerc;
         
-        if (minBlackPerc > .5)
+        if (minBlackPerc > ALLOWED_MIN_BLACK_PERC)
         {
             blackPerc = 1.0 - minBlackPerc;
         }
@@ -2031,7 +2033,7 @@ public:
     
     bool withinTolerance(double slope, double mostCommonSlope)
     {
-        if ((slope <= ((SLOPE_TOLERANCE * mostCommonSlope) + .05)) && (slope >= (mostCommonSlope / SLOPE_TOLERANCE) - .05))
+        if ((slope <= ((SLOPE_TOLERANCE * mostCommonSlope) + SLOPE_TOLERANCE_OFFSET)) && (slope >= (mostCommonSlope / SLOPE_TOLERANCE) - SLOPE_TOLERANCE_OFFSET))
         {
             return true;
         }
@@ -2481,6 +2483,7 @@ RGBImageView* drawColorfulStablePaths(T &image)
         
         for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
         {
+            slf1.smoothStaffLine(setsOfValidStaves[set][staff], slf1.staffSpaceDistance);
             for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
             {
                 new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
