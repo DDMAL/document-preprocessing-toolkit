@@ -53,7 +53,7 @@ using namespace Gamera;
 #define SMOOTH_STAFF_LINE_WINDOW 2
 #define SLOPE_WINDOW 2
 #define SLOPE_TOLERANCE 1.3
-#define VERBOSE_MODE 1
+#define VERBOSE_MODE 0
 #define SLOPE_TOLERANCE_OFFSET .05
 #define ALLOWED_MIN_BLACK_PERC .5
 #define SSP_TOLERANCE 1
@@ -281,7 +281,7 @@ public:
     //=========================================================================================
     
     template<class T>
-    stableStaffLineFinder(T &image, bool enableSSP) //Initializes the stableStaffLineFinder class and its values
+    stableStaffLineFinder(T &image, bool enableSSP1) //Initializes the stableStaffLineFinder class and its values
     {
         primaryImage = myCloneImage(image);
         imageWidth = image.ncols();
@@ -295,6 +295,8 @@ public:
         verDistance = new int[imageWidth * imageHeight];
         memset (verDistance, 0, (sizeof(int) * imageWidth * imageHeight));
         strongStaffPixels = new bool[imageWidth * imageHeight];
+        
+        enableSSP = enableSSP1;
         
         constructGraphWeights();
     }
@@ -425,6 +427,11 @@ public:
         if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
         {
             findStaffLineHeightAndDistance();
+        }
+        
+        if (enableSSP)
+        {
+            cout <<"SSP enabled" <<endl;
         }
         
         determineStrongStaffPixels();
@@ -1625,10 +1632,10 @@ public:
                 hitCounter++;
                 mishitCounter = 0;
                 
-//                if (hitCounter > mishitCounter)
-//                {
-//                    mishitCounter = 0;
-//                }
+                if (hitCounter > mishitCounter)
+                {
+                    mishitCounter = 0;
+                }
             }
             
             if ((!(breakValuesSize) && (mishitCounter > staffSpaceDistance)) || ((breakValues[breakValuesSize - 1].pixVal) && (mishitCounter > staffSpaceDistance)))
