@@ -46,7 +46,7 @@ using namespace Gamera;
 #define CUSTOM_STAFF_SPACE_HEIGHT 0
 #define ALLOWED_DISSIMILARITY 3
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
-#define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 2
+#define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
 #define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
 #define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
 #define ALLOWED_OFFSET_NEARHIT 1
@@ -101,6 +101,8 @@ public:
     NODE* graphPath;
     NODEGRAPH* graphWeight;
     bool* strongStaffPixels; //Array indicating which points are strong staff-pixels
+    
+    bool enableSSP; //Will determine whether strong staff-pixels are calculated
 
     int staffLineHeight;
     int staffSpaceDistance;
@@ -279,7 +281,7 @@ public:
     //=========================================================================================
     
     template<class T>
-    stableStaffLineFinder(T &image) //Initializes the stableStaffLineFinder class and its values
+    stableStaffLineFinder(T &image, bool enableSSP) //Initializes the stableStaffLineFinder class and its values
     {
         primaryImage = myCloneImage(image);
         imageWidth = image.ncols();
@@ -556,9 +558,12 @@ public:
             --y;
         }
         
-        if (strongStaffPixels[(pixelVal1.y() * width) + pixelVal1.x()] || strongStaffPixels[(pixelVal2.y() * width) + pixelVal2.x()])
+        if (enableSSP)
         {
-            --y;
+            if (strongStaffPixels[(pixelVal1.y() * width) + pixelVal1.x()] || strongStaffPixels[(pixelVal2.y() * width) + pixelVal2.x()])
+            {
+                --y;
+            }
         }
         
 //        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
@@ -2281,7 +2286,7 @@ public:
 //================================ Plugins ==========================================================
 //===================================================================================================
 template<class T>
-RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRight, bool with_deletion, bool with_staff_fixing)
+RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRight, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
 {
     if ((topLeft.x() >= bottomRight.x()) || (topLeft.y() >= bottomRight.y()))
     {
@@ -2292,18 +2297,18 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
     stableStaffLineFinder slf1;
     OneBitImageView *image1 = slf1.myCloneImage(image);
     OneBitImageView subimageView(*image1, topLeft, bottomRight);
-    stableStaffLineFinder slfSub (subimageView);
+    stableStaffLineFinder slfSub (subimageView, enable_strong_staff_pixels);
     
     if (with_deletion)
     {
-        stableStaffLineFinder slfSub (subimageView);
+        stableStaffLineFinder slfSub (subimageView, enable_strong_staff_pixels);
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
         OneBitImageView *firstPass = slfSub.stableStaffDetection(validStaves);
         OneBitImageView *subtractedImage = slfSub.subtractImage(subimageView, *firstPass);
         validStaves.clear();
-        stableStaffLineFinder slf2 (*subtractedImage);
+        stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
         vector< vector <vector<Point> > > setsOfTrimmedPaths;
@@ -2359,7 +2364,7 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
     }
     else
     {
-        stableStaffLineFinder slfSub (subimageView);
+        stableStaffLineFinder slfSub (subimageView, enable_strong_staff_pixels);
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
@@ -2422,7 +2427,7 @@ template<class T>
 float returnGraphWeights(T &image) 
 {
     vector <vector<Point> > validStaves;
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     
     return slf1.staffLineHeight;
 }
@@ -2431,7 +2436,7 @@ template<class T>
 OneBitImageView* deleteStablePaths(T &image)
 {
     vector <vector<Point> > validStaves;
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(slf1.primaryImage, 0, image.ncols()-1, validStaves));
@@ -2444,7 +2449,7 @@ template<class T>
 OneBitImageView* removeStaves(T &image, int staffline_height, int staffspace_height)
 {
     vector <vector<Point> > validStaves;
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     
     if (staffline_height)
     {
@@ -2465,7 +2470,7 @@ template<class T>
 OneBitImageView* drawAllStablePaths(T &image)
 {
     vector <vector<Point> > validStaves;
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     //OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
     slf1.stableStaffDetection(validStaves);
@@ -2479,7 +2484,7 @@ template<class T>
 OneBitImageView* drawAllGraphPaths(T &image)
 {
     vector <vector<Point> > validStaves;
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     OneBitImageView *imageCopy = slf1.myCloneImage(image);
     //OneBitImageView *new1 = slf1.myCloneImage(image);
     printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
@@ -2493,7 +2498,7 @@ OneBitImageView* drawAllGraphPaths(T &image)
 template<class T>
 GreyScaleImageView* displayWeights(T &image)
 {
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     int ncols = image.ncols();
     int nrows = image.nrows();
     GreyScaleImageView *new1 = slf1.clearGrey(image);
@@ -2514,7 +2519,7 @@ template<class T>
 OneBitImageView* findStablePaths(T &image) //Returns blank image with stable paths drawn
 {
     vector <vector<Point> > validStaves;
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     OneBitImageView *blank = slf1.clear(image);
     printf("Rows: %d, Columns: %d\n", slf1.imageHeight, slf1.imageWidth);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(slf1.primaryImage, 0, slf1.imageWidth - 1, validStaves));
@@ -2526,7 +2531,7 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
 template<class T>
 RGBImageView* drawColorfulStablePaths(T &image)
 {
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     RGBImageData *data1 = new RGBImageData(image.size());
     RGBImageView *new1 = new RGBImageView(*data1);
     vector<vector <Point> > validStaves;
@@ -2575,14 +2580,14 @@ RGBImageView* drawColorfulStablePaths(T &image)
 template<class T>
 RGBImageView* deletionStablePathDetection(T &image)
 {
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     RGBImageData *data1 = new RGBImageData(image.size());
     RGBImageView *new1 = new RGBImageView(*data1);
     vector<vector <Point> > validStaves;
     OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
     OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
     validStaves.clear();
-    stableStaffLineFinder slf2 (*subtractedImage);
+    stableStaffLineFinder slf2 (*subtractedImage, false);
     vector< vector <vector<Point> > > setsOfValidStaves;
     setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
     int redCount, blueCount, greenCount, counter;
@@ -2610,6 +2615,7 @@ RGBImageView* deletionStablePathDetection(T &image)
         
         for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
         {
+            slf2.smoothStaffLine(setsOfValidStaves[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
             for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
             {
                 new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
@@ -2625,13 +2631,13 @@ RGBImageView* deletionStablePathDetection(T &image)
 template<class T>
 GreyScaleImageView* testForVerticalBlackPercentage(T &image)
 {
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     vector<vector <Point> > validStaves;
     GreyScaleImageView *new1 = slf1.clearGrey(image);
     OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
     OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
     validStaves.clear();
-    stableStaffLineFinder slf2 (*subtractedImage);
+    stableStaffLineFinder slf2 (*subtractedImage, false);
     vector< vector <vector<Point> > > setsOfValidStaves;
     setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
     
@@ -2650,18 +2656,18 @@ GreyScaleImageView* testForVerticalBlackPercentage(T &image)
 }
 
 template<class T>
-RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_fixing)
+RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
 {
     if (with_deletion)
     {
-        stableStaffLineFinder slf1 (image);
+        stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
         OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
         OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
         validStaves.clear();
-        stableStaffLineFinder slf2 (*subtractedImage);
+        stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
         vector< vector <vector<Point> > > setsOfTrimmedPaths;
@@ -2715,7 +2721,7 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
     }
     else
     {
-        stableStaffLineFinder slf1 (image);
+        stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
@@ -2775,7 +2781,7 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
 template<class T>
 PyObject* setOfStablePathPoints(T &image)
 {
-    stableStaffLineFinder slf1 (image);
+    stableStaffLineFinder slf1 (image, false);
     vector<vector <Point> > validStaves;
     vector< vector <vector<Point> > > setsOfValidStaves;
     setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
