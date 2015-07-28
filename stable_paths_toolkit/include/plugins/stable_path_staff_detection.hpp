@@ -191,26 +191,6 @@ public:
 
         return dest_view;
     }
-    
-//    template<class T>
-//    OneBitImageView* myCloneImagePNG(T &image)
-//    {
-//        int width = image.png_get_image_width();
-//        int height = image.png_get_image_height();
-//        
-//        OneBitImageData* dest_data = new OneBitImageData(Dim(width, height));
-//        OneBitImageView* dest_view = new OneBitImageView(*dest_data);
-//        
-//        for (size_t r = 0; r < height; r++)
-//        {
-//            for (size_t c = 0; c < width; c++)
-//            {
-//                //dest_view->set(Point(c, r), image.get(Point(c, r)));
-//            }
-//        }
-//        
-//        return dest_view;
-//    }
 
     void myVerticalErodeImage(OneBitImageView * img, int width, int height)
     {
@@ -849,7 +829,6 @@ public:
             
             if (curr_n_paths == 0)
             {
-                //return imageCopy;
                 break;
             }
         }
@@ -1002,6 +981,7 @@ public:
                 stablePaths.push_back(contour);
             }
         }
+        
         return 0;
     }
     
