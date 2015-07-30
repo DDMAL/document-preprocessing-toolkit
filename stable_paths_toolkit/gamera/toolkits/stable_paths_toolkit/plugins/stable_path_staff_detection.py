@@ -78,7 +78,7 @@ class subimageTrimmedStablePaths(PluginFunction):
 class setOfStablePathPoints(PluginFunction):
     """Returns point values from sets of stable paths"""
     category = "Stable Paths Toolkit"
-    return_type = Class("StaffSets")
+    return_type = Class("staffpoints")
     self_type = ImageType([ONEBIT])
 
 class overlayStaves(PluginFunction):

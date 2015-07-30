@@ -16,9 +16,9 @@
         *5. End of cycle if no valid path was found
 
     Postprocessing
-        1. Uncross stafflines
-        2. Organize stafflines in staves
-        3. Smooth and trim stafflines
+        *1. Uncross stafflines
+        *2. Organize stafflines in staves
+        *3. Smooth and trim stafflines
 
         Notes:
             - Big difference is that in original code the values are in grayscale
@@ -263,6 +263,7 @@ public:
     template<class T>
     stableStaffLineFinder(T &image, bool enableSSP1) //Initializes the stableStaffLineFinder class and its values
     {
+        globalStart = time(0);
         primaryImage = myCloneImage(image);
         imageWidth = image.ncols();
         imageHeight = image.nrows();
@@ -1601,21 +1602,22 @@ public:
             if ((breakValues[breakValuesSize - 1].pixVal) && (hitPercent <= ALLOWED_VERTICAL_HIT_PERCENTAGE))
             {
                 mishitCounter++;
+                hitCounter = 0;
                 
-                if (hitCounter < mishitCounter)
-                {
-                    hitCounter = 0;
-                }
+//                if (hitCounter < mishitCounter)
+//                {
+//                    hitCounter = 0;
+//                }
             }
             else if (!(breakValues[breakValuesSize - 1].pixVal) && (hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE))
             {
                 hitCounter++;
                 mishitCounter = 0;
                 
-                if (hitCounter > mishitCounter)
-                {
-                    mishitCounter = 0;
-                }
+//                if (hitCounter > mishitCounter)
+//                {
+//                    mishitCounter = 0;
+//                }
             }
             
             if ((!(breakValuesSize) && (mishitCounter > staffSpaceDistance)) || ((breakValues[breakValuesSize - 1].pixVal) && (mishitCounter > staffSpaceDistance)))
@@ -2703,7 +2705,7 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
         }
         
         slf1.printStats(setsOfTrimmedPaths);
-        
+        cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }
     else
@@ -2760,7 +2762,7 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
         }
         
         slf1.printStats(setsOfTrimmedPaths);
-        
+        cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }
 }
@@ -2772,9 +2774,30 @@ PyObject* setOfStablePathPoints(T &image)
     vector<vector <Point> > validStaves;
     vector< vector <vector<Point> > > setsOfValidStaves;
     setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
+    int numOfSets = setsOfValidStaves.size();
+    PyObject *entire_set = PyList_New(0);
     
-    PyObject *return_list = PyList_New(0);
-    return return_list;
+    for (int set = 0; set < numOfSets; set++)
+    {
+        int sizeOfSet = setsOfValidStaves[set].size();
+        PyObject *one_set = PyList_New(0);
+        
+        for (int line = 0; line < sizeOfSet; line++)
+        {
+            int numOfPoints = setsOfValidStaves[set][line].size();
+            PyObject *one_line = PyList_New(0);
+            PointVector *one_line_from_cpp = new PointVector;
+            for (int point = 0; point < numOfPoints; point++)
+            {
+                one_line_from_cpp->push_back(setsOfValidStaves[set][line][point]);
+            }
+            
+            PyList_Append(one_set, PointVector_to_python(one_line_from_cpp));
+        }
+        PyList_Append(entire_set, one_set);
+    }
+    
+    return entire_set;
 }
 
 void copyONEBITToRGB(OneBitImageView primaryImage, RGBImageView dest)
