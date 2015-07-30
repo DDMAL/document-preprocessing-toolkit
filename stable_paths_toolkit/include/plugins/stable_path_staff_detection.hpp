@@ -2784,15 +2784,7 @@ PyObject* setOfStablePathPoints(T &image)
         
         for (int line = 0; line < sizeOfSet; line++)
         {
-            int numOfPoints = setsOfValidStaves[set][line].size();
-            PyObject *one_line = PyList_New(0);
-            PointVector *one_line_from_cpp = new PointVector;
-            for (int point = 0; point < numOfPoints; point++)
-            {
-                one_line_from_cpp->push_back(setsOfValidStaves[set][line][point]);
-            }
-            
-            PyList_Append(one_set, PointVector_to_python(one_line_from_cpp));
+            PyList_Append(one_set, PointVector_to_python(&setsOfValidStaves[set][line]));
         }
         PyList_Append(entire_set, one_set);
     }
