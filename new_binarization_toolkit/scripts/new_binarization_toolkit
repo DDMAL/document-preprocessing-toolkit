@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+# This just simply runs the new_binarization_toolkit toolkits main function
+
+from gamera.toolkits.new_binarization_toolkit import main
+
+main.main()
