@@ -352,7 +352,7 @@ public:
         int *hist2d = new int [(imageHeight + 1) * (imageHeight + 1)];
         memset(hist2d, 0, (imageHeight + 1) * (imageHeight + 1) * sizeof(int));
         
-        for (int value = minValue+1; value <= medValue; value++)
+        for (int value = minValue + 1; value <= medValue; value++)
         {
             if (!(value % 10)) printf("value %d \n", value);
                 for (int c = 0; c < imageWidth; c++)
@@ -431,11 +431,13 @@ public:
     
         {
             int maxcounter = 0;
+            
             for (int i = 0; i < runs[1].size(); i++)
             {
                 if (runs[1][i]> maxcounter)
                 {
-                    maxcounter=runs[1][i]; staffSpaceDistance = i;
+                    maxcounter=runs[1][i];
+                    staffSpaceDistance = i;
                 }
             }
         }
@@ -444,9 +446,14 @@ public:
     
         {	
             int maxsum = 0;
+            
             for (int i = 0; i < sum2runs.size(); i++)
             {
-                if (sum2runs[i]> maxsum) {maxsum=sum2runs[i]; staffHeightDistance=i;}
+                if (sum2runs[i]> maxsum)
+                {
+                    maxsum = sum2runs[i];
+                    staffHeightDistance = i;
+                }
             }
         }
     
@@ -456,12 +463,12 @@ public:
             int maxvalue = 0;
             for(int i = 0; i <= staffHeightDistance; i++)
             {
-                int j=staffHeightDistance-i;
+                int j = staffHeightDistance - i;
                 if (hist2d[(i * (imageHeight + 1)) + j] > maxvalue)
                 {
                     maxvalue = hist2d[(i * (imageHeight + 1)) + j];
-                    b_run=i;
-                    w_run=j;
+                    b_run = i;
+                    w_run = j;
                 }
             }
         }

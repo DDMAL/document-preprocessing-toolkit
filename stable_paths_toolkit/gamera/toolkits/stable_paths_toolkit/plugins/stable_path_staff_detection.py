@@ -7,7 +7,7 @@ class returnGraphWeights(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class deleteStablePaths(PluginFunction):
-    """Copies an image."""
+    """Experimental and used for testing. Deletes one iteration of stable paths."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([ONEBIT], "pathsRemoved")
     self_type = ImageType([ONEBIT])
@@ -32,37 +32,40 @@ class drawAllGraphPaths(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class findStablePaths(PluginFunction):
-    """Draws the stable paths found."""
+    """Experimental and used for testing. Draws the stable paths found."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([ONEBIT], "pathsDrawn")
     self_type = ImageType([ONEBIT])
 
 class deletionStablePathDetection(PluginFunction):
-    """Runs stable path staff line deletion, subtracts the imperfect image, then reruns stable staff line detection again and returns the stafflines"""
+    """Runs stable path staff line deletion, subtracts the imperfect image, then reruns stable staff line detection again and returns the stafflines. Does not trim."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB], "deletionStablePathDetection")
     self_type = ImageType([ONEBIT])
 
 class displayWeights(PluginFunction):
-    """Displays the image in greyscale to demonstrate weights"""
+    """Experimental and used for testing. Displays the image in greyscale to demonstrate weights"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([GREYSCALE])
     self_type = ImageType([ONEBIT])
 
 class testForVerticalBlackPercentage(PluginFunction):
-    """Should display dark/light bars based on black percentage of staff systems. WHo know if it will be useful"""
+    """Experimental and used for testing. Should display dark/light bars based on black percentage of staff systems. WHo know if it will be useful"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([GREYSCALE])
     self_type = ImageType([ONEBIT])
 
 class drawColorfulStablePaths(PluginFunction):
-    """Displays the stable paths in sets of matching colors to demonstrate the systems found"""
+    """Displays the stable paths in sets of matching colors to demonstrate the systems found. No trimming."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
 
 class trimmedStablePaths(PluginFunction):
-    """Displays the trimmed stable paths"""
+    """Displays the trimmed stable paths
+with_deletion: If checked, the image will be processed once, keeping what it finds to be the staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
+with_staff_fixing: Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals
+enable_strong_staff_pixels: Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
@@ -92,7 +95,7 @@ class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [returnGraphWeights, trimmedStablePaths, drawAllGraphPaths, overlayStaves, subimageTrimmedStablePaths, setOfStablePathPoints, deleteStablePaths, testForVerticalBlackPercentage, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths, drawColorfulStablePaths]
+    functions = [trimmedStablePaths, drawAllGraphPaths, overlayStaves, subimageTrimmedStablePaths, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths, drawColorfulStablePaths]
     author = "Your name here"
     url = "Your URL here"
 module = stablePaths()
