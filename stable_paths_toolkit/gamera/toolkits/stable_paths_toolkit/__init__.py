@@ -14,7 +14,6 @@ from gamera.toolkits.stable_paths_toolkit import main
 # is imported using the "Toolkit" menu in the Gamera GUI
 # everything works.
 
-from gamera.toolkits.stable_paths_toolkit.plugins import clear
 from gamera.toolkits.stable_paths_toolkit.plugins import stable_path_staff_detection
 
 # You can inherit from toolkit.CustomMenu to create a menu
