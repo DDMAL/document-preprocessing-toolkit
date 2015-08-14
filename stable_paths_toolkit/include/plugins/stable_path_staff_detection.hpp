@@ -2275,7 +2275,7 @@ public:
 //================================ Plugins ==========================================================
 //===================================================================================================
 template<class T>
-RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRight, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
+RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomRight, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
 {
     if ((topLeft.x() >= bottomRight.x()) || (topLeft.y() >= bottomRight.y()))
     {
@@ -2300,14 +2300,23 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
         stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
-        vector< vector <vector<Point> > > setsOfTrimmedPaths;
-        cout <<"About to commence finalTrim" <<endl;
-        setsOfTrimmedPaths = slf2.finalTrim(setsOfValidStaves, slfSub.primaryImage);
-        cout <<"Finished finalTrim" <<endl;
+        vector< vector <vector<Point> > > setsToReturn;
+        
+        if (with_trimming)
+        {
+            cout <<"About to commence finalTrim" <<endl;
+            setsToReturn = slf2.finalTrim(setsOfValidStaves, slfSub.primaryImage);
+            cout <<"Finished finalTrim" <<endl;
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
+        
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
-        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+        for (int set = 0; set < setsToReturn.size(); set++)
         {
             if (counter == 0)
             {
@@ -2329,17 +2338,17 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
             
             if (with_staff_fixing)
             {
-                slf2.fixStaffSystem(setsOfTrimmedPaths[set]);
+                slf2.fixStaffSystem(setsToReturn[set]);
             }
             
-            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
             {
-                slf2.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
-                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                slf2.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
                 {
                     //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
-                    int xVal = setsOfTrimmedPaths[set][staff][line].x() + topLeft.x();
-                    int yVal = setsOfTrimmedPaths[set][staff][line].y() + topLeft.y();
+                    int xVal = setsToReturn[set][staff][line].x() + topLeft.x();
+                    int yVal = setsToReturn[set][staff][line].y() + topLeft.y();
                     new1->set(Point(xVal, yVal), RGBPixel(redCount, greenCount, blueCount));
                 }
             }
@@ -2347,7 +2356,7 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
             counter++;
         }
         
-        slfSub.printStats(setsOfTrimmedPaths);
+        slfSub.printStats(setsToReturn);
         
         return new1;
     }
@@ -2359,14 +2368,23 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
         vector<vector <Point> > validStaves;
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slfSub.returnSetsOfStablePaths(validStaves, *slfSub.primaryImage);
-        vector< vector <vector<Point> > > setsOfTrimmedPaths;
-        cout <<"About to commence finalTrim" <<endl;
-        setsOfTrimmedPaths = slfSub.finalTrim(setsOfValidStaves, slfSub.primaryImage);
-        cout <<"Finished finalTrim" <<endl;
+        vector< vector <vector<Point> > > setsToReturn;
+        
+        if (with_trimming)
+        {
+            cout <<"About to commence finalTrim" <<endl;
+            setsToReturn = slfSub.finalTrim(setsOfValidStaves, slfSub.primaryImage);
+            cout <<"Finished finalTrim" <<endl;
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
+            
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
-        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+        for (int set = 0; set < setsToReturn.size(); set++)
         {
             if (counter == 0)
             {
@@ -2388,17 +2406,17 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
             
             if (with_staff_fixing)
             {
-                slfSub.fixStaffSystem(setsOfTrimmedPaths[set]);
+                slfSub.fixStaffSystem(setsToReturn[set]);
             }
             
-            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
             {
-                slfSub.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slfSub.staffSpaceDistance);
-                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                slfSub.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slfSub.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
                 {
                     //                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
-                    int xVal = setsOfTrimmedPaths[set][staff][line].x() + topLeft.x();
-                    int yVal = setsOfTrimmedPaths[set][staff][line].y() + topLeft.y();
+                    int xVal = setsToReturn[set][staff][line].x() + topLeft.x();
+                    int yVal = setsToReturn[set][staff][line].y() + topLeft.y();
                     new1->set(Point(xVal, yVal), RGBPixel(redCount, greenCount, blueCount));
                 }
             }
@@ -2406,7 +2424,7 @@ RGBImageView* subimageTrimmedStablePaths(T &image, Point topLeft, Point bottomRi
             counter++;
         }
         
-        slfSub.printStats(setsOfTrimmedPaths);
+        slfSub.printStats(setsToReturn);
         
         return new1;
     }
