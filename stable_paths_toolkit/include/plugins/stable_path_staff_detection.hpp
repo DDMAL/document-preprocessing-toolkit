@@ -2518,55 +2518,6 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
 }
 
 template<class T>
-RGBImageView* drawColorfulStablePaths(T &image)
-{
-    stableStaffLineFinder slf1 (image, false);
-    RGBImageData *data1 = new RGBImageData(image.size());
-    RGBImageView *new1 = new RGBImageView(*data1);
-    vector<vector <Point> > validStaves;
-    vector <vector <vector<Point> > > setsOfValidStaves;
-    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, image);
-    int redCount, blueCount, greenCount, counter;
-    redCount = blueCount = greenCount = counter = 0;
-    
-    for (int set = 0; set < setsOfValidStaves.size(); set++)
-    {
-        if (counter == 0)
-        {
-            redCount = 255;
-            greenCount = 0;
-            blueCount = 0;
-        }
-        else if (counter == 1)
-        {
-            greenCount = 150;
-            blueCount = 0;
-            redCount = 0;
-        }
-        else if (counter == 2)
-        {
-            blueCount = 175;
-            redCount = 0;
-            counter = -1;
-        }
-        
-        for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
-        {
-            slf1.smoothStaffLine(setsOfValidStaves[set][staff], slf1.staffSpaceDistance);
-            for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
-            {
-                new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
-            }
-        }
-        
-        counter++;
-    }
-    
-    slf1.printStats(setsOfValidStaves);
-    return new1;
-}
-
-template<class T>
 RGBImageView* deletionStablePathDetection(T &image)
 {
     stableStaffLineFinder slf1 (image, false);
@@ -2645,7 +2596,7 @@ GreyScaleImageView* testForVerticalBlackPercentage(T &image)
 }
 
 template<class T>
-RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
+RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
 {
     if (with_deletion)
     {
@@ -2659,14 +2610,23 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
         stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
-        vector< vector <vector<Point> > > setsOfTrimmedPaths;
+        vector< vector <vector<Point> > > setsToReturn;
         cout <<"About to commence finalTrim" <<endl;
-        setsOfTrimmedPaths = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        
+        if (with_trimming)
+        {
+            setsToReturn = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
+        
         cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
-        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+        for (int set = 0; set < setsToReturn.size(); set++)
         {
             if (counter == 0)
             {
@@ -2688,23 +2648,23 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
             
             if (with_staff_fixing)
             {
-                slf2.fixStaffSystem(setsOfTrimmedPaths[set]);
+                slf2.fixStaffSystem(setsToReturn[set]);
             }
             
-            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
             {
-                slf2.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
-                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                slf2.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
                 {
     //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
-                    new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                    new1->set(setsToReturn[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
                 }
             }
             
             counter++;
         }
         
-        slf1.printStats(setsOfTrimmedPaths);
+        slf1.printStats(setsToReturn);
         cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }
@@ -2716,14 +2676,22 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
         vector<vector <Point> > validStaves;
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
-        vector< vector <vector<Point> > > setsOfTrimmedPaths;
+        vector< vector <vector<Point> > > setsToReturn;
         cout <<"About to commence finalTrim" <<endl;
-        setsOfTrimmedPaths = slf1.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        
+        if (with_trimming)
+        {
+            setsToReturn = slf1.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
         cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
-        for (int set = 0; set < setsOfTrimmedPaths.size(); set++)
+        for (int set = 0; set < setsToReturn.size(); set++)
         {
             if (counter == 0)
             {
@@ -2745,23 +2713,23 @@ RGBImageView* trimmedStablePaths(T &image, bool with_deletion, bool with_staff_f
             
             if (with_staff_fixing)
             {
-                slf1.fixStaffSystem(setsOfTrimmedPaths[set]);
+                slf1.fixStaffSystem(setsToReturn[set]);
             }
             
-            for (int staff = 0; staff < setsOfTrimmedPaths[set].size(); staff++)
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
             {
-                slf1.smoothStaffLine(setsOfTrimmedPaths[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
-                for (int line = 0; line < setsOfTrimmedPaths[set][staff].size(); line++)
+                slf1.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
                 {
                     //                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
-                    new1->set(setsOfTrimmedPaths[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                    new1->set(setsToReturn[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
                 }
             }
             
             counter++;
         }
         
-        slf1.printStats(setsOfTrimmedPaths);
+        slf1.printStats(setsToReturn);
         cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }

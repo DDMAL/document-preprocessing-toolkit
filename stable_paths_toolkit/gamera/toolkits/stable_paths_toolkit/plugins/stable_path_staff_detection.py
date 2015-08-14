@@ -61,15 +61,20 @@ class drawColorfulStablePaths(PluginFunction):
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
 
-class trimmedStablePaths(PluginFunction):
+class stablePathDetection(PluginFunction):
     """Displays the trimmed stable paths
-with_deletion: If checked, the image will be processed once, keeping what it finds to be the staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
-with_staff_fixing: Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals
-enable_strong_staff_pixels: Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel"""
+with_trimming:
+    Trims staff sets where white space or ornamentations are found.
+with_deletion: 
+    If checked, the image will be processed once, keeping what it finds to be the staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
+with_staff_fixing: 
+    Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals
+enable_strong_staff_pixels: 
+    Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
-    args = Args([Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False)])
+    args = Args([Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False)])
 
 class subimageTrimmedStablePaths(PluginFunction):
     """Displays the trimmed stable paths for a subset of the image"""
@@ -95,7 +100,7 @@ class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [trimmedStablePaths, drawAllGraphPaths, overlayStaves, subimageTrimmedStablePaths, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths, drawColorfulStablePaths]
+    functions = [stablePathDetection, drawAllGraphPaths, overlayStaves, subimageTrimmedStablePaths, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths, drawColorfulStablePaths]
     author = "Your name here"
     url = "Your URL here"
 module = stablePaths()
