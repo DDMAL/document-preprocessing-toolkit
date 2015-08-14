@@ -2745,23 +2745,175 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
 }
 
 template<class T>
-PyObject* setOfStablePathPoints(T &image)
+PyObject* setOfStablePathPoints(T &image, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels, int staffline_height, int staffspace_height)
 {
-    stableStaffLineFinder slf1 (image, false);
-    vector<vector <Point> > validStaves;
-    vector< vector <vector<Point> > > setsOfValidStaves;
-    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
-    int numOfSets = setsOfValidStaves.size();
+//    stableStaffLineFinder slf1 (image, false);
+//    vector<vector <Point> > validStaves;
+//    vector< vector <vector<Point> > > setsOfValidStaves;
+//    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
+//    int numOfSets = setsOfValidStaves.size();
+    vector< vector <vector<Point> > > setsToReturn;
+    
+    if (with_deletion)
+    {
+        stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+        
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
+        OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
+        validStaves.clear();
+        stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
+        cout <<"About to commence finalTrim" <<endl;
+        
+        if (with_trimming)
+        {
+            setsToReturn = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
+        
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
+        
+        for (int set = 0; set < setsToReturn.size(); set++)
+        {
+            if (counter == 0)
+            {
+                redCount = 255;
+                greenCount = 0;
+            }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = -1;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slf2.fixStaffSystem(setsToReturn[set]);
+            }
+            
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
+            {
+                slf2.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
+                {
+                    //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
+                    new1->set(setsToReturn[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
+        }
+    }
+    else
+    {
+        stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+        
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
+        cout <<"About to commence finalTrim" <<endl;
+        
+        if (with_trimming)
+        {
+            setsToReturn = slf1.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
+        
+        for (int set = 0; set < setsToReturn.size(); set++)
+        {
+            if (counter == 0)
+            {
+                redCount = 255;
+                greenCount = 0;
+            }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = -1;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slf1.fixStaffSystem(setsToReturn[set]);
+            }
+            
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
+            {
+                slf1.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
+                {
+                    //                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
+                    new1->set(setsToReturn[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
+        }
+    }
+    
+    int numOfSets = setsToReturn.size();
+    
     PyObject *entire_set = PyList_New(0);
     
     for (int set = 0; set < numOfSets; set++)
     {
-        int sizeOfSet = setsOfValidStaves[set].size();
+        int sizeOfSet = setsToReturn[set].size();
         PyObject *one_set = PyList_New(0);
         
         for (int line = 0; line < sizeOfSet; line++)
         {
-            PyList_Append(one_set, PointVector_to_python(&setsOfValidStaves[set][line]));
+            PyList_Append(one_set, PointVector_to_python(&setsToReturn[set][line]));
         }
         PyList_Append(entire_set, one_set);
     }

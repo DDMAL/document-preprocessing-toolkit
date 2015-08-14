@@ -81,14 +81,27 @@ class subimageStablePathDetection(PluginFunction):
                  Int('staffspace_height', default=0)])
 
 class setOfStablePathPoints(PluginFunction):
-    """Returns point values from sets of stable paths
-        Format:
-            staffSets[x] returns set x
-            staffSets[x][l] returns staffline l of set x
-            staffSets[x][l][p] returns point p of staffline l of set x"""
+    """Returns point values from sets of stable paths in the form of a 3D array
+        Format of staffSets:
+            staffSets[x] returns set x.
+            staffSets[x][l] returns staffline l of set x.
+            staffSets[x][l][p] returns point p of staffline l of set x.
+        
+        with_trimming:
+            Trims staff sets where white space or ornamentations are found.
+        with_deletion:
+            If checked, the image will be processed once, keeping what it finds to be the staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
+        with_staff_fixing:
+            Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals
+        enable_strong_staff_pixels:
+            Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel
+        staffline_height and staffspace_height:
+            If left as 0 they will be found by the plugin"""
     category = "Stable Paths Toolkit"
     return_type = Class("staffSets")
     self_type = ImageType([ONEBIT])
+    args = Args([Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False), Int('staffline_height', default=0),\
+             Int('staffspace_height', default=0)])
 
 class overlayStaves(PluginFunction):
     """Overlays the found staves from one image onto another image"""
