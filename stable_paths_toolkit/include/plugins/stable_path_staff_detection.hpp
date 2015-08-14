@@ -2709,42 +2709,6 @@ PyObject* setOfStablePathPoints(T &image)
     return entire_set;
 }
 
-void copyONEBITToRGB(OneBitImageView primaryImage, RGBImageView dest)
-{
-    int width = primaryImage.width();
-    int height = primaryImage.height();
-    
-    for (int col = 0; col < width; col++)
-    {
-        for (int row = 0; row < height; row++)
-        {
-            int pixVal = primaryImage.get(Point(col, row));
-            if (pixVal)
-            {
-                dest.set(Point(col, row), RGBPixel(0, 0, 0));
-            }
-        }
-    }
-}
-
-void overlayRGBPixels(RGBImageView primaryImage, RGBImageView dest)
-{
-    int width = primaryImage.width();
-    int height = primaryImage.height();
-    
-    for (int col = 0; col < width; col++)
-    {
-        for (int row = 0; row < height; row++)
-        {
-//            int pixVal = primaryImage->get(Point(col, row));
-            if (primaryImage.get(Point(col, row)) != RGBPixel(255, 255, 255))
-            {
-                dest.set(Point(col, row), RGBPixel(0, 0, 0));
-            }
-        }
-    }
-}
-
 template<class T, class U>
 RGBImageView *overlayStaves(T &staffImage, U &primaryImage)
 {
@@ -2784,11 +2748,8 @@ RGBImageView *overlayStaves(T &staffImage, U &primaryImage)
             }
         }
     }
-//    copyONEBITToRGB(*primaryImage, *result);
-//    overlayRGBPixels(*staffImage, *result);
-    
-    return result;
 
+    return result;
 }
 
 #endif
