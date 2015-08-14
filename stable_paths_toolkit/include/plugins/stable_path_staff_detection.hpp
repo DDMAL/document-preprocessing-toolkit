@@ -3,6 +3,8 @@
   //=============================================================
 
   /*
+   Code based off the paper Staff Detection with Stable Paths by Jaime dos Santos Cardoso, Artur Capela, Ana Rebelo, Carlos Guedes, and Joaquim into da Costa and many functions are virtually identical to the authors' code with adjustments made to work with Gamera
+   
     Preprocessing:
         *1. Compute staffspaceheight and stafflineheight (Need to relax values so that similar staff spaces/line heights are taken together. Also need to make it so only most common
                 value from each column is considered)
@@ -21,8 +23,12 @@
         *3. Smooth and trim stafflines
 
         Notes:
-            - Big difference is that in original code the values are in grayscale
             - Currently being implemented only for one bit images
+            - verDistances are not computed as they take up too much time for minimal results
+            - A new trim function has been implemented
+            - A function to fix stafflines based on slope has been implemented
+            - Strong staff pixels have been implemented with minimal results
+                - Based on Staff line Detection and Removal in the Grayscale Domain by Ana Rebelo and Jaime S. Cardoso
     */
 #ifndef STABLE_PATH_STAFF_DETECTION
 #define STABLE_PATH_STAFF_DETECTION
