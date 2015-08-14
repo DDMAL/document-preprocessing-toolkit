@@ -1,11 +1,5 @@
 from gamera.plugin import *
 
-class returnGraphWeights(PluginFunction):
-    """Fills the entire image with white."""
-    category = "Stable Paths Toolkit"
-    return_type = Float("values")
-    self_type = ImageType([ONEBIT])
-
 class deleteStablePaths(PluginFunction):
     """Experimental and used for testing. Deletes one iteration of stable paths."""
     category = "Stable Paths Toolkit"
@@ -13,7 +7,7 @@ class deleteStablePaths(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class removeStaves(PluginFunction):
-    """Finds and removes all stable paths. Unless you have already computed *staffline_height* and *staffspace_height*, leave them as 0. If left as 0 they will be computed automatically."""
+    """Finds and removes all found staves. Unless you have already computed *staffline_height* and *staffspace_height*, leave them as 0. If left as 0 they will be computed automatically."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([ONEBIT])

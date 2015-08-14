@@ -2460,15 +2460,6 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
 }
 
 template<class T>
-float returnGraphWeights(T &image) 
-{
-    vector <vector<Point> > validStaves;
-    stableStaffLineFinder slf1 (image, false);
-    
-    return slf1.staffLineHeight;
-}
-
-template<class T>
 OneBitImageView* deleteStablePaths(T &image)
 {
     vector <vector<Point> > validStaves;
