@@ -3,7 +3,7 @@
   //=============================================================
 
   /*
-   Code based off the paper Staff Detection with Stable Paths by Jaime dos Santos Cardoso, Artur Capela, Ana Rebelo, Carlos Guedes, and Joaquim Pinto da Costa and many functions are virtually identical to the authors' code with adjustments made to work with Gamera
+   Code based off the paper "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8" and many functions are virtually identical to the authors' code with adjustments made to work with Gamera
    
     Preprocessing:
         *1. Compute staffspaceheight and stafflineheight (Need to relax values so that similar staff spaces/line heights are taken together. Also need to make it so only most common
