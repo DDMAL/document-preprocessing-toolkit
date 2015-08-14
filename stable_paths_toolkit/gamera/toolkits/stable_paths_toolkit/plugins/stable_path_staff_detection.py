@@ -33,7 +33,7 @@ class drawAllGraphPaths(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class findStablePaths(PluginFunction):
-    """Experimental and used for testing. Draws the stable paths found."""
+    """Experimental and used for testing. Draws the stable paths found in one iteration of the loop that finds stable paths."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([ONEBIT], "pathsDrawn")
     self_type = ImageType([ONEBIT])
@@ -52,25 +52,39 @@ class testForVerticalBlackPercentage(PluginFunction):
 
 class stablePathDetection(PluginFunction):
     """Detects and displays the stafflines.
-with_trimming:
-    Trims staff sets where white space or ornamentations are found.
-with_deletion: 
-    If checked, the image will be processed once, keeping what it finds to be the staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
-with_staff_fixing: 
-    Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals
-enable_strong_staff_pixels: 
-    Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel"""
+        with_trimming:
+            Trims staff sets where white space or ornamentations are found.
+        with_deletion:
+            If checked, the image will be processed once, keeping what it finds to be the staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
+        with_staff_fixing:
+            Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals
+        enable_strong_staff_pixels:
+            Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel
+        staffline_height and staffspace_height:
+            If left as 0 they will be found by the plugin"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
-    args = Args([Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False)])
+    args = Args([Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False), Int('staffline_height', default=0),\
+                 Int('staffspace_height', default=0)])
 
 class subimageStablePathDetection(PluginFunction):
-    """Displays the trimmed stable paths for a subset of the image"""
+    """Displays the trimmed stable paths for a subset of the image
+        with_trimming:
+            Trims staff sets where white space or ornamentations are found.
+        with_deletion:
+            If checked, the image will be processed once, keeping what it finds to be the staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
+        with_staff_fixing:
+            Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals
+        enable_strong_staff_pixels:
+            Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel
+        staffline_height and staffspace_height:
+            If left as 0 they will be found by the plugin"""
     category = "Stable Paths Toolkit"
     return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
-    args = Args([Point('topLeft'), Point('bottomRight'), Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False)])
+    args = Args([Point('topLeft'), Point('bottomRight'), Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False), Int('staffline_height', default=0),\
+                 Int('staffspace_height', default=0)])
 
 class setOfStablePathPoints(PluginFunction):
     """Returns point values from sets of stable paths"""

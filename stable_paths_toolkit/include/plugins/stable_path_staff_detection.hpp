@@ -2275,7 +2275,7 @@ public:
 //================================ Plugins ==========================================================
 //===================================================================================================
 template<class T>
-RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomRight, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
+RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomRight, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels, int staffline_height, int staffspace_height)
 {
     if ((topLeft.x() >= bottomRight.x()) || (topLeft.y() >= bottomRight.y()))
     {
@@ -2291,6 +2291,18 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
     if (with_deletion)
     {
         stableStaffLineFinder slfSub (subimageView, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+
+        
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
@@ -2363,6 +2375,18 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
     else
     {
         stableStaffLineFinder slfSub (subimageView, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+
+        
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
@@ -2563,11 +2587,22 @@ GreyScaleImageView* testForVerticalBlackPercentage(T &image)
 }
 
 template<class T>
-RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels)
+RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels, int staffline_height, int staffspace_height)
 {
     if (with_deletion)
     {
         stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+        
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
@@ -2638,6 +2673,17 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
     else
     {
         stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+        
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
