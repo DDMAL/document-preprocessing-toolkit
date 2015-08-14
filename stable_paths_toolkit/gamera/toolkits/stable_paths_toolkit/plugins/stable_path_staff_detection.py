@@ -81,9 +81,13 @@ class subimageStablePathDetection(PluginFunction):
                  Int('staffspace_height', default=0)])
 
 class setOfStablePathPoints(PluginFunction):
-    """Returns point values from sets of stable paths"""
+    """Returns point values from sets of stable paths
+        Format:
+            staffSets[x] returns set x
+            staffSets[x][l] returns staffline l of set x
+            staffSets[x][l][p] returns point p of staffline l of set x"""
     category = "Stable Paths Toolkit"
-    return_type = Class("staffpoints")
+    return_type = Class("staffSets")
     self_type = ImageType([ONEBIT])
 
 class overlayStaves(PluginFunction):
