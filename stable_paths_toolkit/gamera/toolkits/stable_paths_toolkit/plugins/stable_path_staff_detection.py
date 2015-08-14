@@ -21,7 +21,7 @@ class removeStaves(PluginFunction):
                  Int('staffspace_height', default=0)])
 
 class drawAllStablePaths(PluginFunction):
-    """Draws all stable paths found, including those from before being post processed."""
+    """Experimental and used for testing. Draws all stable paths found, including those from before being post processed."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([ONEBIT], "stablePathsDrawn")
     self_type = ImageType([ONEBIT])
@@ -50,15 +50,9 @@ class displayWeights(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class testForVerticalBlackPercentage(PluginFunction):
-    """Experimental and used for testing. Should display dark/light bars based on black percentage of staff systems. WHo know if it will be useful"""
+    """Experimental and used for testing. Should display dark/light bars based on black percentage of staff systems."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([GREYSCALE])
-    self_type = ImageType([ONEBIT])
-
-class drawColorfulStablePaths(PluginFunction):
-    """Displays the stable paths in sets of matching colors to demonstrate the systems found. No trimming."""
-    category = "Stable Paths Toolkit"
-    return_type = ImageType([RGB])
     self_type = ImageType([ONEBIT])
 
 class stablePathDetection(PluginFunction):
@@ -100,7 +94,7 @@ class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [stablePathDetection, drawAllGraphPaths, overlayStaves, subimageTrimmedStablePaths, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths, drawColorfulStablePaths]
+    functions = [stablePathDetection, drawAllGraphPaths, overlayStaves, subimageTrimmedStablePaths, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, deletionStablePathDetection, displayWeights, drawAllStablePaths]
     author = "Your name here"
     url = "Your URL here"
 module = stablePaths()
