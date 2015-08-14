@@ -27,6 +27,7 @@ class drawAllStablePaths(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class drawAllGraphPaths(PluginFunction):
+    """Experimental and used for testing. Displays all the graph paths found going from right to left on the first iteration of the code. """
     category = "Stable Paths Toolkit"
     return_type = ImageType([ONEBIT], "graphPathsDrawn")
     self_type = ImageType([ONEBIT])
@@ -44,13 +45,13 @@ class displayWeights(PluginFunction):
     self_type = ImageType([ONEBIT])
 
 class testForVerticalBlackPercentage(PluginFunction):
-    """Experimental and used for testing. Should display dark/light bars based on black percentage of staff systems."""
+    """Experimental and used for testing. Displays dark/light bars based on black percentage of staff systems."""
     category = "Stable Paths Toolkit"
     return_type = ImageType([GREYSCALE])
     self_type = ImageType([ONEBIT])
 
 class stablePathDetection(PluginFunction):
-    """Displays the trimmed stable paths
+    """Detects and displays the stafflines.
 with_trimming:
     Trims staff sets where white space or ornamentations are found.
 with_deletion: 
@@ -89,6 +90,6 @@ class stablePaths(PluginModule):
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
     functions = [stablePathDetection, drawAllGraphPaths, overlayStaves, subimageStablePathDetection, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, displayWeights, drawAllStablePaths]
-    author = "Your name here"
+    author = "Ian Karp"
     url = "Your URL here"
 module = stablePaths()
