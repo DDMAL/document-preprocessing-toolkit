@@ -3,7 +3,7 @@
   //=============================================================
 
   /*
-   Code based off the paper Staff Detection with Stable Paths by Jaime dos Santos Cardoso, Artur Capela, Ana Rebelo, Carlos Guedes, and Joaquim into da Costa and many functions are virtually identical to the authors' code with adjustments made to work with Gamera
+   Code based off the paper Staff Detection with Stable Paths by Jaime dos Santos Cardoso, Artur Capela, Ana Rebelo, Carlos Guedes, and Joaquim Pinto da Costa and many functions are virtually identical to the authors' code with adjustments made to work with Gamera
    
     Preprocessing:
         *1. Compute staffspaceheight and stafflineheight (Need to relax values so that similar staff spaces/line heights are taken together. Also need to make it so only most common
@@ -281,7 +281,6 @@ public:
         verRun = new int[imageWidth * imageHeight];
         verDistance = new int[imageWidth * imageHeight];
         memset (verDistance, 0, (sizeof(int) * imageWidth * imageHeight));
-        strongStaffPixels = new bool[imageWidth * imageHeight];
         
         enableSSP = enableSSP1;
         
@@ -418,10 +417,10 @@ public:
         
         if (enableSSP)
         {
+            strongStaffPixels = new bool[imageWidth * imageHeight];
             cout <<"SSP enabled" <<endl;
+            determineStrongStaffPixels();
         }
-        
-        determineStrongStaffPixels();
         
         //Find Graph Weights
         for (int r = 0; r < rows; r++)
