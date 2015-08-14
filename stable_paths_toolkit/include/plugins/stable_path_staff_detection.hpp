@@ -2518,57 +2518,6 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
 }
 
 template<class T>
-RGBImageView* deletionStablePathDetection(T &image)
-{
-    stableStaffLineFinder slf1 (image, false);
-    RGBImageData *data1 = new RGBImageData(image.size());
-    RGBImageView *new1 = new RGBImageView(*data1);
-    vector<vector <Point> > validStaves;
-    OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
-    OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
-    validStaves.clear();
-    stableStaffLineFinder slf2 (*subtractedImage, false);
-    vector< vector <vector<Point> > > setsOfValidStaves;
-    setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
-    int redCount, blueCount, greenCount, counter;
-    redCount = blueCount = greenCount = counter = 0;
-    
-    for (int set = 0; set < setsOfValidStaves.size(); set++)
-    {
-        if (counter == 0)
-        {
-            redCount = 255;
-            greenCount = 0;
-        }
-        else if (counter == 1)
-        {
-            greenCount = 150;
-            blueCount = 0;
-            redCount = 0;
-        }
-        else if (counter == 2)
-        {
-            blueCount = 175;
-            redCount = 0;
-            counter = -1;
-        }
-        
-        for (int staff = 0; staff < setsOfValidStaves[set].size(); staff++)
-        {
-            slf2.smoothStaffLine(setsOfValidStaves[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
-            for (int line = 0; line < setsOfValidStaves[set][staff].size(); line++)
-            {
-                new1->set(setsOfValidStaves[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
-            }
-        }
-        
-        counter++;
-    }
-    
-    return new1;
-}
-
-template<class T>
 GreyScaleImageView* testForVerticalBlackPercentage(T &image)
 {
     stableStaffLineFinder slf1 (image, false);
