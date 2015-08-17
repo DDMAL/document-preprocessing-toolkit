@@ -556,7 +556,8 @@ public:
                 --y;
             }
         }
-        
+
+//      Commented out since it is derived from verDistance which is no longer computed
 //        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
 //        {
 //            y++;
@@ -835,6 +836,7 @@ public:
         return imageCopy;
     }
     
+    //Copied from code written by the authors of "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8"
     int findAllStablePaths(OneBitImageView *image, int startCol, int endCol, vector <vector<Point> > &stablePaths)
     {
         stablePaths.clear();
@@ -1066,7 +1068,7 @@ public:
         int ncolsEroded = imageErodedCopy->ncols();
         int nrowsEroded = imageErodedCopy->nrows();
         
-        //Undocumented Operation
+        //Undocumented Operation copied from inital code written by authors of "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8"
         for (int i = 0; i < setsOfValidStaves.size(); i++)
         {
             vector <vector<Point> > &setOfStaves = setsOfValidStaves[i];
@@ -1115,28 +1117,8 @@ public:
         {
             vector <vector<Point> > &setOfStaves = *set_it; //setsOfValidStaves[i]
             
-            //Compute the median staff in terms of color
-//            vector<unsigned char> medianStaff;
-//            
-//            for (int c = 0; c < ncolsEroded; c++)
-//            {
-//                vector <unsigned char> medianValue;
-//                
-//                for (int i = 0; i < setOfStaves.size(); i++)
-//                {
-//                    int x = setOfStaves[i][c].x();
-//                    int y = setOfStaves[i][c].y();
-//                    unsigned char pel = imageErodedCopy->get(getPointView((y * ncolsEroded) + x, ncolsEroded, nrowsEroded));
-//                    medianValue.push_back(pel);
-//                }
-//                
-//                sort(medianValue.begin(), medianValue.end());
-//                medianStaff.push_back(medianValue[medianValue.size() - 1]);
-//            }
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
-            
-            //trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
             
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
@@ -1147,6 +1129,7 @@ public:
             //2 trim staffs from start to nvalid
             for (int i = 0; i < setOfStaves.size(); i++)
             {
+//                Smoothing now done after trimming
 //                smoothStaffLine(setOfStaves[i], SMOOTH_STAFF_LINE_WINDOW * staffSpaceDistance);
                 
                 vector<Point>::iterator it = setOfStaves[i].begin();
@@ -1170,8 +1153,6 @@ public:
             set_it++;
         }
         
-        //validStaves.clear();
-        
         for (int i = 0; i < setsOfValidStaves.size(); i++)
         {
             vector <vector<Point> > &setOfStaves = setsOfValidStaves[i];
@@ -1185,60 +1166,7 @@ public:
         //return finalTrim(setsOfValidStaves, imageErodedCopy);
         return setsOfValidStaves;
     }
-    
-    void trimPath(vector<unsigned char> &vec, int window, int &startX, int &endX)
-    {
-        startX = 0;
         
-        while((!vec[startX]) && (startX < (vec.size() / 2)))
-        {
-            startX++;
-        }
-        
-        int i;
-        int sum = 0;
-        
-        for (i = startX; i < (startX + window); i++)
-        {
-            sum += vec[i];
-        }
-        
-        for (; i < (vec.size() / 2); i++)
-        {
-            sum += vec[i];
-            sum -= vec[i - window];
-            if (sum < (window * 1.0 * 0.9)) //Original code accounted for greyscale, may be problematic
-            {
-                startX = i + 1;
-            }
-        }
-        
-        endX = vec.size() - 1;
-        
-        while ((!vec[endX]) && (endX > (vec.size() / 2)))
-        {
-            endX--;
-        }
-        
-        sum = 0;
-        
-        for (i = endX; i > endX - window; i--)
-        {
-            sum += vec[i];
-        }
-        
-        for (; i > (vec.size() / 2); i--)
-        {
-            sum += vec[i];
-            sum -= vec[i + window];
-            
-            if (sum < (window * 1 * 0.9)) //Original code accounted for greyscale
-            {
-                endX = i - 1;
-            }
-        }
-    }
-    
     void smoothStaffLine(vector<Point> &staff, int halfWindowSize)
     {
         if (staff.size() < ((halfWindowSize * 2) + 1))
