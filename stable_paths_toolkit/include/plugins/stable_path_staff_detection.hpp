@@ -2284,7 +2284,6 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
             slf1.staffSpaceDistance = staffspace_height;
         }
 
-        
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
