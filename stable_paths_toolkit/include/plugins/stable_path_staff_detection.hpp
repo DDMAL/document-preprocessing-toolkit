@@ -51,15 +51,15 @@ using namespace Gamera;
 #define ALLOWED_DISSIMILARITY 3 //Originally 4, used for allowing dissimilar found stafflines in stableStaffDetection
 #define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2 //pixels with a vertical run less than ALLOWED_THICKNESS_OF_STAFFLINE_DELETION*staffLineHeight will be deleted in staffline removal
 #define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1 //Allows for some leniency in stafflines that are thicker in some areas if set to a value higher than 1
-#define ALLOWED_VERTICAL_HIT_PERCENTAGE .50 
-#define ALLOWED_OFFSET_NEARHIT 1
-#define SMOOTH_STAFF_LINE_WINDOW 2
-#define SLOPE_WINDOW 2
-#define SLOPE_TOLERANCE 1.3
-#define VERBOSE_MODE 0
-#define SLOPE_TOLERANCE_OFFSET .05
-#define ALLOWED_MIN_BLACK_PERC .5
-#define SSP_TOLERANCE 1
+#define ALLOWED_VERTICAL_HIT_PERCENTAGE .50 //Used for trimming. For one vertical slice of a system, if the percent on black pixels is less than ALLOWED_VERTICAL_HIT_PERCENTAGE it is considered for trimming
+#define ALLOWED_OFFSET_NEARHIT 1 //When trimming and checking for hits of a pixel in a staffline, this allows the program to check within ALLOWED_OFFSET_NEARHIT pixels to the top or bottom for a black pixel
+#define SMOOTH_STAFF_LINE_WINDOW 2 //Sets size of smoothing window. Originally set to 2
+#define SLOPE_WINDOW 2 //Sets size of window when finding the slope of a line
+#define SLOPE_TOLERANCE 1.3 //Sets the leniency for how similar slopes can be in fixStaffSystem
+#define VERBOSE_MODE 0 //If set to 1, writes info as the program iterates through the image
+#define SLOPE_TOLERANCE_OFFSET .05 //Used in case the slope is 0 for a more lenient slope tolerance
+#define ALLOWED_MIN_BLACK_PERC .5 //Used when testing to see if a stable path has enough black pixels
+#define SSP_TOLERANCE 1 //If set above 1, makes SSP detection more lenient. If set below 1, SSP detection won't work. Currently not implemented
 
 
 //Code heavily based on stableStaffLineFinder.h
@@ -101,15 +101,15 @@ public:
 
     int* verRun; //length of vertical run of same color pixels. 
     int* verDistance; //Minimum distance of a pixel of the same color NOT in the same run of pixels of the same color
-    NODE* graphPath;
-    NODEGRAPH* graphWeight;
+    NODE* graphPath; //Will contain the path of stable paths
+    NODEGRAPH* graphWeight; //Will contain the weight/cost of moving from one pixel to the upper right, right, or lower right
     bool* strongStaffPixels; //Array indicating which points are strong staff-pixels
     
     bool enableSSP; //Will determine whether strong staff-pixels are calculated
 
     int staffLineHeight;
     int staffSpaceDistance;
-    time_t globalStart;
+    time_t globalStart; //Used for testing
 
     typedef ImageData<OneBitPixel> OneBitImageData;
     typedef ImageView<OneBitImageData> OneBitImageView;
@@ -284,9 +284,8 @@ public:
         constructGraphWeights();
     }
     
-    stableStaffLineFinder()
+    stableStaffLineFinder() //Allows you to use the functions without having to compute anything
     {
-        //Allows you to use the functions without having to compute anything
         graphPath = new NODE[0];
         graphWeight = new NODEGRAPH[0];
         verRun = new int[0];
@@ -338,7 +337,7 @@ public:
                     {
                         verRun[(row * cols) + c] = run;
                     }
-                    val = !val; //Changes value from 0 to 1 or from 1 to
+                    val = !val; //Changes value from 0 to 1 or from 1 to 0
                     run = 1;
                 }
             }
@@ -360,7 +359,7 @@ public:
             cout <<"Done finding vertical runs" <<endl;
         }
         
-        //Find Vertical Distance
+        //Find Vertical Distance (currently commented out since the benefits don't seem to outweigh the costs)
 //        for (int c = 0; c < cols; c++)
 //        {
 //            for (int r = 0; r < rows; r++)
@@ -452,6 +451,8 @@ public:
         // }
     }
     
+    //Determines if a vertical run of pixels are the exact height of staffLineHeight and the closest black run is exactly staffSpaceHeight away, which indicates a very strong likelihood of being part of a staffline
+    //Results have been disappointing
     void determineStrongStaffPixels()
     {
         for (int col = 0; col < imageWidth; col++)
@@ -474,41 +475,41 @@ public:
         }
     }
     
-    bool acceptableStrongStaffPixel(int col, int row, int currRun)
-    {
-        if ((currRun >= row) && (primaryImage->get(Point(col, row))))
-        {
-            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
-            {
-                return true;
-            }
-        }
-        else if (((currRun < row) && (primaryImage->get(Point(col, row)))))
-        {
-            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
-            {
-                return true;
-            }
-            else if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row - currRun) * imageWidth) + col], staffSpaceDistance))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    
-    bool currRunWithinTolerance(int currRun, int restriction)
-    {
-        if ((static_cast<double>(currRun) <= (static_cast<double>(restriction) * SSP_TOLERANCE)) && (static_cast<double>(currRun) >= (static_cast<double>(restriction) / SSP_TOLERANCE)))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
+//    bool acceptableStrongStaffPixel(int col, int row, int currRun)
+//    {
+//        if ((currRun >= row) && (primaryImage->get(Point(col, row))))
+//        {
+//            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
+//            {
+//                return true;
+//            }
+//        }
+//        else if (((currRun < row) && (primaryImage->get(Point(col, row)))))
+//        {
+//            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
+//            {
+//                return true;
+//            }
+//            else if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row - currRun) * imageWidth) + col], staffSpaceDistance))
+//            {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
+//    
+//    bool currRunWithinTolerance(int currRun, int restriction)
+//    {
+//        if ((static_cast<double>(currRun) <= (static_cast<double>(restriction) * SSP_TOLERANCE)) && (static_cast<double>(currRun) >= (static_cast<double>(restriction) / SSP_TOLERANCE)))
+//        {
+//            return true;
+//        }
+//        else
+//        {
+//            return false;
+//        }
+//    }
     
     void setRunToTrue(int run, int col, int row)
     {
@@ -643,7 +644,7 @@ public:
         int nrows = imageHeight;
         int ncols = imageWidth;
         
-        while(1)
+        while(1) //Loops until no more stable paths are found
         {
             vector <vector<Point> > stablePaths;
             int curr_n_paths = 0;
@@ -653,7 +654,7 @@ public:
                 printf("About to findAllStablePaths\n");
             }
             
-            findAllStablePaths(imageCopy, 0, ncols - 1, stablePaths);
+            findAllStablePaths(imageCopy, 0, ncols - 1, stablePaths); //Places stable paths in stablePaths
             
             if (VERBOSE_MODE)
             {
@@ -774,16 +775,6 @@ public:
                             imageCopy->set(Point(col, (row + j)), 0);
                             imgErode->set(Point(col, (row + j)), 0);
                         }
-                        
-//                        Trial method to get rid of problem where imgErode stablePaths are not deleted. 
-//                        if (verRun[(row * ncols) + col] < (ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight))
-//                        {
-//                            imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                            imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                        }
-                        
-//                        imageCopy->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
-//                        imgErode->set(getPointView(((row + j) * ncols) + col, ncols, nrows), 0);
 
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
