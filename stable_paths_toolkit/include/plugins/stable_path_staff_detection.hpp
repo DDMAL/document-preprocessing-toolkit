@@ -2201,7 +2201,6 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
         {
             slf1.staffSpaceDistance = staffspace_height;
         }
-
         
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
@@ -2258,7 +2257,6 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
                 slf2.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
                 for (int line = 0; line < setsToReturn[set][staff].size(); line++)
                 {
-                    //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
                     int xVal = setsToReturn[set][staff][line].x() + topLeft.x();
                     int yVal = setsToReturn[set][staff][line].y() + topLeft.y();
                     new1->set(Point(xVal, yVal), RGBPixel(redCount, greenCount, blueCount));
@@ -2549,7 +2547,6 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
                 slf2.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
                 for (int line = 0; line < setsToReturn[set][staff].size(); line++)
                 {
-    //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
                     new1->set(setsToReturn[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
                 }
             }
@@ -2642,11 +2639,6 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
 template<class T>
 PyObject* setOfStablePathPoints(T &image, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels, int staffline_height, int staffspace_height)
 {
-//    stableStaffLineFinder slf1 (image, false);
-//    vector<vector <Point> > validStaves;
-//    vector< vector <vector<Point> > > setsOfValidStaves;
-//    setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
-//    int numOfSets = setsOfValidStaves.size();
     vector< vector <vector<Point> > > setsToReturn;
     
     if (with_deletion)
