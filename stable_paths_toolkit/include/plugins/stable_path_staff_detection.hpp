@@ -24,7 +24,7 @@
 
         Notes:
             - Currently being implemented only for one bit images
-            - verDistances are not computed as they take up too much time for minimal results
+            - verDistances are currently not computed as they take up too much time for minimal results
             - A new trim function has been implemented
             - A function to fix stafflines based on slope has been implemented
             - Strong staff pixels have been implemented with minimal results
@@ -48,13 +48,10 @@ using namespace std;
 using namespace Gamera;
 
 #define MIN_BLACK_PER 0.25
-#define CUSTOM_STAFF_LINE_HEIGHT 0
-#define CUSTOM_STAFF_SPACE_HEIGHT 0
-#define ALLOWED_DISSIMILARITY 3
-#define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2
-#define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1
-#define ALLOWED_VERTICAL_BLACK_PERCENTAGE .99
-#define ALLOWED_VERTICAL_HIT_PERCENTAGE .50
+#define ALLOWED_DISSIMILARITY 3 //Originally 4, used for allowing dissimilar found stafflines in stableStaffDetection
+#define ALLOWED_THICKNESS_OF_STAFFLINE_DELETION 2 //pixels with a vertical run less than ALLOWED_THICKNESS_OF_STAFFLINE_DELETION*staffLineHeight will be deleted in staffline removal
+#define ALLOWED_DISSIMILARITY_STAFF_LINE_HEIGHT_IN_WEIGHT_CONSTRUCTION 1 //Allows for some leniency in stafflines that are thicker in some areas if set to a value higher than 1
+#define ALLOWED_VERTICAL_HIT_PERCENTAGE .50 
 #define ALLOWED_OFFSET_NEARHIT 1
 #define SMOOTH_STAFF_LINE_WINDOW 2
 #define SLOPE_WINDOW 2
@@ -274,8 +271,8 @@ public:
         imageWidth = image.ncols();
         imageHeight = image.nrows();
         
-        staffLineHeight = CUSTOM_STAFF_LINE_HEIGHT; //Set to 0 unless specified by user
-        staffSpaceDistance = CUSTOM_STAFF_SPACE_HEIGHT; //Set to 0 unless specified by user
+        staffLineHeight = 0; //Set to 0 unless specified by user
+        staffSpaceDistance = 0; //Set to 0 unless specified by user
         graphPath = new NODE[imageWidth * imageHeight];
         graphWeight = new NODEGRAPH[imageWidth * imageHeight];
         verRun = new int[imageWidth * imageHeight];
@@ -1148,9 +1145,7 @@ public:
             //1 find start and end
             int startx = 0, endx = ncolsEroded - 1;
             
-            //trimIndividualPaths(setOfStaves, (2 * staffSpaceDistance));
             //trimPath(medianStaff, (2 * staffSpaceDistance), startx, endx);
-            //blackPercentageTrimEdges(setOfStaves, startx, endx);
             
             if ( (endx - startx) < maxStaffDistance) //remove whole set
             {
@@ -1249,27 +1244,6 @@ public:
             if (sum < (window * 1 * 0.9)) //Original code accounted for greyscale
             {
                 endX = i - 1;
-            }
-        }
-    }
-    
-    void blackPercentageTrimEdges(vector< vector<Point> > &staffSystem, int &startX, int &endX)
-    {
-        //startX = 0;
-        for (int col = startX; col < (imageWidth / 3); col++) //Trim up to a third of the staff system
-        {
-            if (verticalBlackPercentage(col, staffSystem[0][col].y(), staffSystem[staffSystem.size() - 1][col].y()) > ALLOWED_VERTICAL_BLACK_PERCENTAGE)
-            {
-                startX++;
-            }
-        }
-        
-        //endX = imageWidth - 1;
-        for (int col = endX; col > (imageWidth - (imageWidth * (1.0 / 3.0))); col--) //Trim up to a third of the staff system
-        {
-            if (verticalBlackPercentage(col, staffSystem[0][col].y(), staffSystem[staffSystem.size() - 1][col].y()) > ALLOWED_VERTICAL_BLACK_PERCENTAGE)
-            {
-                endX--;
             }
         }
     }
