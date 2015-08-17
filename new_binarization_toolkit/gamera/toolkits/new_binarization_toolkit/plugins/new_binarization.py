@@ -41,6 +41,7 @@ class pythonBinarize(PluginFunction):
     pure_python = True
     def __call__(self, scale, gradient_threshold):
         canny_image = _edgedetect.canny_edge_image(self, scale, gradient_threshold)
+        canny_image_onebit = canny_image.to_onebit()
         
         """
             LAPLACIAN OF GAUSSIAN (recreated from convolution.py)
@@ -52,7 +53,7 @@ class pythonBinarize(PluginFunction):
         tmp_x = tmp.convolve_y(smooth)
         tmp = fp.convolve_x(smooth)
         tmp_y = tmp.convolve_y(deriv)
-        result = _arithmetic.add_images(tmp_x, tmp_y, False)
+        lap = _arithmetic.add_images(tmp_x, tmp_y, False)
 
         """
            Bias high-confidence background pixels
@@ -65,7 +66,7 @@ class pythonBinarize(PluginFunction):
         rms = squareRoot(gsmooth_squared_img2)
         threshold_img = checkThreshold(rms, 12)
         
-        return threshold_img
+        return lap
     __call__ = staticmethod(__call__)
 
 class NewBinarization(PluginModule):
