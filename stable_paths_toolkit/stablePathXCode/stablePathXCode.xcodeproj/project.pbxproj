@@ -7,11 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C8851531B29FF8600F1C74A /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8851521B29FF8600F1C74A /* libpng16.16.dylib */; };
+		3C8851551B2B248400F1C74A /* libtiff.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8851541B2B248400F1C74A /* libtiff.dylib */; };
+		3C8852871B2B625500F1C74A /* Testing.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3C8852861B2B625500F1C74A /* Testing.1 */; };
+		3C8852901B2B762100F1C74A /* unit_test_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3C88528E1B2B762100F1C74A /* unit_test_main.cpp */; };
+		3C8852921B2B776700F1C74A /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8852911B2B776700F1C74A /* gtest.framework */; };
 		3CC331221B1F7E830064DF13 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3CC331211B1F7E830064DF13 /* main.cpp */; };
 		3CC3312C1B20D2950064DF13 /* Python.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CC3312B1B20D2950064DF13 /* Python.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		3C8852801B2B625500F1C74A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				3C8852871B2B625500F1C74A /* Testing.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		3CC3311C1B1F7E830064DF13 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -24,8 +39,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3C8851181B28FD1200F1C74A /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
+		3C1BF4E51B7E395D0009B182 /* stable_path_staff_detection.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; name = stable_path_staff_detection.py; path = ../../gamera/toolkits/stable_paths_toolkit/plugins/stable_path_staff_detection.py; sourceTree = "<group>"; };
 		3C88511A1B29E84100F1C74A /* _png_support.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; name = _png_support.so; path = "../../../gamera/build/lib.macosx-10.9-x86_64-2.7/gamera/plugins/_png_support.so"; sourceTree = "<group>"; };
+		3C8851521B29FF8600F1C74A /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../../../usr/local/lib/libpng16.16.dylib; sourceTree = "<group>"; };
+		3C8851541B2B248400F1C74A /* libtiff.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtiff.dylib; path = ../../../../../../../usr/local/lib/libtiff.dylib; sourceTree = "<group>"; };
+		3C8852821B2B625500F1C74A /* Testing */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Testing; sourceTree = BUILT_PRODUCTS_DIR; };
+		3C8852841B2B625500F1C74A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		3C8852861B2B625500F1C74A /* Testing.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Testing.1; sourceTree = "<group>"; };
+		3C88528E1B2B762100F1C74A /* unit_test_main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = unit_test_main.cpp; sourceTree = "<group>"; };
+		3C88528F1B2B762100F1C74A /* unit_test_main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unit_test_main.h; sourceTree = "<group>"; };
+		3C8852911B2B776700F1C74A /* gtest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gtest.framework; path = ../../../../../../../Library/Frameworks/gtest.framework; sourceTree = "<group>"; };
 		3CC3311E1B1F7E830064DF13 /* stablePathXCode */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = stablePathXCode; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CC331211B1F7E830064DF13 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		3CC3312B1B20D2950064DF13 /* Python.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Python.framework; path = ../../../../../../../usr/local/Frameworks/Python.framework; sourceTree = "<group>"; };
@@ -33,24 +56,56 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3C88527F1B2B625500F1C74A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C8852921B2B776700F1C74A /* gtest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3CC3311B1B1F7E830064DF13 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				3CC3312C1B20D2950064DF13 /* Python.framework in Frameworks */,
+				3C8851531B29FF8600F1C74A /* libpng16.16.dylib in Frameworks */,
+				3C8851551B2B248400F1C74A /* libtiff.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3C88527D1B2B60FB00F1C74A /* Testing */ = {
+			isa = PBXGroup;
+			children = (
+				3C88528E1B2B762100F1C74A /* unit_test_main.cpp */,
+				3C88528F1B2B762100F1C74A /* unit_test_main.h */,
+			);
+			name = Testing;
+			sourceTree = "<group>";
+		};
+		3C8852831B2B625500F1C74A /* Testing */ = {
+			isa = PBXGroup;
+			children = (
+				3C8852841B2B625500F1C74A /* main.cpp */,
+				3C8852861B2B625500F1C74A /* Testing.1 */,
+			);
+			path = Testing;
+			sourceTree = "<group>";
+		};
 		3CC331151B1F7E830064DF13 = {
 			isa = PBXGroup;
 			children = (
+				3C8852911B2B776700F1C74A /* gtest.framework */,
+				3C88527D1B2B60FB00F1C74A /* Testing */,
+				3C8851541B2B248400F1C74A /* libtiff.dylib */,
+				3C8851521B29FF8600F1C74A /* libpng16.16.dylib */,
 				3C88511A1B29E84100F1C74A /* _png_support.so */,
-				3C8851181B28FD1200F1C74A /* libc++.dylib */,
 				3CC3312B1B20D2950064DF13 /* Python.framework */,
 				3CC331201B1F7E830064DF13 /* stablePathXCode */,
+				3C8852831B2B625500F1C74A /* Testing */,
 				3CC3311F1B1F7E830064DF13 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				3CC3311E1B1F7E830064DF13 /* stablePathXCode */,
+				3C8852821B2B625500F1C74A /* Testing */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,6 +122,7 @@
 		3CC331201B1F7E830064DF13 /* stablePathXCode */ = {
 			isa = PBXGroup;
 			children = (
+				3C1BF4E51B7E395D0009B182 /* stable_path_staff_detection.py */,
 				3CC331211B1F7E830064DF13 /* main.cpp */,
 				3CC3312D1B2622790064DF13 /* stable_path_staff_detection.hpp */,
 			);
@@ -75,6 +132,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3C8852811B2B625500F1C74A /* Testing */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3C8852881B2B625500F1C74A /* Build configuration list for PBXNativeTarget "Testing" */;
+			buildPhases = (
+				3C88527E1B2B625500F1C74A /* Sources */,
+				3C88527F1B2B625500F1C74A /* Frameworks */,
+				3C8852801B2B625500F1C74A /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Testing;
+			productName = Testing;
+			productReference = 3C8852821B2B625500F1C74A /* Testing */;
+			productType = "com.apple.product-type.tool";
+		};
 		3CC3311D1B1F7E830064DF13 /* stablePathXCode */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3CC331271B1F7E830064DF13 /* Build configuration list for PBXNativeTarget "stablePathXCode" */;
@@ -114,11 +188,20 @@
 			projectRoot = "";
 			targets = (
 				3CC3311D1B1F7E830064DF13 /* stablePathXCode */,
+				3C8852811B2B625500F1C74A /* Testing */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3C88527E1B2B625500F1C74A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C8852901B2B762100F1C74A /* unit_test_main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3CC3311A1B1F7E830064DF13 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -130,6 +213,32 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		3C8852891B2B625500F1C74A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3C88528A1B2B625500F1C74A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		3CC331251B1F7E830064DF13 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -210,13 +319,18 @@
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					/usr/local/Frameworks/Python.framework/Headers,
+					/usr/local/include,
 					/Users/ian/Documents/Code/gamera,
 					/Users/ian/Documents/Code/gamera/include,
 					"/Users/ian/Documents/Code/document-preprocessing-toolkit/stable_paths_toolkit/include/plugins",
 					/Users/ian/Documents/Code/gamera/include/plugins,
-					"/Users/ian/Documents/Code/gamera/src/libpng-1.2.5/**",
 					/Users/ian/Documents/Code/gamera/gamera/plugins,
 				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/Cellar/libpng/1.6.17/lib,
+					/usr/local/Cellar/libtiff/4.0.3/lib,
+				);
+				OTHER_CFLAGS = "-Dpng_set_gray_1_2_4_to_8=png_set_expand_gray_1_2_4_to_8";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -231,13 +345,18 @@
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					/usr/local/Frameworks/Python.framework/Headers,
+					/usr/local/include,
 					/Users/ian/Documents/Code/gamera,
 					/Users/ian/Documents/Code/gamera/include,
 					"/Users/ian/Documents/Code/document-preprocessing-toolkit/stable_paths_toolkit/include/plugins",
 					/Users/ian/Documents/Code/gamera/include/plugins,
-					"/Users/ian/Documents/Code/gamera/src/libpng-1.2.5/**",
 					/Users/ian/Documents/Code/gamera/gamera/plugins,
 				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/Cellar/libpng/1.6.17/lib,
+					/usr/local/Cellar/libtiff/4.0.3/lib,
+				);
+				OTHER_CFLAGS = "-Dpng_set_gray_1_2_4_to_8=png_set_expand_gray_1_2_4_to_8";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -245,6 +364,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3C8852881B2B625500F1C74A /* Build configuration list for PBXNativeTarget "Testing" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3C8852891B2B625500F1C74A /* Debug */,
+				3C88528A1B2B625500F1C74A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3CC331191B1F7E830064DF13 /* Build configuration list for PBXProject "stablePathXCode" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

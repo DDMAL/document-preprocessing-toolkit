@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Testing.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
 		<key>stablePathXCode.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -12,6 +17,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>3C8852811B2B625500F1C74A</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>3CC3311D1B1F7E830064DF13</key>
 		<dict>
 			<key>primary</key>

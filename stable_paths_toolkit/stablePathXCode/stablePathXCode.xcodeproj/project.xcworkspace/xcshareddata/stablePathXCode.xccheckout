@@ -12,6 +12,8 @@
 	<dict>
 		<key>440A9E8F-1B79-4B9B-BD70-31A5F7BE1061</key>
 		<string>ssh://github.com/DDMAL/document-preprocessing-toolkit.git</string>
+		<key>78B74225-028C-4F1F-870C-632C37A312D6</key>
+		<string>ssh://github.com/philsquared/Catch.git</string>
 		<key>ED07C5D7-2068-4F40-83FE-7648E13C31FC</key>
 		<string>svn://svn.code.sf.net/p/gamera/code/trunk/gamera</string>
 	</dict>
@@ -21,6 +23,8 @@
 	<dict>
 		<key>440A9E8F-1B79-4B9B-BD70-31A5F7BE1061</key>
 		<string>../../../..</string>
+		<key>78B74225-028C-4F1F-870C-632C37A312D6</key>
+		<string>../../../../../Catch</string>
 		<key>ED07C5D7-2068-4F40-83FE-7648E13C31FC</key>
 		<string>../../../../../gamera</string>
 	</dict>
@@ -37,6 +41,14 @@
 	<string>440A9E8F-1B79-4B9B-BD70-31A5F7BE1061</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>78B74225-028C-4F1F-870C-632C37A312D6</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Catch</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryBranchesRelativeLocationKey</key>
 			<string>branches</string>

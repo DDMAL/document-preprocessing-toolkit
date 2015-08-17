@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "stablePathXCode/main.cpp"
-            timestampString = "455671708.140109"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "29"
-            endingLineNumber = "29"
+            startingLineNumber = "105"
+            endingLineNumber = "105"
             landmarkName = "main()"
             landmarkType = "7">
          </BreakpointContent>
@@ -26,12 +26,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "720"
-            endingLineNumber = "720"
-            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
+            startingLineNumber = "2096"
+            endingLineNumber = "2096"
+            landmarkName = "findDissimilarSlopeBreakPointsSingleStaff(vector &lt;double&gt; &amp;staff, vector &lt;SLOPEBVAL&gt; &amp;breakVals, double mostCommonSlope)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -42,12 +42,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "721"
-            endingLineNumber = "721"
-            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
+            startingLineNumber = "2073"
+            endingLineNumber = "2073"
+            landmarkName = "findDissimilarSlopeBreakPointsSingleStaff(vector &lt;double&gt; &amp;staff, vector &lt;SLOPEBVAL&gt; &amp;breakVals, double mostCommonSlope)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -58,12 +58,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "722"
-            endingLineNumber = "722"
-            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
+            startingLineNumber = "2092"
+            endingLineNumber = "2092"
+            landmarkName = "findDissimilarSlopeBreakPointsSingleStaff(vector &lt;double&gt; &amp;staff, vector &lt;SLOPEBVAL&gt; &amp;breakVals, double mostCommonSlope)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -74,12 +74,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "631"
-            endingLineNumber = "631"
-            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
+            startingLineNumber = "775"
+            endingLineNumber = "775"
+            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -90,12 +90,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "685"
-            endingLineNumber = "685"
-            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
+            startingLineNumber = "778"
+            endingLineNumber = "778"
+            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -106,12 +106,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "686"
-            endingLineNumber = "686"
-            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
+            startingLineNumber = "1073"
+            endingLineNumber = "1073"
+            landmarkName = "postProcessing(vector &lt;vector&lt;Point&gt; &gt; &amp;validStaves, OneBitImageView *imageErodedCopy)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -122,12 +122,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "634"
-            endingLineNumber = "634"
-            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
+            startingLineNumber = "1188"
+            endingLineNumber = "1188"
+            landmarkName = "postProcessing(vector &lt;vector&lt;Point&gt; &gt; &amp;validStaves, OneBitImageView *imageErodedCopy)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -138,12 +138,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1049"
-            endingLineNumber = "1049"
-            landmarkName = "findAllStablePathsView(OneBitImageView *image, int startCol, int endCol, vector &lt;vector&lt;Point&gt; &gt; &amp;stablePaths)"
+            startingLineNumber = "1512"
+            endingLineNumber = "1512"
+            landmarkName = "returnSetsOfStablePaths(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves, T &amp;image)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -154,44 +154,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1050"
-            endingLineNumber = "1050"
-            landmarkName = "findAllStablePathsView(OneBitImageView *image, int startCol, int endCol, vector &lt;vector&lt;Point&gt; &gt; &amp;stablePaths)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "stablePathXCode/main.cpp"
-            timestampString = "455671708.140109"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "17"
-            endingLineNumber = "17"
-            landmarkName = "main()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "244"
-            endingLineNumber = "244"
-            landmarkName = "drawPaths(vector &lt;vector&lt;Point&gt; &gt; &amp;validStaves, OneBitImageView *image)"
+            startingLineNumber = "1528"
+            endingLineNumber = "1528"
+            landmarkName = "finalTrim(vector &lt;vector &lt;vector &lt;Point&gt; &gt; &gt; &amp;staffSets, OneBitImageView *image)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -202,11 +170,235 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1594"
-            endingLineNumber = "1594"
+            startingLineNumber = "1533"
+            endingLineNumber = "1533"
+            landmarkName = "finalTrim(vector &lt;vector &lt;vector &lt;Point&gt; &gt; &gt; &amp;staffSets, OneBitImageView *image)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "790"
+            endingLineNumber = "790"
+            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "799"
+            endingLineNumber = "799"
+            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "423"
+            endingLineNumber = "423"
+            landmarkName = "constructGraphWeights()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "453"
+            endingLineNumber = "453"
+            landmarkName = "constructGraphWeights()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "843"
+            endingLineNumber = "843"
+            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "803"
+            endingLineNumber = "803"
+            landmarkName = "stableStaffDetection(vector &lt;vector &lt;Point&gt; &gt; &amp;validStaves)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1609"
+            endingLineNumber = "1609"
+            landmarkName = "getBreakPoints(vector &lt;vector &lt;Point&gt; &gt; &amp;staffSet, vector &lt;BVAL&gt; &amp;breakValues, OneBitImageView *image)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1619"
+            endingLineNumber = "1619"
+            landmarkName = "getBreakPoints(vector &lt;vector &lt;Point&gt; &gt; &amp;staffSet, vector &lt;BVAL&gt; &amp;breakValues, OneBitImageView *image)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1638"
+            endingLineNumber = "1638"
+            landmarkName = "getBreakPoints(vector &lt;vector &lt;Point&gt; &gt; &amp;staffSet, vector &lt;BVAL&gt; &amp;breakValues, OneBitImageView *image)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1655"
+            endingLineNumber = "1655"
+            landmarkName = "getBreakPoints(vector &lt;vector &lt;Point&gt; &gt; &amp;staffSet, vector &lt;BVAL&gt; &amp;breakValues, OneBitImageView *image)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1982"
+            endingLineNumber = "1982"
+            landmarkName = "fixStaffSystem(vector &lt;vector &lt;Point&gt; &gt; &amp;staffSystem)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2001"
+            endingLineNumber = "2001"
+            landmarkName = "fixLineSegment(vector &lt;Point&gt; &amp;staff, int start, int end, double mostCommonSlope)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2000"
+            endingLineNumber = "2000"
+            landmarkName = "fixLineSegment(vector &lt;Point&gt; &amp;staff, int start, int end, double mostCommonSlope)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../include/plugins/stable_path_staff_detection.hpp"
+            timestampString = "461277913.826206"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2053"
+            endingLineNumber = "2053"
             landmarkName = "class stableStaffLineFinder"
             landmarkType = "3">
          </BreakpointContent>
@@ -217,14 +409,14 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            filePath = "stablePathXCode/main.cpp"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1602"
-            endingLineNumber = "1602"
-            landmarkName = "trimPath(vector&lt;unsigned char&gt; &amp;vec, int window, int &amp;startX, int &amp;endX)"
-            landmarkType = "5">
+            startingLineNumber = "47"
+            endingLineNumber = "47"
+            landmarkName = "getFileNames(string dirPath, vector &lt;string&gt; &amp;fileNames)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -233,14 +425,14 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            filePath = "stablePathXCode/main.cpp"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1610"
-            endingLineNumber = "1610"
-            landmarkName = "trimPath(vector&lt;unsigned char&gt; &amp;vec, int window, int &amp;startX, int &amp;endX)"
-            landmarkType = "5">
+            startingLineNumber = "48"
+            endingLineNumber = "48"
+            landmarkName = "getFileNames(string dirPath, vector &lt;string&gt; &amp;fileNames)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -249,126 +441,14 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
+            filePath = "stablePathXCode/main.cpp"
+            timestampString = "461277913.826206"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1619"
-            endingLineNumber = "1619"
-            landmarkName = "trimPath(vector&lt;unsigned char&gt; &amp;vec, int window, int &amp;startX, int &amp;endX)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1620"
-            endingLineNumber = "1620"
-            landmarkName = "trimPath(vector&lt;unsigned char&gt; &amp;vec, int window, int &amp;startX, int &amp;endX)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1634"
-            endingLineNumber = "1634"
-            landmarkName = "trimPath(vector&lt;unsigned char&gt; &amp;vec, int window, int &amp;startX, int &amp;endX)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1644"
-            endingLineNumber = "1644"
-            landmarkName = "trimPath(vector&lt;unsigned char&gt; &amp;vec, int window, int &amp;startX, int &amp;endX)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1645"
-            endingLineNumber = "1645"
-            landmarkName = "trimPath(vector&lt;unsigned char&gt; &amp;vec, int window, int &amp;startX, int &amp;endX)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1566"
-            endingLineNumber = "1566"
-            landmarkName = "postProcessing(vector &lt;vector&lt;Point&gt; &gt; &amp;validStaves, int staffDistance, OneBitImageView *imageErodedCopy)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1575"
-            endingLineNumber = "1575"
-            landmarkName = "postProcessing(vector &lt;vector&lt;Point&gt; &gt; &amp;validStaves, int staffDistance, OneBitImageView *imageErodedCopy)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../include/plugins/stable_path_staff_detection.hpp"
-            timestampString = "455731315.207128"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1583"
-            endingLineNumber = "1583"
-            landmarkName = "postProcessing(vector &lt;vector&lt;Point&gt; &gt; &amp;validStaves, int staffDistance, OneBitImageView *imageErodedCopy)"
-            landmarkType = "5">
+            startingLineNumber = "63"
+            endingLineNumber = "63"
+            landmarkName = "runTestsOnFiles(vector &lt;string&gt; &amp;inputFiles, string inputDir, string outPutDir)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
