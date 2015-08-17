@@ -1166,7 +1166,8 @@ public:
         //return finalTrim(setsOfValidStaves, imageErodedCopy);
         return setsOfValidStaves;
     }
-        
+    
+//    copied from initial code by authors of "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8"
     void smoothStaffLine(vector<Point> &staff, int halfWindowSize)
     {
         if (staff.size() < ((halfWindowSize * 2) + 1))
@@ -1199,6 +1200,7 @@ public:
         }
     }
     
+//    Nearly identical to stableStaffDetection except it sets pixels to white regardless of vertical height and returns the sets of stable paths instead of an image
     template<class T>
     vector <vector <vector<Point> > > returnSetsOfStablePaths(vector <vector <Point> > &validStaves, T &image)
     {
@@ -1422,12 +1424,12 @@ public:
         
         for (int set = 0; set < numSets; set++)
         {
-            getBreakPoints(staffSets[set], breakValues[set], image);
+            getBreakPoints(staffSets[set], breakValues[set], image); //Collects x-values that either mark the beginning of ornamentation/white space that needs to be trimmed or the beginning of staves that needs to be saved
         }
         
         for (int set = 0; set < numSets; set++)
         {
-            trimIndividualSet(staffSets[set], breakValues[set], trimmedSets);
+            trimIndividualSet(staffSets[set], breakValues[set], trimmedSets); //Uses the break values to trim the staff sets
         }
         
         return trimmedSets;
@@ -1439,7 +1441,7 @@ public:
         int endVal = breakValues.size() - 1;
         for (int breakValIndex = 0; breakValIndex < endVal; breakValIndex = (breakValIndex + 2))
         {
-            if (!(breakValIndex) && (!(breakValues[breakValIndex].pixVal)))
+            if (!(breakValIndex) && (!(breakValues[breakValIndex].pixVal))) //Starting from the left, checking to see if there is immediate white space to trim
             {
                 breakValIndex++;
             }
