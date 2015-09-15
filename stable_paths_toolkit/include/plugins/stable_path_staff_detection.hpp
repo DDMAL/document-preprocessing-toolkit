@@ -2807,6 +2807,184 @@ PyObject* setOfStablePathPoints(T &image, bool with_trimming, bool with_deletion
     return entire_set;
 }
 
+template <class T>
+PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool with_deletion, bool with_staff_fixing, bool enable_strong_staff_pixels, int staffline_height, int staffspace_height)
+{
+    vector< vector <vector<Point> > > setsToReturn;
+    
+    if (with_deletion)
+    {
+        stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+        
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        OneBitImageView *firstPass = slf1.stableStaffDetection(validStaves);
+        OneBitImageView *subtractedImage = slf1.subtractImage(image, *firstPass);
+        validStaves.clear();
+        stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
+        cout <<"About to commence finalTrim" <<endl;
+        
+        if (with_trimming)
+        {
+            setsToReturn = slf2.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
+        
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
+        
+        for (int set = 0; set < setsToReturn.size(); set++)
+        {
+            if (counter == 0)
+            {
+                redCount = 255;
+                greenCount = 0;
+            }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = -1;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slf2.fixStaffSystem(setsToReturn[set]);
+            }
+            
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
+            {
+                slf2.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf2.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
+                {
+                    //                slf2.fixLine(setsOfTrimmedPaths[set][staff]);
+                    new1->set(setsToReturn[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
+        }
+    }
+    else
+    {
+        stableStaffLineFinder slf1 (image, enable_strong_staff_pixels);
+        
+        if (staffline_height)
+        {
+            slf1.staffLineHeight = staffline_height;
+        }
+        
+        if (staffspace_height)
+        {
+            slf1.staffSpaceDistance = staffspace_height;
+        }
+        
+        RGBImageData *data1 = new RGBImageData(image.size());
+        RGBImageView *new1 = new RGBImageView(*data1);
+        vector<vector <Point> > validStaves;
+        vector< vector <vector<Point> > > setsOfValidStaves;
+        setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
+        cout <<"About to commence finalTrim" <<endl;
+        
+        if (with_trimming)
+        {
+            setsToReturn = slf1.finalTrim(setsOfValidStaves, slf1.primaryImage);
+        }
+        else
+        {
+            setsToReturn = setsOfValidStaves;
+        }
+        cout <<"Finished finalTrim" <<endl;
+        int redCount, blueCount, greenCount, counter;
+        redCount = blueCount = greenCount = counter = 0;
+        
+        for (int set = 0; set < setsToReturn.size(); set++)
+        {
+            if (counter == 0)
+            {
+                redCount = 255;
+                greenCount = 0;
+            }
+            else if (counter == 1)
+            {
+                greenCount = 150;
+                blueCount = 0;
+                redCount = 0;
+            }
+            else if (counter == 2)
+            {
+                blueCount = 175;
+                redCount = 0;
+                counter = -1;
+            }
+            
+            if (with_staff_fixing)
+            {
+                slf1.fixStaffSystem(setsToReturn[set]);
+            }
+            
+            for (int staff = 0; staff < setsToReturn[set].size(); staff++)
+            {
+                slf1.smoothStaffLine(setsToReturn[set][staff], SMOOTH_STAFF_LINE_WINDOW * slf1.staffSpaceDistance);
+                for (int line = 0; line < setsToReturn[set][staff].size(); line++)
+                {
+                    //                slf1.findSlopes(setsOfTrimmedPaths[set][staff]);
+                    new1->set(setsToReturn[set][staff][line], RGBPixel(redCount, greenCount, blueCount));
+                }
+            }
+            
+            counter++;
+        }
+    }
+    
+    int numOfSets = setsToReturn.size();
+    
+    PyObject *skeleton_list = PyList_New(0);
+    
+    for (int set = 0; set < numOfSets; set++)
+    {
+        PyObject *newSet = PyList_New(0);
+        PyList_Append(newSet, PyLong_FromLong(setsToReturn[set][0][0].x()));
+        PyObject *listOfYValues = PyList_New(0);
+        
+        for (int line = 0; line < setsToReturn[set].size(); line++)
+        {
+            for (int point = 0; point < setsToReturn[set][0].size(); point++)
+            {
+                PyList_Append(listOfYValues, PyLong_FromLong(setsToReturn[set][line][point].y()));
+            }
+        }
+        
+        PyList_Append(newSet, listOfYValues);
+        PyList_Append(skeleton_list, newSet);
+    }
+  
+    return skeleton_list;
+}
+
 template<class T, class U>
 RGBImageView *overlayStaves(T &staffImage, U &primaryImage)
 {

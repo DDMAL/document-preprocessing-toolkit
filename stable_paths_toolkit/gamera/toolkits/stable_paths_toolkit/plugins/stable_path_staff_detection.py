@@ -1,4 +1,5 @@
 from gamera.plugin import *
+import _stable_path_staff_detection
 
 class deleteStablePaths(PluginFunction):
     """Experimental and used for testing. Deletes one iteration of stable paths."""
@@ -110,11 +111,52 @@ class overlayStaves(PluginFunction):
     self_type = ImageType([RGB])
     args = Args([ImageType(ONEBIT, 'Primary Image')])
 
+class get_stable_path_staff_skeletons(PluginFunction):
+    """Returns the staffline skeletons found by the stable path algorithm, as described in
+        Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto (2008): A connected path approach
+        for staff detection on a music score. 15th IEEE International Conference on Image Processing,
+        pp. 1005-8.
+        
+        Arguments:
+        
+        *with_trimming*:
+        Trims staff sets where white space or ornamentations are found.
+        
+        *with_deletion*:
+        If checked, the image will be processed once and will create an image comprised of only found staves and then the code is run again. More accurate for images with a lot of lyrics or ornamentation.
+        
+        *with_staff_fixing*:
+        Uses the slopes of staff sets to fix staff lines that differ wildly from the slope at specific intervals.
+        
+        *enable_strong_staff_pixels*:
+        Experimental method that reduces the weights of vertical runs that are the exact width of staffline_height and are exactly staffspace_height away from the closest black pixel.
+        
+        *staffline_height* and *staffspace_height*:
+        If left as 0 they will be automatically determined.
+        
+        
+        Return value:
+        
+        *skeleton_list*:
+        A nested list, where each sublist represents a staffline candidate
+        skeleton as an array of two elements: the first element is the leftmost
+        x position, the second element is a list of subsequent y-values.
+        
+        The returned skeleton list is sorted from top to bottom and from left
+        to right.
+        """
+    category = "MusicStaves/Stable_path"
+    self_type = ImageType([ONEBIT])
+    args = Args([Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False), Int('staffline_height', default=0),\
+                 Int('staffspace_height', default=0)])
+    return_type = Class("skeleton_list")
+    author = "Ian Karp"
+
 class stablePaths(PluginModule):
     cpp_headers=["stable_path_staff_detection.hpp"]
     cpp_namespace=["Gamera"]
     category = "Stable_paths_toolkit"
-    functions = [stablePathDetection, drawAllGraphPaths, overlayStaves, subimageStablePathDetection, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, displayWeights, drawAllStablePaths]
+    functions = [stablePathDetection, drawAllGraphPaths, overlayStaves, subimageStablePathDetection, setOfStablePathPoints, deleteStablePaths, findStablePaths, removeStaves, displayWeights, drawAllStablePaths, get_stable_path_staff_skeletons]
     author = "Ian Karp"
     url = "Your URL here"
 module = stablePaths()
