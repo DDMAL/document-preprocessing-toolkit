@@ -1,47 +1,45 @@
 
-  //=================== STABLE PATH FUNCTIONS ===================
-  //=============================================================
+//=================== STABLE PATH FUNCTIONS ===================
+//=============================================================
 
-  /*
-   Code based off the paper "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8" and many functions are virtually identical to the authors' code with adjustments made to work with Gamera
-   
-    Preprocessing:
-        *1. Compute staffspaceheight and stafflineheight (Need to relax values so that similar staff spaces/line heights are taken together. Also need to make it so only most common
-                value from each column is considered)
-        *2. Compute weights of the graph
-
-    Main Cycle:
-        *1. Compute stable paths
-        *2. Validate paths with blackness and shape
-        *3. Erase valid paths from image
-        *4. Add valid paths to list of stafflines
-        *5. End of cycle if no valid path was found
-
-    Postprocessing
-        *1. Uncross stafflines
-        *2. Organize stafflines in staves
-        *3. Smooth and trim stafflines
-
-        Notes:
-            - Currently being implemented only for one bit images
-            - verDistances are currently not computed as they take up too much time for minimal results
-            - A new trim function has been implemented
-            - A function to fix stafflines based on slope has been implemented
-            - Strong staff pixels have been implemented with minimal results
-                - Based on Staff line Detection and Removal in the Grayscale Domain by Ana Rebelo and Jaime S. Cardoso
-    */
+/*
+ Code based off the paper "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8" and many functions are virtually identical to the authors' code with adjustments made to work with Gamera
+ 
+ Preprocessing:
+ *1. Compute staffspaceheight and stafflineheight (Need to relax values so that similar staff spaces/line heights are taken together. Also need to make it so only most common
+ value from each column is considered)
+ *2. Compute weights of the graph
+ 
+ Main Cycle:
+ *1. Compute stable paths
+ *2. Validate paths with blackness and shape
+ *3. Erase valid paths from image
+ *4. Add valid paths to list of stafflines
+ *5. End of cycle if no valid path was found
+ 
+ Postprocessing
+ *1. Uncross stafflines
+ *2. Organize stafflines in staves
+ *3. Smooth and trim stafflines
+ 
+ Notes:
+ - Currently being implemented only for one bit images
+ - verDistances are currently not computed as they take up too much time for minimal results
+ - A new trim function has been implemented
+ - A function to fix stafflines based on slope has been implemented
+ - Strong staff pixels have been implemented with minimal results
+ - Based on Staff line Detection and Removal in the Grayscale Domain by Ana Rebelo and Jaime S. Cardoso
+ */
 #ifndef STABLE_PATH_STAFF_DETECTION
 #define STABLE_PATH_STAFF_DETECTION
 
 #include <vector>
 #include <algorithm>
 #include <string>
-#include <stdexcept>
-#include "gameramodule.hpp"
+
 #include "gamera.hpp"
-#include "png.h"
-#include "knnmodule.hpp"
-#include "plugins/arithmetic.hpp"
+
+
 #include <time.h>
 
 using namespace std;
@@ -68,7 +66,7 @@ public:
     typedef int weight_t;
     enum e_NEIGHBOUR {NEIGHBOUR4 = 0, NEIGHBOUR8};
     typedef enum e_NEIGHBOUR NEIGHBOUR;
-
+    
     struct NODE
     {
         Point previous;
@@ -94,26 +92,26 @@ public:
         int breakVal;
         bool start;
     };
-
+    
     //Values taken from stableStaffLineFinder.cpp lines 106-107
-//    const double MIN_BLACK_PER = 0.25;
+    //    const double MIN_BLACK_PER = 0.25;
     static const weight_t TOP_VALUE = (INT_MAX/2);
-
-    int* verRun; //length of vertical run of same color pixels. 
+    
+    int* verRun; //length of vertical run of same color pixels.
     int* verDistance; //Minimum distance of a pixel of the same color NOT in the same run of pixels of the same color
     NODE* graphPath; //Will contain the path of stable paths
     NODEGRAPH* graphWeight; //Will contain the weight/cost of moving from one pixel to the upper right, right, or lower right
     bool* strongStaffPixels; //Array indicating which points are strong staff-pixels
     
     bool enableSSP; //Will determine whether strong staff-pixels are calculated
-
+    
     int staffLineHeight;
     int staffSpaceDistance;
     time_t globalStart; //Used for testing
-
+    
     typedef ImageData<OneBitPixel> OneBitImageData;
     typedef ImageView<OneBitImageData> OneBitImageView;
-
+    
     typedef ImageData<GreyScalePixel> GreyScaleImageData;
     typedef ImageView<GreyScaleImageData> GreyScaleImageView;
     
@@ -124,11 +122,11 @@ public:
     OneBitImageView *primaryImage; //Will be the view for the image being input from the python side
     int imageWidth;
     int imageHeight;
-
+    
     //=========================================================================================
     //                          Image Cloners/Eroders and Point Functions
     //=========================================================================================
-
+    
     template <class T>
     Point getPoint(int x, T &image) //Returns the point value based on the int value x
     {
@@ -136,20 +134,20 @@ public:
         int yValue = (x - xValue) / image.ncols();
         return Point(xValue, yValue);
     }
-
+    
     Point getPointView(int x, int width, int height) //Returns the point value based on the int value x
     {
         int xValue = x % width;
         int yValue = (x - xValue) / width;
         return Point(xValue, yValue);
     }
-
+    
     template<class T>
     OneBitImageView* clear(T& image)
     {
         OneBitImageData* dest_data = new OneBitImageData(image.size());
         OneBitImageView* dest_view = new OneBitImageView(*dest_data);
-
+        
         for (size_t r = 0; r < image.nrows(); r++)
         {
             for (size_t c = 0; c < image.ncols(); c++)
@@ -157,16 +155,16 @@ public:
                 dest_view->set(Point(c, r), 0);
             }
         }
-
+        
         return dest_view;
     }
-
+    
     template<class T>
     GreyScaleImageView* clearGrey(T& image)
     {
         GreyScaleImageData* dest_data = new GreyScaleImageData(image.size());
         GreyScaleImageView* dest_view = new GreyScaleImageView(*dest_data);
-
+        
         for (size_t r = 0; r < image.nrows(); r++)
         {
             for (size_t c = 0; c < image.ncols(); c++)
@@ -174,16 +172,16 @@ public:
                 dest_view->set(Point(c, r), 255);
             }
         }
-
+        
         return dest_view;
     }
-
+    
     template<class T>
     OneBitImageView* myCloneImage(T &image)
     {
         OneBitImageData* dest_data = new OneBitImageData(image.size());
         OneBitImageView* dest_view = new OneBitImageView(*dest_data);
-
+        
         for (size_t r = 0; r < image.nrows(); r++)
         {
             for (size_t c = 0; c < image.ncols(); c++)
@@ -191,10 +189,10 @@ public:
                 dest_view->set(Point(c, r), image.get(Point(c, r)));
             }
         }
-
+        
         return dest_view;
     }
-
+    
     void myVerticalErodeImage(OneBitImageView * img, int width, int height)
     {
         unsigned char pel_prev;
@@ -232,7 +230,7 @@ public:
             }
         }
     }
-
+    
     void printPoint(Point p)
     {
         printf("(%lu, %lu)\n", p.x(), p.y());
@@ -258,7 +256,7 @@ public:
         
         return result;
     }
-
+    
     //=========================================================================================
     //=============================Primary Functions===========================================
     //=========================================================================================
@@ -291,7 +289,7 @@ public:
         verRun = new int[0];
         verDistance = new int[0];
     }
-
+    
     ~stableStaffLineFinder ()
     {
         //myReleaseImage(&img);
@@ -360,51 +358,51 @@ public:
         }
         
         //Find Vertical Distance (currently commented out since the benefits don't seem to outweigh the costs)
-//        for (int c = 0; c < cols; c++)
-//        {
-//            for (int r = 0; r < rows; r++)
-//            {
-//                //cout <<"Finding vertical distance of Point(" <<c <<", " <<r <<")" <<endl;
-//                unsigned char pel = primaryImage->get(Point(c, r));
-//                int row = r;
-//                unsigned char curr_pel = pel;
-//                
-//                while ((row > 0) && (curr_pel == pel))
-//                {
-//                    row--;
-//                    curr_pel = primaryImage->get(Point(c, row));
-//                }
-//                
-//                int run1 = 1;
-//                
-//                while ((row > 0) && (curr_pel != pel))
-//                {
-//                    row--;
-//                    curr_pel = primaryImage->get(Point(c, row));
-//                    run1++;
-//                }
-//                
-//                row = r;
-//                curr_pel = pel;
-//                
-//                while ((row < rows - 1) && (curr_pel == pel))
-//                {
-//                    row++;
-//                    curr_pel = primaryImage->get(Point(c, row));
-//                }
-//                
-//                int run2 = 1;
-//                
-//                while ((row < rows - 1) && (curr_pel != pel))
-//                {
-//                    row++;
-//                    curr_pel = primaryImage->get(Point(c, row));
-//                    run2++;
-//                }
-//                
-//                verDistance[(r * cols) + c] = min(run1, run2);
-//            }
-//        }
+        //        for (int c = 0; c < cols; c++)
+        //        {
+        //            for (int r = 0; r < rows; r++)
+        //            {
+        //                //cout <<"Finding vertical distance of Point(" <<c <<", " <<r <<")" <<endl;
+        //                unsigned char pel = primaryImage->get(Point(c, r));
+        //                int row = r;
+        //                unsigned char curr_pel = pel;
+        //
+        //                while ((row > 0) && (curr_pel == pel))
+        //                {
+        //                    row--;
+        //                    curr_pel = primaryImage->get(Point(c, row));
+        //                }
+        //
+        //                int run1 = 1;
+        //
+        //                while ((row > 0) && (curr_pel != pel))
+        //                {
+        //                    row--;
+        //                    curr_pel = primaryImage->get(Point(c, row));
+        //                    run1++;
+        //                }
+        //
+        //                row = r;
+        //                curr_pel = pel;
+        //
+        //                while ((row < rows - 1) && (curr_pel == pel))
+        //                {
+        //                    row++;
+        //                    curr_pel = primaryImage->get(Point(c, row));
+        //                }
+        //
+        //                int run2 = 1;
+        //
+        //                while ((row < rows - 1) && (curr_pel != pel))
+        //                {
+        //                    row++;
+        //                    curr_pel = primaryImage->get(Point(c, row));
+        //                    run2++;
+        //                }
+        //
+        //                verDistance[(r * cols) + c] = min(run1, run2);
+        //            }
+        //        }
         
         if ((!staffLineHeight) && (!staffSpaceDistance)) //No values yet assigned to staffLineHeight or staffSpaceDistance
         {
@@ -414,7 +412,7 @@ public:
         if (enableSSP)
         {
             strongStaffPixels = new bool[imageWidth * imageHeight];
-            cout <<"SSP enabled" <<endl;
+            //cout <<"SSP enabled" <<endl;
             determineStrongStaffPixels();
         }
         
@@ -475,41 +473,41 @@ public:
         }
     }
     
-//    bool acceptableStrongStaffPixel(int col, int row, int currRun)
-//    {
-//        if ((currRun >= row) && (primaryImage->get(Point(col, row))))
-//        {
-//            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
-//            {
-//                return true;
-//            }
-//        }
-//        else if (((currRun < row) && (primaryImage->get(Point(col, row)))))
-//        {
-//            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
-//            {
-//                return true;
-//            }
-//            else if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row - currRun) * imageWidth) + col], staffSpaceDistance))
-//            {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-//    
-//    bool currRunWithinTolerance(int currRun, int restriction)
-//    {
-//        if ((static_cast<double>(currRun) <= (static_cast<double>(restriction) * SSP_TOLERANCE)) && (static_cast<double>(currRun) >= (static_cast<double>(restriction) / SSP_TOLERANCE)))
-//        {
-//            return true;
-//        }
-//        else
-//        {
-//            return false;
-//        }
-//    }
+    //    bool acceptableStrongStaffPixel(int col, int row, int currRun)
+    //    {
+    //        if ((currRun >= row) && (primaryImage->get(Point(col, row))))
+    //        {
+    //            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
+    //            {
+    //                return true;
+    //            }
+    //        }
+    //        else if (((currRun < row) && (primaryImage->get(Point(col, row)))))
+    //        {
+    //            if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row + currRun) * imageWidth) + col], staffSpaceDistance))
+    //            {
+    //                return true;
+    //            }
+    //            else if (currRunWithinTolerance(currRun, staffLineHeight) && currRunWithinTolerance(verRun[((row - currRun) * imageWidth) + col], staffSpaceDistance))
+    //            {
+    //                return true;
+    //            }
+    //        }
+    //
+    //        return false;
+    //    }
+    //
+    //    bool currRunWithinTolerance(int currRun, int restriction)
+    //    {
+    //        if ((static_cast<double>(currRun) <= (static_cast<double>(restriction) * SSP_TOLERANCE)) && (static_cast<double>(currRun) >= (static_cast<double>(restriction) / SSP_TOLERANCE)))
+    //        {
+    //            return true;
+    //        }
+    //        else
+    //        {
+    //            return false;
+    //        }
+    //    }
     
     void setRunToTrue(int run, int col, int row)
     {
@@ -525,8 +523,8 @@ public:
         unsigned int pel2 = primaryImage->get(pixelVal2); //Gets pixel value of Point 2
         int width = imageWidth;
         
-//        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
-//        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
+        //        int dist1 = verDistance[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Distance taken from array of values created in constructGraphWeights
+        //        int dist2 = verDistance[(pixelVal2.y() * width) + pixelVal2.x()];
         int vRun1 = verRun[(pixelVal1.y() * width) + pixelVal1.x()]; //Vertical Runs taken from array of values created in constructGraphWeights
         int vRun2 = verRun[(pixelVal2.y() * width) + pixelVal2.x()];
         
@@ -556,12 +554,12 @@ public:
                 --y;
             }
         }
-
-//      Commented out since it is derived from verDistance which is no longer computed
-//        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
-//        {
-//            y++;
-//        }
+        
+        //      Commented out since it is derived from verDistance which is no longer computed
+        //        if (max(dist1, dist2) > ((2 * staffLineHeight) + staffSpaceDistance))
+        //        {
+        //            y++;
+        //        }
         
         return y;
     }
@@ -639,7 +637,7 @@ public:
         vector<int> npaths;
         
         bool first_time = 1;
-        double blackPerc;
+        double blackPerc = 0.0;
         vector<Point> bestStaff;
         
         int nrows = imageHeight;
@@ -688,7 +686,7 @@ public:
                 
                 if (!allSumOfValues.size())
                 {
-                    cout <<"There are no valid stable paths in your image. Sorry.\n";
+                    throw std::runtime_error("There are no valid stable paths in your image. Sorry.");
                     return imageCopy;
                 }
                 
@@ -770,13 +768,13 @@ public:
                             continue;
                         }
                         
-//                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
+                        //                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
                         if (verRun[((row + j) * ncols) + col] < ((ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1)) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
                         {
                             imageCopy->set(Point(col, (row + j)), 0);
                             imgErode->set(Point(col, (row + j)), 0);
                         }
-
+                        
                         if ( ((row + j) > nrows - 1) || ((row + j) < 0 ) )
                         {
                             continue;
@@ -1047,11 +1045,11 @@ public:
                     singleSet.push_back(validStaves[i]);
                 }
                 
-//                if (singleSet.size() >= 2) //Paper writers wanted more complex rules to validate sets
-//                {
-//                    setsOfValidStaves.push_back(singleSet);
-//                    printf("SET SIZE = %lu\n", singleSet.size());
-//                }
+                //                if (singleSet.size() >= 2) //Paper writers wanted more complex rules to validate sets
+                //                {
+                //                    setsOfValidStaves.push_back(singleSet);
+                //                    printf("SET SIZE = %lu\n", singleSet.size());
+                //                }
                 
                 //I want to include systems with only one staff. There will have to be rules written to make sure it actually should be included
                 setsOfValidStaves.push_back(singleSet);
@@ -1129,8 +1127,8 @@ public:
             //2 trim staffs from start to nvalid
             for (int i = 0; i < setOfStaves.size(); i++)
             {
-//                Smoothing now done after trimming
-//                smoothStaffLine(setOfStaves[i], SMOOTH_STAFF_LINE_WINDOW * staffSpaceDistance);
+                //                Smoothing now done after trimming
+                //                smoothStaffLine(setOfStaves[i], SMOOTH_STAFF_LINE_WINDOW * staffSpaceDistance);
                 
                 vector<Point>::iterator it = setOfStaves[i].begin();
                 
@@ -1167,7 +1165,7 @@ public:
         return setsOfValidStaves;
     }
     
-//    copied from initial code by authors of "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8"
+    //    copied from initial code by authors of "Cardoso, J., A. Capela, A. Rebelo, C. Guedes, and I. Porto 2008 A connected path approach for staff detection on a music score Proceedings of the 15th IEEE International Conference on Image Processing, 1005–8"
     void smoothStaffLine(vector<Point> &staff, int halfWindowSize)
     {
         if (staff.size() < ((halfWindowSize * 2) + 1))
@@ -1200,7 +1198,7 @@ public:
         }
     }
     
-//    Nearly identical to stableStaffDetection except it sets pixels to white regardless of vertical height and returns the sets of stable paths instead of an image
+    //    Nearly identical to stableStaffDetection except it sets pixels to white regardless of vertical height and returns the sets of stable paths instead of an image
     template<class T>
     vector <vector <vector<Point> > > returnSetsOfStablePaths(vector <vector <Point> > &validStaves, T &image)
     {
@@ -1213,7 +1211,7 @@ public:
         vector<int> npaths;
         
         bool first_time = 1;
-        double blackPerc;
+        double blackPerc = 0.0;
         vector<Point> bestStaff;
         
         int nrows = imageCopy->nrows();
@@ -1253,7 +1251,7 @@ public:
                 
                 if (!allSumOfValues.size())
                 {
-                    cout <<"There are no valid stable paths in your image. Sorry.\n";
+                    throw std::runtime_error("There are no valid stable paths in your image. Sorry.");
                     return postProcessing(validStaves, imageErodedCopy);
                 }
                 
@@ -1504,20 +1502,20 @@ public:
                 mishitCounter++;
                 hitCounter = 0;
                 
-//                if (hitCounter < mishitCounter)
-//                {
-//                    hitCounter = 0;
-//                }
+                //                if (hitCounter < mishitCounter)
+                //                {
+                //                    hitCounter = 0;
+                //                }
             }
             else if (!(breakValues[breakValuesSize - 1].pixVal) && (hitPercent > ALLOWED_VERTICAL_HIT_PERCENTAGE))
             {
                 hitCounter++;
                 mishitCounter = 0;
                 
-//                if (hitCounter > mishitCounter)
-//                {
-//                    mishitCounter = 0;
-//                }
+                //                if (hitCounter > mishitCounter)
+                //                {
+                //                    mishitCounter = 0;
+                //                }
             }
             
             if ((!(breakValuesSize) && (mishitCounter > staffSpaceDistance)) || ((breakValues[breakValuesSize - 1].pixVal) && (mishitCounter > staffSpaceDistance)))
@@ -1590,7 +1588,7 @@ public:
         
         return false;
     }
-
+    
     //=============================================================================
     //                          HELPER FUNCTIONS
     //=============================================================================
@@ -1819,7 +1817,7 @@ public:
     {
         for (int row = 0; row < imageHeight; row++)
         {
-//            cout <<"Row #" <<row <<endl;
+            //            cout <<"Row #" <<row <<endl;
             Point start = graphP[((row + 1) * imageWidth) - 1].start;
             Point previous = graphP[((row + 1) * imageWidth) - 1].previous;
             while (start != previous)
@@ -1894,7 +1892,7 @@ public:
             {
                 if (deltaY)
                 {
-//                    staff[start + point] = Point(staff[start + point].x(), staff[start].y() - (point / deltaY));
+                    //                    staff[start + point] = Point(staff[start + point].x(), staff[start].y() - (point / deltaY));
                     staff[start + point] = Point(staff[start + point].x(), staff[start].y());
                 }
                 else
@@ -2042,8 +2040,7 @@ public:
     {
         if (staff.size() < (windowSize + start))
         {
-            cout <<"The staff is too small to find an accurate slope." <<endl;
-            return -999999999999;
+            throw std::runtime_error("The staff is too small to find an accurate slope.");
         }
         
         double totalY = 0.0;
@@ -2112,7 +2109,7 @@ public:
         }
         return (totalHits / size);
     }
-
+    
     OneBitImageView* lineDraw(OneBitImageView *image)
     {
         int height = image->nrows();
@@ -2148,7 +2145,7 @@ public:
             for (int x = width/10; x < width - 1; x++)
             {
                 image->set(Point(x, y), 1);
-//                image->set(Point(x, y + 1), 1);
+                //                image->set(Point(x, y + 1), 1);
             }
             counter++;
         }
@@ -2168,7 +2165,7 @@ public:
         
         return (1.0 - (numBlackPixels / totalRows));
     }
-
+    
 };
 
 //===================================================================================================
@@ -2179,8 +2176,7 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
 {
     if ((topLeft.x() >= bottomRight.x()) || (topLeft.y() >= bottomRight.y()))
     {
-        cout <<"Invalid points, please try again" <<endl;
-        exit(1);
+        throw std::runtime_error("Invalid points, please try again.");
     }
     
     stableStaffLineFinder slf1;
@@ -2215,9 +2211,9 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
         
         if (with_trimming)
         {
-            cout <<"About to commence finalTrim" <<endl;
+            //cout <<"About to commence finalTrim" <<endl;
             setsToReturn = slf2.finalTrim(setsOfValidStaves, slfSub.primaryImage);
-            cout <<"Finished finalTrim" <<endl;
+            //cout <<"Finished finalTrim" <<endl;
         }
         else
         {
@@ -2283,7 +2279,7 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
         {
             slf1.staffSpaceDistance = staffspace_height;
         }
-
+        
         RGBImageData *data1 = new RGBImageData(image.size());
         RGBImageView *new1 = new RGBImageView(*data1);
         vector<vector <Point> > validStaves;
@@ -2293,15 +2289,15 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
         
         if (with_trimming)
         {
-            cout <<"About to commence finalTrim" <<endl;
+            //cout <<"About to commence finalTrim" <<endl;
             setsToReturn = slfSub.finalTrim(setsOfValidStaves, slfSub.primaryImage);
-            cout <<"Finished finalTrim" <<endl;
+            //cout <<"Finished finalTrim" <<endl;
         }
         else
         {
             setsToReturn = setsOfValidStaves;
         }
-            
+        
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
@@ -2443,7 +2439,7 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
     printf("Rows: %d, Columns: %d\n", slf1.imageHeight, slf1.imageWidth);
     printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(slf1.primaryImage, 0, slf1.imageWidth - 1, validStaves));
     slf1.drawPaths(validStaves, blank);
-
+    
     return blank;
 }
 
@@ -2501,7 +2497,7 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
         vector< vector <vector<Point> > > setsToReturn;
-        cout <<"About to commence finalTrim" <<endl;
+        //cout <<"About to commence finalTrim" <<endl;
         
         if (with_trimming)
         {
@@ -2512,7 +2508,7 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
             setsToReturn = setsOfValidStaves;
         }
         
-        cout <<"Finished finalTrim" <<endl;
+        //cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
@@ -2554,7 +2550,7 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
         }
         
         slf1.printStats(setsToReturn);
-        cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
+        //cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }
     else
@@ -2577,7 +2573,7 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
         vector< vector <vector<Point> > > setsToReturn;
-        cout <<"About to commence finalTrim" <<endl;
+        //cout <<"About to commence finalTrim" <<endl;
         
         if (with_trimming)
         {
@@ -2587,7 +2583,7 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
         {
             setsToReturn = setsOfValidStaves;
         }
-        cout <<"Finished finalTrim" <<endl;
+        //cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
@@ -2630,7 +2626,7 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
         }
         
         slf1.printStats(setsToReturn);
-        cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
+        //cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }
 }
@@ -2663,7 +2659,7 @@ PyObject* setOfStablePathPoints(T &image, bool with_trimming, bool with_deletion
         stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
-        cout <<"About to commence finalTrim" <<endl;
+        //cout <<"About to commence finalTrim" <<endl;
         
         if (with_trimming)
         {
@@ -2674,7 +2670,7 @@ PyObject* setOfStablePathPoints(T &image, bool with_trimming, bool with_deletion
             setsToReturn = setsOfValidStaves;
         }
         
-        cout <<"Finished finalTrim" <<endl;
+        //cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
@@ -2735,7 +2731,7 @@ PyObject* setOfStablePathPoints(T &image, bool with_trimming, bool with_deletion
         vector<vector <Point> > validStaves;
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
-        cout <<"About to commence finalTrim" <<endl;
+        //cout <<"About to commence finalTrim" <<endl;
         
         if (with_trimming)
         {
@@ -2745,7 +2741,7 @@ PyObject* setOfStablePathPoints(T &image, bool with_trimming, bool with_deletion
         {
             setsToReturn = setsOfValidStaves;
         }
-        cout <<"Finished finalTrim" <<endl;
+        //cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
@@ -2835,7 +2831,7 @@ PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool wit
         stableStaffLineFinder slf2 (*subtractedImage, enable_strong_staff_pixels);
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf2.returnSetsOfStablePaths(validStaves, *subtractedImage);
-        cout <<"About to commence finalTrim" <<endl;
+        //cout <<"About to commence finalTrim" <<endl;
         
         if (with_trimming)
         {
@@ -2846,7 +2842,7 @@ PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool wit
             setsToReturn = setsOfValidStaves;
         }
         
-        cout <<"Finished finalTrim" <<endl;
+        //cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
@@ -2907,7 +2903,7 @@ PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool wit
         vector<vector <Point> > validStaves;
         vector< vector <vector<Point> > > setsOfValidStaves;
         setsOfValidStaves = slf1.returnSetsOfStablePaths(validStaves, *slf1.primaryImage);
-        cout <<"About to commence finalTrim" <<endl;
+        //cout <<"About to commence finalTrim" <<endl;
         
         if (with_trimming)
         {
@@ -2917,7 +2913,7 @@ PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool wit
         {
             setsToReturn = setsOfValidStaves;
         }
-        cout <<"Finished finalTrim" <<endl;
+        //cout <<"Finished finalTrim" <<endl;
         int redCount, blueCount, greenCount, counter;
         redCount = blueCount = greenCount = counter = 0;
         
@@ -2981,7 +2977,7 @@ PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool wit
         PyList_Append(newSet, listOfYValues);
         PyList_Append(skeleton_list, newSet);
     }
-  
+    
     return skeleton_list;
 }
 
@@ -2993,8 +2989,7 @@ RGBImageView *overlayStaves(T &staffImage, U &primaryImage)
     
     if ((width != primaryImage.width()) || (height != primaryImage.height()))
     {
-        cout <<"Sorry, those images are not the same size. Please pick two images of equal size.";
-        exit(1);
+        throw std::runtime_error("Sorry, those images are not the same size. Please pick two images of equal size.");
     }
     
     RGBImageData *data = new RGBImageData(staffImage.size());
@@ -3024,7 +3019,7 @@ RGBImageView *overlayStaves(T &staffImage, U &primaryImage)
             }
         }
     }
-
+    
     return result;
 }
 
