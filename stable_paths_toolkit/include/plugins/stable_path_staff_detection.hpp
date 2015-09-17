@@ -3021,18 +3021,22 @@ PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool wit
     for (int set = 0; set < numOfSets; set++)
     {
         PyObject *newSet = PyList_New(0);
-        PyList_Append(newSet, PyLong_FromLong(setsToReturn[set][0][0].x()));
-        PyObject *listOfYValues = PyList_New(0);
         
         for (int line = 0; line < setsToReturn[set].size(); line++)
         {
+            PyObject *newLine = PyList_New(0);
+            PyList_Append(newLine, PyLong_FromLong(setsToReturn[set][line][0].x()));
+            PyObject *listOfYValues = PyList_New(0);
+            
             for (int point = 0; point < setsToReturn[set][0].size(); point++)
             {
                 PyList_Append(listOfYValues, PyLong_FromLong(setsToReturn[set][line][point].y()));
             }
+            
+            PyList_Append(newLine, listOfYValues);
+            PyList_Append(newSet, newLine);
         }
         
-        PyList_Append(newSet, listOfYValues);
         PyList_Append(skeleton_list, newSet);
     }
     
