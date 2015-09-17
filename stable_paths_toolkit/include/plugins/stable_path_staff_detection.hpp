@@ -36,7 +36,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-
+//#include "gameramodule.hpp"
 #include "gamera.hpp"
 
 
@@ -742,7 +742,11 @@ public:
                 
                 if (dissimilarity > (ALLOWED_DISSIMILARITY * staffSpaceDistance))
                 {
-                    printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    if (VERBOSE_MODE)
+                    {
+                        printf ("\tToo Dissimilar. Dissimilarity = %f, staffSpaceDistance = %d\n", dissimilarity, staffSpaceDistance);
+                    }
+                    
                     continue;
                 }
                 
@@ -827,7 +831,12 @@ public:
         }
         
         postProcessing(validStaves, imageErodedCopy);
-        printf ("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
+        
+        if (VERBOSE_MODE)
+        {
+            printf("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
+        }
+        
         delete imgErode;
         delete imageErodedCopy;
         
@@ -1221,9 +1230,7 @@ public:
         {
             vector <vector<Point> > stablePaths;
             int curr_n_paths = 0;
-            printf("About to findAllStablePaths\n");
             findAllStablePaths(imageCopy, 0, ncols - 1, stablePaths);
-            printf("Finished findAllStablePaths. Size = %lu\n", stablePaths.size());
             
             if (first_time && (stablePaths.size() > 0))
             {
@@ -1698,7 +1705,11 @@ public:
     {
         if ((staff1.size() == 0) || (staff2.size() == 0))
         {
-            printf("SIZE 0\n");
+            if (VERBOSE_MODE)
+            {
+                printf("SIZE 0\n");
+            }
+            
             return -1;
         }
         
@@ -1709,7 +1720,11 @@ public:
         
         if (m > M)
         {
-            printf("Do not overlap\n");
+            if (VERBOSE_MODE)
+            {
+                printf("Do not overlap\n");
+            }
+            
             return -1;
         }
         
@@ -1774,7 +1789,11 @@ public:
     {
         int numPaths = validStaves.size();
         int numPix = validStaves[0].size();
-        printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        
+        if (VERBOSE_MODE)
+        {
+            printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        }
         
         for (int i = 0; i < numPaths; i++)
         {
@@ -1802,7 +1821,11 @@ public:
     {
         int numPaths = validStaves.size();
         int numPix = validStaves[0].size();
-        printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        
+        if (VERBOSE_MODE)
+        {
+            printf("numPaths: %d, numPix: %d\n", numPaths, numPix);
+        }
         
         for (int i = 0; i < numPaths; i++)
         {
@@ -2262,7 +2285,10 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
             counter++;
         }
         
-        slfSub.printStats(setsToReturn);
+        if (VERBOSE_MODE)
+        {
+            slfSub.printStats(setsToReturn);
+        }
         
         return new1;
     }
@@ -2341,7 +2367,10 @@ RGBImageView* subimageStablePathDetection(T &image, Point topLeft, Point bottomR
             counter++;
         }
         
-        slfSub.printStats(setsToReturn);
+        if (VERBOSE_MODE)
+        {
+            slfSub.printStats(setsToReturn);
+        }
         
         return new1;
     }
@@ -2353,8 +2382,13 @@ OneBitImageView* deleteStablePaths(T &image)
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image, false);
     OneBitImageView *new1 = slf1.myCloneImage(image);
-    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
-    printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(slf1.primaryImage, 0, image.ncols()-1, validStaves));
+    
+    if (VERBOSE_MODE)
+    {
+        printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+        printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(slf1.primaryImage, 0, image.ncols()-1, validStaves));
+    }
+    
     slf1.deletePaths(validStaves, new1);
     
     return new1;
@@ -2376,7 +2410,10 @@ OneBitImageView* removeStaves(T &image, int staffline_height, int staffspace_hei
         slf1.staffSpaceDistance = staffspace_height;
     }
     
-    printf("Rows (image.nrows()): %lu, Rows (imageHeight): %d Columns (image.ncols()): %lu Columns (imageWidth): %d\n", image.nrows(), slf1.imageHeight, image.ncols(), slf1.imageWidth);
+    if (VERBOSE_MODE)
+    {
+        printf("Rows (image.nrows()): %lu, Rows (imageHeight): %d Columns (image.ncols()): %lu Columns (imageWidth): %d\n", image.nrows(), slf1.imageHeight, image.ncols(), slf1.imageWidth);
+    }
     
     return slf1.stableStaffDetection(validStaves);
 }
@@ -2386,8 +2423,12 @@ OneBitImageView* drawAllStablePaths(T &image)
 {
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image, false);
-    //OneBitImageView *new1 = slf1.myCloneImage(image);
-    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    
+    if (VERBOSE_MODE)
+    {
+        printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    }
+    
     slf1.stableStaffDetection(validStaves);
     OneBitImageView *blank = slf1.clear(image);
     slf1.drawPaths(validStaves, blank);
@@ -2401,8 +2442,12 @@ OneBitImageView* drawAllGraphPaths(T &image)
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image, false);
     OneBitImageView *imageCopy = slf1.myCloneImage(image);
-    //OneBitImageView *new1 = slf1.myCloneImage(image);
-    printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    
+    if (VERBOSE_MODE)
+    {
+        printf("Rows: %lu, Columns: %lu\n", image.nrows(), image.ncols());
+    }
+    
     slf1.findAllStablePaths(imageCopy, 0, slf1.imageWidth - 1, validStaves);
     OneBitImageView *blank = slf1.clear(image);
     slf1.drawGraphPaths(slf1.graphPath, blank);
@@ -2436,8 +2481,13 @@ OneBitImageView* findStablePaths(T &image) //Returns blank image with stable pat
     vector <vector<Point> > validStaves;
     stableStaffLineFinder slf1 (image, false);
     OneBitImageView *blank = slf1.clear(image);
-    printf("Rows: %d, Columns: %d\n", slf1.imageHeight, slf1.imageWidth);
-    printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(slf1.primaryImage, 0, slf1.imageWidth - 1, validStaves));
+    
+    if (VERBOSE_MODE)
+    {
+        printf("Rows: %d, Columns: %d\n", slf1.imageHeight, slf1.imageWidth);
+        printf("findAllStablePaths: %d\n", slf1.findAllStablePaths(slf1.primaryImage, 0, slf1.imageWidth - 1, validStaves));
+    }
+    
     slf1.drawPaths(validStaves, blank);
     
     return blank;
@@ -2549,7 +2599,11 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
             counter++;
         }
         
-        slf1.printStats(setsToReturn);
+        if (VERBOSE_MODE)
+        {
+            slf1.printStats(setsToReturn);
+        }
+        
         //cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }
@@ -2625,7 +2679,11 @@ RGBImageView* stablePathDetection(T &image, bool with_trimming, bool with_deleti
             counter++;
         }
         
-        slf1.printStats(setsToReturn);
+        if (VERBOSE_MODE)
+        {
+            slf1.printStats(setsToReturn);
+        }
+        
         //cout <<"Global Time = " << time (0) - slf1.globalStart <<endl;
         return new1;
     }
