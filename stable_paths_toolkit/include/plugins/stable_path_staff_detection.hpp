@@ -842,6 +842,8 @@ public:
             printf("TOTAL = %lu TOTAL STAFF LINES\n", validStaves.size());
         }
         
+        delete imgErode->data();
+        delete imageErodedCopy->data();
         delete imgErode;
         delete imageErodedCopy;
         
