@@ -36,7 +36,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-//#include "gameramodule.hpp"
+#include "gameramodule.hpp"
 #include "gamera.hpp"
 
 
@@ -643,7 +643,9 @@ public:
         int nrows = imageHeight;
         int ncols = imageWidth;
         
-        while(1) //Loops until no more stable paths are found
+        int loops = imageHeight / 2; //Limits the number of times the program can loop through the image
+        
+        while(loops > 0) //Loops until no more stable paths are found
         {
             vector <vector<Point> > stablePaths;
             int curr_n_paths = 0;
@@ -763,7 +765,7 @@ public:
                     int row = staff[i].y();
                     
                     //ERASE PATHS ALREADY SELECTED!
-                    for (int j = -path_half_width2; j <= path_half_width2; j++)
+                    for (int j =- path_half_width2; j <= path_half_width2; j++)
                     {
                         // printf("path_half_width2 = %d, j = %d\n", path_half_width2, j);
                         // printf("Currently erasing lines\n");
@@ -772,8 +774,9 @@ public:
                             continue;
                         }
                         
+                        long verRunThreshold = long(ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1.0;
                         //                        If a vertical run of pixels that is less than some value times the staffLineHeight is along the path, set it to white
-                        if (verRun[((row + j) * ncols) + col] < ((ALLOWED_THICKNESS_OF_STAFFLINE_DELETION * staffLineHeight) + 1)) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
+                        if (verRun[((row + j) * ncols) + col] < verRunThreshold) //1 os added for specific case where stafflineheight is 1 and fluctuates by 2 or 3 pixels
                         {
                             imageCopy->set(Point(col, (row + j)), 0);
                             imgErode->set(Point(col, (row + j)), 0);
@@ -828,6 +831,8 @@ public:
             {
                 break;
             }
+            
+            loops--;
         }
         
         postProcessing(validStaves, imageErodedCopy);
@@ -3025,8 +3030,8 @@ PyObject* get_stable_path_staff_skeletons(T &image, bool with_trimming, bool wit
         for (int line = 0; line < setsToReturn[set].size(); line++)
         {
             PyObject *newLine = PyList_New(0);
-            PyList_Append(newLine, PyLong_FromLong(setsToReturn[set][line][0].x()));
             PyObject *listOfYValues = PyList_New(0);
+            PyList_Append(newLine, PyLong_FromLong(setsToReturn[set][line][0].x()));
             
             for (int point = 0; point < setsToReturn[set][0].size(); point++)
             {
