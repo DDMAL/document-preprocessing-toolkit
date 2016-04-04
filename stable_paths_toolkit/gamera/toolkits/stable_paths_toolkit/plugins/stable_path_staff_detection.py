@@ -62,6 +62,9 @@ class stablePathDetection(PluginFunction):
     self_type = ImageType([ONEBIT])
     args = Args([Bool('with_trimming', default = True), Bool('with_deletion', default = False), Bool('with_staff_fixing', default = False), Bool('enable_strong_staff_pixels', default = False), Int('staffline_height', default=0),\
                  Int('staffspace_height', default=0)])
+    def __call__(self, with_trimming=True, with_deletion=False, with_staff_fixing=False, enable_strong_staff_pixels=False, staffline_height=0, staffspace_height=0):
+        return _stable_path_staff_detection.stablePathDetection(self, with_trimming, with_deletion, with_staff_fixing, enable_strong_staff_pixels, staffline_height, staffspace_height)
+    __call__ = staticmethod(__call__)
 
 class subimageStablePathDetection(PluginFunction):
     """Displays the trimmed stable paths for a subset of the image
