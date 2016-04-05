@@ -14,6 +14,9 @@ class removeStaves(PluginFunction):
     self_type = ImageType([ONEBIT])
     args = Args([Int('staffline_height', default=0),\
                  Int('staffspace_height', default=0)])
+    def __call__(self, staffline_height=0, staffspace_height=0):
+        return _stable_path_staff_detection.removeStaves(self, staffline_height, staffspace_height)
+    __call__ = staticmethod(__call__)
 
 class drawAllStablePaths(PluginFunction):
     """Experimental and used for testing. Draws all stable paths found, including those from before being post processed."""
